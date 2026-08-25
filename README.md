@@ -22,6 +22,14 @@ https://raw.githubusercontent.com/DeLoWaN/openfront-extended-ui/main/dist/openfr
 
 The script runs on `openfront.io` and on a local copy of the game at `localhost:9000`.
 
+### Chrome needs one setting turned on
+
+Open `chrome://extensions`, find Tampermonkey, and turn on **Allow user scripts**. Older versions of Chrome have a **Developer mode** switch at the top of that page instead.
+
+Chrome does not let an extension run a script in the page's own world until this is on. The package needs the page's world, because it reads the game's own objects. Without the setting the script still installs, still reports itself as enabled, and does nothing at all, with no error anywhere. So if nothing appears in a match, check this first.
+
+Firefox needs nothing of the sort.
+
 ## Switch a feature off
 
 There is no settings screen yet. Its shape depends on how many options the readouts turn out to have, so it cannot be designed until they exist. Until then, the browser console is the way in.
