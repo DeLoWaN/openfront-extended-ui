@@ -61,9 +61,16 @@
   const ORANGE_400 = { l: 75, c: 0.183, h: 55.934 };
   const GREEN_400 = { l: 79.2, c: 0.209, h: 151.711 };
 
-  // Our signature violet at two weights, on one hue. Nothing in the game uses it.
-  const VIOLET_DIM = { l: 26, c: 0.03, h: 285 };
-  const VIOLET_BRIGHT = { l: 68, c: 0.15, h: 285 };
+  // Our signature violet at two weights, on one hue.
+  //
+  // Hue 300 rather than the 285 of `#7f77dd`. The gradient has to sit next to the
+  // bar's own blue fill, and 285 is only 40 degrees off that blue, which reads as
+  // one muddy band at the join. 300 leans far enough towards magenta to separate.
+  //
+  // The dim end stops at 38% lightness, not near black. The bar's track is already
+  // dark, so a dim end any lower reads as an empty bar rather than a low rate.
+  const VIOLET_DIM = { l: 38, c: 0.06, h: 300 };
+  const VIOLET_BRIGHT = { l: 72, c: 0.17, h: 300 };
 
   const PEAK = 0.422;
   const DROP_WIDTH = 2;

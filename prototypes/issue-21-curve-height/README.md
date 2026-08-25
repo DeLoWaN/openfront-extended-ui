@@ -227,6 +227,14 @@ figure the package worked out itself. Green and orange here are ours, carrying o
 meaning, in the game's own palette. `V` is the same drawing under the settled rule, so
 it costs nothing to compare them.
 
+One correction while checking this. #6 says the game's palette "has no purple
+anywhere". It does. `PlayerPanel.ts:365-371` marks a Nation with indigo and a Bot with
+purple, and `WinModal.ts:231` and `SendResourceModal.ts:276` use `bg-indigo-600` for
+their primary button. None of it sits on the HUD's bottom row, so violet is still
+foreign next to the troop bar, but the blanket claim does not hold. Pink, fuchsia and
+rose have no uses at all, so there is unused hue space if violet ever turns out to be
+too close to something.
+
 **[#6](https://github.com/DeLoWaN/openfront-extended-ui/issues/6) turned a gradient
 down once already**, on the grounds that a gradient reads as "aim here" while a break
 reads as a switch. The settled decision is that crossing the line means spend, not
@@ -236,6 +244,54 @@ ramp.
 
 `G` also changes how the game's own troop fill looks, which no readout has done so
 far. `T` and `V` leave the blue fill alone and draw behind it.
+
+## What to do about the colour clash
+
+The clash does not come from the two colours picked. It comes from the pill and the
+gradient using the same channel, hue, for two different quantities. The pill's hue
+tells you which way the rate is moving. The gradient's hue tells you how big the rate
+is. Two quantities, one channel, so they contradict wherever the two happen to
+disagree. Any warm-to-cool ramp does this, whatever the exact hex values.
+
+That leaves three ways out, and only one of them is any good.
+
+**Match the pill's quantity instead.** Colour the bar green below the 42.2% level and
+orange above it. The hue can then never contradict the pill. Reject this. It says
+nothing the pill does not already say, and it puts a hue break in the middle of the
+plateau: 40% full and 45% full would read green and orange while their rates differ by
+0.2 of a percentage point. #6 turned that cliff down for good reasons and they still
+hold.
+
+**Keep the quantity, change the channel.** Draw the ramp in a hue the game does not
+use for anything, so nobody can read it against the pill. This is `V`, and it is the
+recommendation.
+
+**Accept the clash.** This is `G` as it stands. Live with the pill and the bar
+disagreeing across a 40-point band.
+
+`V` was tuned after the first look, and both changes were needed to make it judgeable:
+
+- Hue 300 rather than the 285 of `#7f77dd`. The gradient has to sit directly against
+  the bar's own blue fill, and 285 is only 40 degrees off that blue, which reads as one
+  muddy band at the join. 300 leans far enough towards magenta to separate cleanly.
+- The dim end floors at 38% lightness. The bar's track is already dark, so a dim end
+  near black reads as an empty bar rather than as a low rate.
+
+The cost is real and worth saying plainly: violet gives up the traffic-light instinct.
+Nobody has to be told what orange means. A violet ramp has to be learned once. That is
+the whole of what the recommendation trades away, and it buys a readout that never
+argues with the game underneath it.
+
+Pair it with `T`'s layering, behind the fills rather than over them, for two reasons
+beyond the colour. Blue keeps meaning troops, and the bright part of the ramp stays
+visible ahead of your fill, which is the half of the curve `G` clips away.
+
+That layering also produced the one thing in this prototype nobody designed. The
+brightest violet sits at the 42.2% level, so while you are below it the glow is ahead
+of your fill and you grow towards it. Once you are past it the fill has covered the
+glow and only the fading side is left. The crossing therefore reads as the glow going
+from in front of you to behind you, with no state change and no line. Whether that is
+enough is the thing to look at.
 
 ## Two things the measurements already flagged
 
