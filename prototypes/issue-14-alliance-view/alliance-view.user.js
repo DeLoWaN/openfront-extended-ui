@@ -11,34 +11,34 @@
 
 // THROWAWAY PROTOTYPE — answers issue #14, then dies. Do not import, do not extend.
 //
-// The question: is the alliance view mode worth building, and what does it feel like?
+// The question: is the alliance view mode worth the work, and what does it feel like?
 //
-// The mechanism was settled by issue #12 and is not in question here. Grey every
+// Issue #12 settled the mechanism, and this script does not reopen it. Grey every
 // player's palette slot, write a colour into the slots of the player under the
 // cursor and everyone in their allies() list, then call view.updatePalette() once.
 //
-// This script exists to put every open question on screen at the same time, so one
-// match answers all of them. A bar at the top switches:
+// This script puts every open question on screen at the same time, so one match
+// answers all of them. A bar at the top switches:
 //
 //   trigger   hover / click / hold    does the subject follow the cursor or stick?
 //   scheme    one / two / own / web   is one colour for every ally enough?
-//   grey      slider                  how dark is the rest of the map?
+//   grey      slider                  how dark does the rest of the map go?
 //   alpha     slider                  territoryAlpha, 0.588 default toward 1
-//   names     on / off                the names go grey; is off better than grey?
+//   names     on / off                the names lose their colour; does that help?
 //
-// Two things the ticket says are worth checking on screen, because the code says
-// something slightly different:
+// The ticket says two things that the code contradicts. Both are worth a look on
+// screen rather than a read here:
 //
-//   1. The ticket says the player names go grey. What actually goes grey is the
-//      name OUTLINE. name.outlineUsePlayerColor is true and name.fillUsePlayerColor
+//   1. The ticket says the player names go grey. What goes grey is the name
+//      OUTLINE. name.outlineUsePlayerColor is true and name.fillUsePlayerColor
 //      is false, so the letters keep their own fill and lose their coloured edge.
 //      Judge the real thing, not the description.
-//   2. Names can be switched off outright. settings.passEnabled.name is read on
-//      every draw, so the `names` button hides them live. That is a third answer to
-//      "does it help or hurt" that the ticket did not have.
+//   2. The names can go off outright. settings.passEnabled.name is read on
+//      every draw, so the `names` button hides them live. That is a third answer
+//      to "does it help or hurt" that the ticket did not have.
 //
-// Persistence: state is in localStorage, not memory. A reload drops you out of the
-// match, so an in-memory choice would be lost every time you wanted to compare.
+// Persistence: state lives in localStorage, not memory. A reload drops you out of
+// the match, so an in-memory choice would die every time you wanted to compare.
 // The issue #5 prototype settled this the same way.
 //
 // window.__ofxProto14.destroy() puts the map back and removes everything.
@@ -60,6 +60,11 @@
 
   const STORE_KEY = "ofx-proto-issue14";
   const HOLD_CODE = "Backquote";
+  // The re-assert only repairs a palette the game overwrote. Both causes are rare,
+  // so a slow beat is enough and it keeps the upload counter honest.
+  const REASSERT_MS = 4000;
+  // A long ally list must not stretch the bar off screen.
+  const MAX_NAMES_SHOWN = 8;
 
   // --------------------------------------------------------------- colours
 
@@ -88,21 +93,35 @@
 
   // --------------------------------------------------------------- stored state
 
-  const state = Object.assign(
-    {
-      on: true,
-      trigger: "hover",
-      scheme: "two",
-      grey: 0.22,
-      alpha: DEFAULT_TERRITORY_ALPHA,
-      names: true,
-    },
-    readStore(),
-  );
+  const DEFAULTS = {
+    on: true,
+    trigger: "hover",
+    scheme: "two",
+    grey: 0.22,
+    alpha: DEFAULT_TERRITORY_ALPHA,
+    names: true,
+  };
+
+  const state = loadState();
+
+  // A stored value of the wrong type reaches toFixed() and kills every repaint, and
+  // a reload does not clear it. Check each field against its default instead.
+  function loadState() {
+    const stored = readStore();
+    const s = Object.assign({}, DEFAULTS);
+    if (typeof stored.on === "boolean") s.on = stored.on;
+    if (typeof stored.names === "boolean") s.names = stored.names;
+    if (TRIGGERS.includes(stored.trigger)) s.trigger = stored.trigger;
+    if (SCHEMES.includes(stored.scheme)) s.scheme = stored.scheme;
+    if (Number.isFinite(stored.grey)) s.grey = clamp(stored.grey, 0.05, 0.6);
+    if (Number.isFinite(stored.alpha)) s.alpha = clamp(stored.alpha, 0.3, 1);
+    return s;
+  }
 
   function readStore() {
     try {
-      return JSON.parse(localStorage.getItem(STORE_KEY) ?? "{}");
+      const raw = JSON.parse(localStorage.getItem(STORE_KEY) ?? "{}");
+      return raw && typeof raw === "object" ? raw : {};
     } catch {
       return {};
     }
@@ -112,19 +131,23 @@
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(state));
     } catch {
-      /* a full quota is not worth failing the prototype over */
+      /* a full quota is not worth failure of the prototype */
     }
   }
 
-  // --------------------------------------------------------------- reaching the game
+  function clamp(v, lo, hi) {
+    return Math.min(hi, Math.max(lo, v));
+  }
+
+  // --------------------------------------------------------------- the game hooks
 
   // Two hooks, both settled by issue #12. `view` is the map renderer and is a real
   // global with no development-only guard. `game` is a new object every match.
   //
-  // The elements are cached because this runs on every mousemove. Both are static
-  // markup that lives for the whole page, so the cache only misses before the first
-  // match. `.game` and `.transformHandler` are read fresh, because `.game` is
-  // replaced on every new match.
+  // This caches the elements, because it runs on every mousemove. Both elements are
+  // static markup that lives for the whole page, so the cache misses only before the
+  // first match. `.game` and `.transformHandler` are read fresh, because the game
+  // replaces `.game` on every new match.
   let cachedPanel = null;
   let cachedBuildMenu = null;
 
@@ -155,7 +178,12 @@
     }
   }
 
-  // --------------------------------------------------------------- palette writing
+  // --------------------------------------------------------------- the palette
+
+  // One buffer, reused. updatePalette copies what it is given, so the same array
+  // serves every upload. A fresh 128 KB array per hover would churn the collector
+  // during the exact judgement this prototype exists to make.
+  const scratch = new Float32Array(PALETTE_SIZE * 2 * 4);
 
   function writeSlot(arr, smallID, fill, border) {
     const f = smallID * 4;
@@ -184,20 +212,20 @@
     return [rgb.r / 255, rgb.g / 255, rgb.b / 255];
   }
 
-  // The game's own palette, rebuilt from the same two accessors it uses itself.
-  // This is the restore path: it is current every time it is called, so a player
-  // who spawned while the mode was on still gets their real colour back.
+  // This rebuilds the game's own palette from the two accessors the game uses
+  // itself. It is the restore path, and it is current on every call, so a player who
+  // spawned while the mode was on gets the real colour back.
   function realPalette(game) {
-    const arr = new Float32Array(PALETTE_SIZE * 2 * 4);
+    scratch.fill(0);
     for (const p of game.players()) {
       writeSlot(
-        arr,
+        scratch,
         p.smallID(),
         toUnit(p.territoryColor()),
         toUnit(p.borderColor()),
       );
     }
-    return arr;
+    return scratch;
   }
 
   // allies() resolves every id through playerBySmallID, which throws for an id it
@@ -210,8 +238,8 @@
     }
   }
 
-  // The hovered player, everyone they are allied with, and everyone allied with
-  // those. The third ring is only drawn by the `web` scheme.
+  // This finds the hovered player, the players allied with them, and the players
+  // allied with those. Only the `web` scheme draws the third ring.
   function alliance(game, subjectID) {
     const subject = playerOrNull(game, subjectID);
     if (!subject) return null;
@@ -232,21 +260,21 @@
   }
 
   function alliancePalette(game, subjectID) {
-    const arr = new Float32Array(PALETTE_SIZE * 2 * 4);
+    scratch.fill(0);
     const grey = [state.grey, state.grey, state.grey];
     const greyBorder = lighten(grey, 0.35);
 
     const real = state.scheme === "own" ? new Map() : null;
     for (const p of game.players()) {
-      writeSlot(arr, p.smallID(), grey, greyBorder);
+      writeSlot(scratch, p.smallID(), grey, greyBorder);
       if (real) real.set(p.smallID(), p);
     }
 
     const web = alliance(game, subjectID);
-    if (!web) return { arr, web: null };
+    if (!web) return { arr: scratch, web: null };
 
     const colour = (smallID, fill) => {
-      writeSlot(arr, smallID, fill, lighten(fill, 0.4));
+      writeSlot(scratch, smallID, fill, lighten(fill, 0.4));
     };
 
     if (state.scheme === "one") {
@@ -259,7 +287,12 @@
       const keepOwn = (id) => {
         const p = real.get(id);
         if (!p) return;
-        writeSlot(arr, id, toUnit(p.territoryColor()), toUnit(p.borderColor()));
+        writeSlot(
+          scratch,
+          id,
+          toUnit(p.territoryColor()),
+          toUnit(p.borderColor()),
+        );
       };
       keepOwn(subjectID);
       for (const id of web.directIDs) keepOwn(id);
@@ -269,31 +302,39 @@
       for (const id of web.secondIDs) colour(id, ALLY_OF_ALLY);
     }
 
-    return { arr, web };
+    return { arr: scratch, web };
   }
 
   // --------------------------------------------------------------- the mode
 
   const mode = {
-    // The player the map is drawn around. 0 means nobody, so the map is normal.
+    // The player the map is drawn around. 0 means nobody, so the map stays normal.
     subjectID: 0,
-    // In `click` trigger, the locked player. Survives the cursor moving away.
+    // In `click` trigger, this holds the locked player. It survives when the cursor
+    // moves away.
     lockedID: 0,
-    // In `hold` trigger, whether the key is down right now.
+    // In `hold` trigger, this is true while the key is down.
     holding: false,
-    // Whatever the cursor is over, whether or not it is the subject.
+    // Whatever the cursor sits over, whether or not it is the subject.
     hoveredID: 0,
-    // The last palette written, re-asserted on a timer.
-    written: null,
+    // Where the cursor sits. A wheel zoom changes the tile under it without a
+    // mousemove, so the position has to outlive the event that reported it.
+    cursorX: 0,
+    cursorY: 0,
+    // True while the mode paints. The timer re-asserts only then.
+    active: false,
     game: null,
     settings: null,
     savedAlpha: DEFAULT_TERRITORY_ALPHA,
     savedNames: true,
+    // Uploads the user caused, and uploads the keep-alive caused. They are counted
+    // apart, because the first is the cost of the feature and the second is not.
     uploads: 0,
+    keepAlives: 0,
   };
 
-  // The settings object is live and shared, so writing to it lands on the next
-  // frame. Save what we found so destroy() can put it back.
+  // The settings object is live and shared, so a write to it lands on the next
+  // frame. Save what we found, so destroy() can put it back.
   function captureSettings(view) {
     if (mode.settings) return;
     const s = view.getSettings();
@@ -317,8 +358,9 @@
     mode.settings.passEnabled.name = mode.savedNames;
   }
 
-  // The one call that does the work. Everything above builds its argument.
-  function paint(force) {
+  // This makes the one call that does the work. Every function above builds its
+  // argument. `keepAlive` marks a repaint the timer asked for, not the user.
+  function paint(force, keepAlive) {
     const h = hooks();
     if (!h) return;
 
@@ -327,7 +369,7 @@
       mode.game = h.game;
       mode.subjectID = 0;
       mode.lockedID = 0;
-      mode.written = null;
+      mode.active = false;
       mode.settings = null;
     }
     captureSettings(h.view);
@@ -338,18 +380,19 @@
 
     applySettings();
 
+    if (keepAlive) mode.keepAlives++;
+    else mode.uploads++;
+
     if (!state.on || wanted === 0) {
       h.view.updatePalette(realPalette(h.game));
-      mode.written = null;
-      mode.uploads++;
+      mode.active = false;
       bar.render(null);
       return;
     }
 
     const { arr, web } = alliancePalette(h.game, wanted);
     h.view.updatePalette(arr);
-    mode.written = arr;
-    mode.uploads++;
+    mode.active = true;
     bar.render(web);
   }
 
@@ -362,8 +405,8 @@
 
   // --------------------------------------------------------------- the cursor
 
-  // The same chain HoverHighlightController uses. Water reads as nobody, which is
-  // what makes moving the cursor off the land clear the map.
+  // This uses the same chain as HoverHighlightController. Water reads as nobody, so
+  // the map clears when the cursor leaves the land.
   function ownerUnderCursor(clientX, clientY) {
     const h = hooks();
     if (!h) return 0;
@@ -382,16 +425,41 @@
 
   function onMouseMove(e) {
     if (overTheBar(e.target)) return;
+    mode.cursorX = e.clientX;
+    mode.cursorY = e.clientY;
     mode.hoveredID = ownerUnderCursor(e.clientX, e.clientY);
     paint(false);
   }
 
-  // Middle click, because left click attacks and right click opens the game's own
-  // player panel. A tap of the hold key does the same thing, for a trackpad.
+  // A wheel zoom moves the map under a still cursor, so a different player is now
+  // under it and no mousemove says so. Without this the map keeps the old subject,
+  // and the next click in `click` trigger locks the wrong player.
+  //
+  // This listens in the capture phase, which runs before the game's own handler, so
+  // the new scale is not readable yet. A timer of 0 ms reads it on the next turn of
+  // the event loop. A timer rather than a frame, because a background tab pauses
+  // frames but still has to be correct when it comes back.
+  let wheelTimer = 0;
+
+  function onWheel() {
+    if (wheelTimer) return;
+    wheelTimer = setTimeout(() => {
+      wheelTimer = 0;
+      mode.hoveredID = ownerUnderCursor(mode.cursorX, mode.cursorY);
+      paint(false);
+    }, 0);
+  }
+
+  // This uses the middle click, because left click attacks and right click opens the
+  // game's own player panel. A tap of the hold key does the same, for a trackpad.
   function onMouseDown(e) {
     if (state.trigger !== "click" || e.button !== 1) return;
     // Without this the browser starts its autoscroll mode.
     e.preventDefault();
+    // The cursor may have moved or the map may have zoomed since the last read.
+    mode.cursorX = e.clientX;
+    mode.cursorY = e.clientY;
+    mode.hoveredID = ownerUnderCursor(e.clientX, e.clientY);
     toggleLock();
   }
 
@@ -401,8 +469,16 @@
     paint(false);
   }
 
+  // The game has a chat box. A backquote typed into it must not flip the map.
+  function typingSomewhere() {
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = el.tagName;
+    return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
+  }
+
   function onKeyDown(e) {
-    if (e.code !== HOLD_CODE || e.repeat) return;
+    if (e.code !== HOLD_CODE || e.repeat || typingSomewhere()) return;
     if (state.trigger === "hold") {
       mode.holding = true;
       paint(false);
@@ -431,6 +507,8 @@
         "top:8px",
         "left:50%",
         "transform:translateX(-50%)",
+        "max-width:96vw",
+        "box-sizing:border-box",
         "z-index:2147483647",
         "display:flex",
         "align-items:center",
@@ -444,39 +522,55 @@
         "user-select:none",
       );
 
-      root.appendChild(this.button("on", () => {
-        state.on = !state.on;
-        commit(true);
-      }));
-      root.appendChild(this.button("trigger", () => {
-        state.trigger = next(TRIGGERS, state.trigger);
-        mode.lockedID = 0;
-        mode.holding = false;
-        commit(true);
-      }));
-      root.appendChild(this.button("scheme", () => {
-        state.scheme = next(SCHEMES, state.scheme);
-        commit(true);
-      }));
-      root.appendChild(this.button("names", () => {
-        state.names = !state.names;
-        commit(true);
-      }));
-      root.appendChild(this.slider("grey", 0.05, 0.6, (v) => {
-        state.grey = v;
-        commit(true);
-      }));
-      root.appendChild(this.slider("alpha", 0.3, 1, (v) => {
-        state.alpha = v;
-        commit(true);
-      }));
+      root.appendChild(
+        this.button("on", () => {
+          state.on = !state.on;
+          commit(true);
+        }),
+      );
+      root.appendChild(
+        this.button("trigger", () => {
+          state.trigger = next(TRIGGERS, state.trigger);
+          mode.lockedID = 0;
+          mode.holding = false;
+          commit(true);
+        }),
+      );
+      root.appendChild(
+        this.button("scheme", () => {
+          state.scheme = next(SCHEMES, state.scheme);
+          commit(true);
+        }),
+      );
+      root.appendChild(
+        this.button("names", () => {
+          state.names = !state.names;
+          commit(true);
+        }),
+      );
+      root.appendChild(
+        this.slider("grey", 0.05, 0.6, (v) => {
+          state.grey = v;
+          commit(true);
+        }),
+      );
+      root.appendChild(
+        this.slider("alpha", 0.3, 1, (v) => {
+          state.alpha = v;
+          commit(true);
+        }),
+      );
 
       const readout = document.createElement("div");
       readout.style.cssText = css(
-        "min-width:280px",
+        "flex:1 1 auto",
+        "min-width:240px",
         "padding-left:8px",
         "border-left:1px solid #444",
-        "white-space:pre",
+        // pre-wrap keeps the newlines and still wraps a long ally list, so the bar
+        // cannot grow past the window and carry its own buttons off screen.
+        "white-space:pre-wrap",
+        "overflow-wrap:anywhere",
       );
       root.appendChild(readout);
 
@@ -490,6 +584,7 @@
       el.type = "button";
       el.style.cssText = css(
         "cursor:pointer",
+        "flex:0 0 auto",
         "padding:4px 8px",
         "background:#1c1c26",
         "color:#e8e8f0",
@@ -504,7 +599,12 @@
 
     slider(name, min, max, onInput) {
       const wrap = document.createElement("label");
-      wrap.style.cssText = css("display:flex", "align-items:center", "gap:4px");
+      wrap.style.cssText = css(
+        "display:flex",
+        "flex:0 0 auto",
+        "align-items:center",
+        "gap:4px",
+      );
       const label = document.createElement("span");
       const input = document.createElement("input");
       input.type = "range";
@@ -517,12 +617,11 @@
       wrap.appendChild(label);
       wrap.appendChild(input);
       this.buttons[name] = label;
-      this.buttons[name + "Input"] = input;
       return wrap;
     },
 
-    // Called after every repaint. Shows the whole state, so what is on the map and
-    // what the game thinks can be compared without opening the console.
+    // Every repaint calls this. It shows the whole state, so a reader can compare
+    // the map against the game without the console.
     render(web) {
       if (!this.root) return;
       this.buttons.on.textContent = state.on ? "ON" : "off";
@@ -539,6 +638,10 @@
     },
   };
 
+  function counts() {
+    return mode.uploads + " uploads, " + mode.keepAlives + " keep-alive";
+  }
+
   function describe(web) {
     if (!state.on) return "off — the game's own colours";
     if (!web) {
@@ -548,23 +651,26 @@
           : state.trigger === "click"
             ? "middle click or ` over a player"
             : "point at a player";
-      return hint + "\n" + mode.uploads + " palette uploads";
+      return hint + "\n" + counts();
     }
-    const names = [...web.direct]
-      .map((p) => p.displayName())
-      .sort()
-      .join(", ");
+    const all = web.direct.map((p) => p.displayName()).sort();
+    const shown = all.slice(0, MAX_NAMES_SHOWN).join(", ");
+    const rest =
+      all.length > MAX_NAMES_SHOWN
+        ? " and " + (all.length - MAX_NAMES_SHOWN) + " more"
+        : "";
     return (
       web.subject.displayName() +
       "  —  " +
       web.direct.length +
       " allies" +
-      (state.scheme === "web" ? ", " + web.secondIDs.size + " once removed" : "") +
+      (state.scheme === "web"
+        ? ", " + web.secondIDs.size + " once removed"
+        : "") +
       "\n" +
-      (names || "no allies") +
+      (shown ? shown + rest : "no allies") +
       "\n" +
-      mode.uploads +
-      " palette uploads"
+      counts()
     );
   }
 
@@ -581,27 +687,30 @@
     paint(force);
   }
 
-  // --------------------------------------------------------------- keeping it applied
+  // --------------------------------------------------------------- keep it applied
 
-  // The game rewrites the palette in full on a theme change and when a player is
-  // seen for the first time. Both are rare, but a bot spawning and silently
-  // restoring every colour mid-judgement would waste the match, so re-assert.
+  // The game rewrites the whole palette on a theme change, and again when it sees a
+  // player for the first time. Both are rare. But if a bot spawns and quietly
+  // restores every colour, the match is wasted, so re-assert.
   //
-  // This rebuilds rather than replaying the last upload. A replay would leave a
-  // player who spawned since then at black, because their slot was never written.
+  // This rebuilds the palette. A replay of the last upload would draw a player who
+  // spawned since then in black, because nothing wrote their slot.
   const reassert = setInterval(() => {
-    if (!state.on || !mode.written) return;
-    paint(true);
-  }, 2000);
+    if (!state.on || !mode.active) return;
+    paint(true, true);
+  }, REASSERT_MS);
 
-  // --------------------------------------------------------------- wiring
+  // --------------------------------------------------------------- wire it up
 
   window.addEventListener("mousemove", onMouseMove, true);
   window.addEventListener("mousedown", onMouseDown, true);
+  window.addEventListener("wheel", onWheel, true);
   window.addEventListener("keydown", onKeyDown, true);
   window.addEventListener("keyup", onKeyUp, true);
 
   bar.build();
+  // paint() gives up when no match is running, so label the bar first. Otherwise it
+  // loads on the main menu as a row of empty buttons.
   bar.render(null);
   paint(true);
 
@@ -611,8 +720,10 @@
     repaint: () => paint(true),
     destroy() {
       clearInterval(reassert);
+      if (wheelTimer) clearTimeout(wheelTimer);
       window.removeEventListener("mousemove", onMouseMove, true);
       window.removeEventListener("mousedown", onMouseDown, true);
+      window.removeEventListener("wheel", onWheel, true);
       window.removeEventListener("keydown", onKeyDown, true);
       window.removeEventListener("keyup", onKeyUp, true);
       restoreSettings();

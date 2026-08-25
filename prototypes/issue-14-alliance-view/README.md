@@ -72,7 +72,12 @@ Each one answers a question the ticket asks.
 | `hold` | The mode is on only while `` ` `` is held down. |
 
 Left click attacks and right click opens the game's own player panel, so `click`
-uses the middle button. A tap of `` ` `` does the same thing, for a trackpad.
+uses the middle button. A tap of `` ` `` does the same thing, for a trackpad. The
+key is ignored while you type in the game's chat.
+
+A wheel zoom moves the map under a cursor that has not moved, so a different player
+is under it and no mouse event says so. The script re-reads the tile after every
+zoom. Without that the map keeps the old subject and a click locks the wrong player.
 
 ### Schemes
 
@@ -103,11 +108,16 @@ coloured names, but no names at all.
 ## What keeps it applied
 
 The game rewrites the whole palette on a theme change, and again the first time it
-sees a player. Both are rare. A bot spawning halfway through and silently restoring
-every colour would waste the match, so the script re-asserts every two seconds.
+sees a player. Both are rare. A bot that spawns halfway through and quietly restores
+every colour would waste the match, so the script re-asserts every four seconds.
 
 It rebuilds the palette each time rather than replaying the last upload, because a
-replay would leave a player who spawned since then drawn in black.
+replay would draw a player who spawned since then in black.
+
+The readout counts these re-assertions apart from the uploads you cause by hovering,
+because only the second figure is the cost of the feature. A readout that said "101
+uploads" after a minute of sitting still would make hovering look far more expensive
+than it is.
 
 ## Where the mechanism comes from
 
