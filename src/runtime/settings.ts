@@ -5,7 +5,7 @@ import { logError } from "./log";
  * Where the on/off choices are kept.
  *
  * The package has no userscript grants, so it has no `GM_setValue` and uses
- * `localStorage`. See docs/adr/0005. Another store means one more version of
+ * `localStorage`. See docs/adr/0007. Another store means one more version of
  * this interface and no other change.
  */
 export interface SettingsStore {

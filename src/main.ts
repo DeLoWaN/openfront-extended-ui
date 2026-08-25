@@ -10,7 +10,7 @@ import { createSettings, localStorageStore } from "./runtime/settings";
  * The userscript entry point.
  *
  * The script takes no grants, so this runs in the page's own context and
- * `window` is the page's window. See docs/adr/0005.
+ * `window` is the page's window. See docs/adr/0007.
  */
 
 const PANEL = "control-panel";
