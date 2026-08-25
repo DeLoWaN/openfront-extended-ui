@@ -102,11 +102,21 @@
     web: "Allies violet, allies-of-allies dim",
   };
 
-  const EXPIRIES = ["fade", "off"];
+  const EXPIRIES = ["both", "clock", "fade", "off"];
   const EXPIRY_NAMES = {
-    fade: "Ally brightness carries the time left",
-    off: "Flat ally colour, time only in the readout",
+    both: "A clock under each ally's name, and the brightness too",
+    clock: "A clock under each ally's name, flat colour",
+    fade: "Brightness only, no clock",
+    off: "Neither. The map says nothing about time.",
   };
+
+  function wantsClock() {
+    return state.expiry === "both" || state.expiry === "clock";
+  }
+
+  function wantsFade() {
+    return state.expiry === "both" || state.expiry === "fade";
+  }
 
   if (window.__ofxProto14) {
     window.__ofxProto14.destroy();
@@ -118,7 +128,7 @@
     on: true,
     trigger: "hover",
     scheme: "two",
-    expiry: "fade",
+    expiry: "both",
     grey: 0.22,
     alpha: DEFAULT_TERRITORY_ALPHA,
     names: true,
@@ -360,7 +370,7 @@
     // direct ring fades: the second ring is already dim, and the subject is not in
     // an alliance with itself.
     const fadeFor = (smallID, full, spent) => {
-      if (state.expiry !== "fade") return full;
+      if (!wantsFade()) return full;
       const clock = web.expiry.get(smallID);
       if (!clock) return full;
       return mix(spent, full, clock.fraction);
@@ -586,6 +596,165 @@
     paint(false);
   }
 
+  // --------------------------------------------------------------- clocks on the map
+
+  // The clock belongs on the map, not in the control bar. The bar is scaffolding for
+  // this prototype and no part of it survives into the package, so a number that
+  // lives only there is not part of the feature at all.
+  //
+  // The map is one WebGL canvas. There is no element per territory to hang a label
+  // on, and the game draws its player names inside the renderer where a userscript
+  // cannot reach. So the labels are a layer of our own, placed by measurement.
+  //
+  // That is the approach ADR-0003 rejected for the HUD, and the reasons it gave still
+  // bite: the layer needs a loop on every drawn frame, and it keeps drawing while the
+  // game dims itself behind a modal. The ADR is about the HUD, where a real element
+  // exists to inject into. Here nothing else is possible, so the map surface pays a
+  // cost the HUD readouts never pay. That is a finding for the ticket.
+  //
+  // Each label sits under the ally's own name, because nameLocation() hands back the
+  // very anchor the game's name pass uses.
+  // The clock has to grow and shrink with the name it sits under, so it copies the
+  // game's own sizing steps from `shaders/name/text.vert.glsl`:
+  //
+  //   baseSize  = max(1, floor(size))
+  //   nameSize  = max(4, floor(baseSize * nameScaleFactor))   nameScaleFactor = 0.4
+  //   nameScale = min(baseSize * 0.25, nameScaleCap)          nameScaleCap    = 3
+  //
+  // A name therefore grows with the square of its owner's room until the cap, not in
+  // step with it. A plain `size * scale` drifts badly from the name as an empire
+  // grows, which is the whole reason to anchor to the name in the first place.
+  //
+  // PIXELS_PER_UNIT stands in for the shader's uFontBase / uFontSize, which are not
+  // reachable from here. It is tuned by eye, which is good enough for a throwaway.
+  const PIXELS_PER_UNIT = 1.2;
+  const LABEL_MIN_PX = 8;
+  const LABEL_MAX_PX = 28;
+
+  function labelSize(nameSize, cameraScale) {
+    const baseSize = Math.max(1, Math.floor(nameSize));
+    const named = Math.max(4, Math.floor(baseSize * 0.4));
+    const scaled = Math.min(baseSize * 0.25, 3);
+    const px = named * scaled * cameraScale * PIXELS_PER_UNIT;
+    // The game hides a name it considers too small. This keeps the clock instead, so
+    // that it can be judged at every zoom. A clock with no name over it is the cost,
+    // and whether that reads badly is a question for the ticket.
+    return Math.max(LABEL_MIN_PX, Math.min(LABEL_MAX_PX, px));
+  }
+
+  const labels = {
+    root: null,
+    pool: [],
+    frame: 0,
+
+    build() {
+      const root = document.createElement("div");
+      root.style.cssText = css(
+        "position:fixed",
+        "inset:0",
+        "pointer-events:none",
+        "overflow:hidden",
+        // Below the control bar, above the game.
+        "z-index:2147483646",
+      );
+      document.body.appendChild(root);
+      this.root = root;
+    },
+
+    // The labels are pooled, because a hover across a crowded map would otherwise
+    // build and drop nodes on every frame.
+    node(i) {
+      while (this.pool.length <= i) {
+        const el = document.createElement("div");
+        el.style.cssText = css(
+          "position:absolute",
+          "transform:translate(-50%,0)",
+          "white-space:nowrap",
+          "font-family:ui-monospace,Menlo,Consolas,monospace",
+          "font-weight:700",
+          "color:#ffffff",
+          "text-shadow:0 0 3px #000,0 0 3px #000,0 0 3px #000",
+        );
+        this.root.appendChild(el);
+        this.pool.push(el);
+      }
+      return this.pool[i];
+    },
+
+    hideFrom(i) {
+      for (let k = i; k < this.pool.length; k++) {
+        this.pool[k].style.display = "none";
+      }
+    },
+
+    // Runs on every drawn frame. The camera moves without telling us, so every
+    // label has to be placed again each time.
+    sync() {
+      const web = mode.lastWeb;
+      if (!state.on || !mode.active || !web || !wantsClock()) {
+        this.hideFrom(0);
+        return;
+      }
+      const h = hooks();
+      if (!h) {
+        this.hideFrom(0);
+        return;
+      }
+
+      let i = 0;
+      for (const ally of web.direct) {
+        const clock = web.expiry.get(ally.smallID());
+        if (!clock) continue;
+
+        let where;
+        try {
+          where = ally.nameLocation();
+        } catch {
+          where = undefined;
+        }
+        // A player the renderer has not placed yet has no anchor.
+        if (!where) continue;
+
+        const at = h.transform.worldToScreenCoordinates({
+          x: where.x,
+          y: where.y,
+        });
+        if (
+          at.x < -100 ||
+          at.y < -50 ||
+          at.x > window.innerWidth + 100 ||
+          at.y > window.innerHeight + 50
+        ) {
+          continue;
+        }
+
+        const size = labelSize(where.size, h.transform.scale);
+        const el = this.node(i++);
+        el.style.display = "block";
+        el.style.left = at.x + "px";
+        el.style.top = at.y + size * 0.9 + "px";
+        el.style.fontSize = size + "px";
+        el.textContent = mmss(clock.remainingTicks);
+      }
+      this.hideFrom(i);
+    },
+
+    start() {
+      const step = () => {
+        this.frame = requestAnimationFrame(step);
+        this.sync();
+      };
+      this.frame = requestAnimationFrame(step);
+    },
+
+    destroy() {
+      if (this.frame) cancelAnimationFrame(this.frame);
+      if (this.root) this.root.remove();
+      this.root = null;
+      this.pool = [];
+    },
+  };
+
   // --------------------------------------------------------------- the control bar
 
   const bar = {
@@ -729,8 +898,7 @@
       this.buttons.trigger.title = TRIGGER_NAMES[state.trigger];
       this.buttons.scheme.textContent = state.scheme;
       this.buttons.scheme.title = SCHEME_NAMES[state.scheme];
-      this.buttons.expiry.textContent =
-        state.expiry === "fade" ? "fade" : "no fade";
+      this.buttons.expiry.textContent = "time:" + state.expiry;
       this.buttons.expiry.title = EXPIRY_NAMES[state.expiry];
       this.buttons.names.textContent = state.names ? "names" : "no names";
       this.buttons.grey.textContent = "grey " + state.grey.toFixed(2);
@@ -825,7 +993,7 @@
   let reassert = 0;
 
   function scheduleReassert() {
-    const delay = state.expiry === "fade" ? FADE_MS : REASSERT_MS;
+    const delay = wantsFade() ? FADE_MS : REASSERT_MS;
     reassert = setTimeout(() => {
       if (state.on && mode.active) paint(true, true);
       scheduleReassert();
@@ -853,15 +1021,20 @@
   window.addEventListener("keyup", onKeyUp, true);
 
   bar.build();
+  labels.build();
   // paint() gives up when no match is running, so label the bar first. Otherwise it
   // loads on the main menu as a row of empty buttons.
   bar.render(null);
   paint(true);
   scheduleReassert();
+  labels.start();
 
   window.__ofxProto14 = {
     state,
     mode,
+    // The label layer places itself on a drawn frame. A hidden tab draws none, so
+    // this is here to drive it by hand when nothing is on screen.
+    labels,
     repaint: () => paint(true),
     destroy() {
       clearTimeout(reassert);
@@ -875,6 +1048,7 @@
       restoreSettings();
       const h = hooks();
       if (h) h.view.updatePalette(realPalette(h.game));
+      labels.destroy();
       if (bar.root) bar.root.remove();
       delete window.__ofxProto14;
     },

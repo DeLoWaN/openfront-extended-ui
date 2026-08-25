@@ -29,6 +29,9 @@ the Europe map and does what issue #12 said it would:
 - Allies match their alliance rows by `PlayerID`, and the fractions come out exact.
 - The fade darkens in step with the fraction, and goes flat when it is switched off.
 - The countdown formats, re-sorts as clocks wind down, and survives an expiry of 0.
+- The map labels place themselves at each ally's name anchor, cull off screen, and
+  follow the game's sizing curve: a floor for small nations, a cap for large ones.
+- `destroy()` takes the label layer with it.
 
 Two limits on that list, both from the environment rather than the script.
 
@@ -43,6 +46,12 @@ and not only the local one: it is present and an array on each of them, and
 long-lived timer to about once a minute, and it also froze the game's own clock, so
 there was nothing for the countdown to move to. The recompute and the redraw it
 performs were both driven directly instead, and they are correct.
+
+The same goes for the label loop. A hidden pane draws no frames, so
+`requestAnimationFrame` never runs and the labels never place themselves. That is
+right for a real tab, where a hidden one shows nothing anyway, but it means the loop
+was driven by hand here. `window.__ofxProto14.labels.sync()` does one pass, and it is
+exposed for exactly that reason.
 
 ## Running it
 
@@ -74,7 +83,7 @@ Each one answers a question the ticket asks.
 | --- | --- |
 | `trigger` | Is hovering the right trigger, or does it want a click, or a held key? |
 | `scheme` | Is one colour for every ally enough? |
-| `fade` | Should the map carry how long each alliance has left? |
+| `time` | How should the map carry how long each alliance has left? |
 | `grey` | Does the grey read flat, or does it blend into the terrain? |
 | `alpha` | The same question, from the other side. `territoryAlpha`, default 0.588. |
 | `names` | The names lose their colour. Does that help or hurt? |
@@ -113,17 +122,68 @@ Every alliance ends, and a web of alliances that all lapse in twenty seconds is 
 different picture from one that holds for five minutes. The ticket did not ask for
 this. It turned out to be the first thing the picture was missing.
 
-It shows up in two places at once, so the two can be judged against each other.
+**The clock belongs on the map.** The control bar is scaffolding for this prototype
+and no part of it survives into the package, so a number that lives only there is not
+part of the feature at all. The `time` button switches between two ways of putting it
+on the map, and their combination.
 
-**In the readout**, every ally carries the time left as `m:ss`, soonest first. Which
-alliance breaks next is the useful order, and alphabetical order buries it.
+| | What it does |
+| --- | --- |
+| `both` | A clock under each ally's name, and the brightness too. The default. |
+| `clock` | A clock under each ally's name. Every ally keeps a flat colour. |
+| `fade` | Brightness only, no clock. |
+| `off` | Neither. The map says nothing about time. |
 
-**On the map**, the `fade` button makes an ally's brightness carry the time left. A
-fresh alliance draws in full violet and one about to lapse draws in a dark violet.
-The fade stops short of the grey rather than reaching it, because an ally about to
-lapse must still read as an ally. The grey has no hue at all, so even the darkest
-ally stays apart from it. `no fade` turns this off and leaves every ally flat, which
-is the comparison.
+**The clock** is a `m:ss` label under each ally's own name, because `nameLocation()`
+hands back the very anchor the game's name pass uses.
+
+**The fade** makes an ally's brightness carry the time left. A fresh alliance draws
+in full violet and one about to lapse draws in a dark violet. The fade stops short of
+the grey rather than reaching it, because an ally about to lapse must still read as
+an ally. The grey has no hue at all, so even the darkest ally stays apart from it.
+
+The readout in the bar lists the same times, soonest first. That is the debug view,
+kept because it is the ground truth to check the map against. Which alliance breaks
+next is the useful order, and alphabetical order buries it.
+
+### What the labels cost, and it is not nothing
+
+The map is one WebGL canvas. There is no element per territory to hang a label on,
+and the game draws its player names inside the renderer where a userscript cannot
+reach. So the labels are a layer of our own, placed by measurement.
+
+That is the approach [ADR-0003](../../docs/adr/0003-inject-into-the-hud-not-a-layer-over-the-page.md)
+rejected for the HUD, and the reasons it gave still bite here:
+
+- The layer needs a loop on every drawn frame, because the camera moves without
+  telling us. The HUD readouts need no loop at all.
+- It keeps drawing while the game dims itself behind a modal.
+- A label can land under one of the game's own panels, and raising it above them
+  would cover the HUD instead, which is worse.
+
+The ADR is about the HUD, where a real element exists to inject into. On the map
+nothing else is possible. **So the map surface pays a cost no HUD readout pays, and
+that belongs in the decision about whether to build this at all.**
+
+### Sizing the label
+
+The clock copies the game's own sizing steps from `shaders/name/text.vert.glsl`:
+
+```
+baseSize  = max(1, floor(size))
+nameSize  = max(4, floor(baseSize * 0.4))
+nameScale = min(baseSize * 0.25, 3)
+```
+
+A name grows with the square of its owner's room until the cap, not in step with it.
+A plain `size * scale` drifts badly from the name as an empire grows, which defeats
+the point of anchoring to the name.
+
+Two knowing departures. `PIXELS_PER_UNIT` stands in for the shader's `uFontBase` and
+`uFontSize`, which are not reachable from here, and it is tuned by eye. And the game
+hides a name it thinks too small, where this keeps the clock at a floor of 8 px so it
+can be judged at every zoom. **A clock with no name over it is the cost of that, and
+whether it reads badly is a question for the ticket.**
 
 The fade is not a new idea. The game already draws a player's own alliance icon at a
 brightness set by `remainingTicks / allianceDuration`
