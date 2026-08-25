@@ -31,6 +31,7 @@ the Europe map and does what issue #12 said it would:
 - The countdown formats, re-sorts as clocks wind down, and survives an expiry of 0.
 - The map labels place themselves at each ally's name anchor, cull off screen, and
   follow the game's sizing curve: a floor for small nations, a cap for large ones.
+- The red starts exactly on the game's window: 301 ticks white, 300 and 299 red.
 - `destroy()` takes the label layer with it.
 
 Two limits on that list, both from the environment rather than the script.
@@ -135,7 +136,25 @@ on the map, and their combination.
 | `off` | Neither. The map says nothing about time. |
 
 **The clock** is a `m:ss` label under each ally's own name, because `nameLocation()`
-hands back the very anchor the game's name pass uses.
+hands back the very anchor the game's name pass uses. It turns red for the last
+stretch of an alliance.
+
+That last stretch is not a number this package chose. It is the game's own extension
+window, `allianceExtensionPromptOffset()`, which is 300 ticks: the 30 seconds a player
+already knows as the point where the game offers to renew. Reading it rather than
+writing 30 here keeps the two in step if the game ever moves it, and it gives the red
+a meaning beyond "nearly over". **The red says the game is offering to renew this one
+now**, which is something to act on rather than only to notice.
+
+`AllianceView.hasExtensionRequest` carries the same boolean, computed server-side at
+`PlayerImpl.ts:258`. It is not used, because its name says something else and a reader
+would have to go and check.
+
+One artifact worth knowing about: the text comes from `floor(ticks / 10)` and the red
+from the raw tick count, so for one tick a label can read `0:30` in white while
+another reads `0:30` in red. Keying the red off the printed number instead would cut
+it loose from the game's window, which is the thing that gives it meaning. The sliver
+is a tenth of a second and it stays.
 
 **The fade** makes an ally's brightness carry the time left. A fresh alliance draws
 in full violet and one about to lapse draws in a dark violet. The fade stops short of

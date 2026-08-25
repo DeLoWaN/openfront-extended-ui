@@ -86,6 +86,11 @@
   // because the grey has none. An ally about to lapse must still read as an ally,
   // so the fade stops here instead of going all the way to the grey.
   const ALLY_EXPIRING = [0.25, 0.22, 0.42];
+  // The clock turns this colour once the alliance is nearly over.
+  const CLOCK_NORMAL = "#ffffff";
+  const CLOCK_URGENT = "#ff4d4d";
+  // Fallback for the game's extension window, used only if the config hides it.
+  const EXTENSION_WINDOW_TICKS = 300;
 
   const TRIGGERS = ["hover", "click", "hold"];
   const TRIGGER_NAMES = {
@@ -312,6 +317,7 @@
 
     const now = game.ticks();
     const duration = Math.max(1, game.config().allianceDuration());
+    const window = extensionWindow(game);
     for (const v of views) {
       const smallID = byPlayerID.get(v.other);
       if (smallID === undefined) continue;
@@ -321,9 +327,28 @@
         // The same ratio the game's own on-map alliance icon uses, at
         // PlayerStatus.ts:168.
         fraction: Math.max(0, Math.min(1, remaining / duration)),
+        urgent: remaining <= window,
       });
     }
     return out;
+  }
+
+  // The last stretch of an alliance is not a number this package chose. It is the
+  // game's own extension window: the point where the game starts offering to renew.
+  // `allianceExtensionPromptOffset()` is 300 ticks, which is the 30 seconds a player
+  // already knows from the renew prompt. Reading it rather than writing 30 here keeps
+  // the two in step if the game ever moves it.
+  //
+  // AllianceView.hasExtensionRequest carries the same boolean, computed server-side
+  // at PlayerImpl.ts:258. It is not used, because the name says something else and a
+  // reader would have to go and check.
+  function extensionWindow(game) {
+    try {
+      const t = game.config().allianceExtensionPromptOffset();
+      return typeof t === "number" && t > 0 ? t : EXTENSION_WINDOW_TICKS;
+    } catch {
+      return EXTENSION_WINDOW_TICKS;
+    }
   }
 
   // This finds the hovered player, the players allied with them, and the players
@@ -672,7 +697,6 @@
           "white-space:nowrap",
           "font-family:ui-monospace,Menlo,Consolas,monospace",
           "font-weight:700",
-          "color:#ffffff",
           "text-shadow:0 0 3px #000,0 0 3px #000,0 0 3px #000",
         );
         this.root.appendChild(el);
@@ -734,6 +758,7 @@
         el.style.left = at.x + "px";
         el.style.top = at.y + size * 0.9 + "px";
         el.style.fontSize = size + "px";
+        el.style.color = clock.urgent ? CLOCK_URGENT : CLOCK_NORMAL;
         el.textContent = mmss(clock.remainingTicks);
       }
       this.hideFrom(i);
