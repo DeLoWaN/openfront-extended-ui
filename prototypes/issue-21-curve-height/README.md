@@ -26,7 +26,12 @@ on this branch as the record of how the answer was reached.
 
 ## The answer
 
-Not settled yet. This prototype exists to be looked at. Record the answer on
+None of the four heights was kept. The curve above the bar was looked at and turned
+down, so `curve-height.user.js` is now the record of a direction that was tried.
+
+`gradient.user.js` is the live direction. It drops the curve and colours the troop
+bar itself instead. The section at the end of this file covers it, including three
+conflicts with decisions already written down. Record the answer on
 [issue #21](https://github.com/DeLoWaN/openfront-extended-ui/issues/21).
 
 ## Running it
@@ -159,3 +164,92 @@ player. It just means the crossing has nothing to do with the number.
 - Is the drop line doing its job, or does it just add clutter?
 - Does violet hold up on both of the bar's blues and on its dark background?
 - Does the percentage in the corner get in the way?
+
+# The gradient
+
+`gradient.user.js`. A second direction, after the curve was turned down. It costs no
+vertical space at all, which was the curve's real problem, and it needs no node above
+the bar.
+
+The colour is not a plain ramp between the two ends. Every stop is the same share of
+best rate the curve plotted, so the colour at any point along the bar is that troop
+level's share. Green lands on the 42.2% level because that is where the share reads 1.
+The colour is the curve, drawn as colour.
+
+## The three variants
+
+| | What it does |
+| --- | --- |
+| `G` | The gradient replaces the game's blue troop fill, clipped to your level. |
+| `T` | The gradient sits behind the game's fills, which stay blue. |
+| `V` | `T` again in violet, which carries no meaning of the game's own. |
+
+`G` is the ask. `T` and `V` each test one of the objections below, so you can see
+whether the objection matters to you or not.
+
+One toggle: the 42.2% line, on or off. The colour peak may already place it.
+
+`G` and `T` differ in more than layering, and the difference is the interesting part.
+`G` shows the ramp you have climbed and clips away everything past your level, so the
+cost of growing further is not on screen. `T` covers what you have passed with the
+blue fill and leaves the colour ahead of you visible, so it shows what you are growing
+into. The overshoot cost that `G` hides is the only thing `T` shows.
+
+## Three conflicts with decisions already written down
+
+Recorded here rather than settled, because they are yours to settle. The first is a
+fact you can check in five seconds. The other two are judgements.
+
+**The gradient and the game's own pill say opposite things.** The pill to the left of
+the bar reads `+380/s`, and the game colours it green while your rate rises and orange
+while it falls (`ControlPanel.ts:300-307`). So on the pill, green means below the
+42.2% level and orange means above it. In the gradient, green means a high share of
+your best rate and orange means a low one. Those are different meanings for the same
+two colours, about 100 px apart.
+
+| Troop level | Share of best | Pill | Bar | |
+| --- | --- | --- | --- | --- |
+| 5% full | 35.0% | green | orange | clash |
+| 20% full | 80.4% | green | green | agree |
+| 42.2% full | 100.0% | orange | green | clash |
+| 55% full | 94.4% | orange | green | clash |
+| 80% full | 55.1% | orange | green | clash |
+| 90% full | 30.0% | orange | orange | agree |
+
+They disagree from 42.2% to 82.2% full, a band 40 points wide, and again from 0% to
+8.6% full. The upper band covers the whole range where the decision to spend troops
+gets made. The switcher reports which colour the pill currently shows, so you can
+watch the two disagree during a match.
+
+**It repurposes the game's colours.** [#6](https://github.com/DeLoWaN/openfront-extended-ui/issues/6)
+settled that the game's colours keep the game's meanings, and that violet marks a
+figure the package worked out itself. Green and orange here are ours, carrying our
+meaning, in the game's own palette. `V` is the same drawing under the settled rule, so
+it costs nothing to compare them.
+
+**[#6](https://github.com/DeLoWaN/openfront-extended-ui/issues/6) turned a gradient
+down once already**, on the grounds that a gradient reads as "aim here" while a break
+reads as a switch. The settled decision is that crossing the line means spend, not
+sit. A green centre says park here, which is the opposite. Worth deciding whether that
+reading still holds now that the gradient carries the real curve instead of a made-up
+ramp.
+
+`G` also changes how the game's own troop fill looks, which no readout has done so
+far. `T` and `V` leave the blue fill alone and draw behind it.
+
+## Two things the measurements already flagged
+
+The 42.2% line is dim violet, chosen in #6 to sit on the bar's dark background and on
+its blues. Over the bright yellow and green of `G` it nearly disappears. If the line
+is worth keeping here, it wants to be dark rather than violet.
+
+`T` and `V` are drawn once at mount and never touched again, because a static gradient
+needs no updates. Only `G` follows your troop level, and it animates its clip on the
+same 200 ms ease-out the game uses for its own fill, so the two edges stay together.
+
+## Running the gradient
+
+Same as above, with `gradient.user.js` in place of `curve-height.user.js`.
+`window.__ofxProto21g.destroy()` removes it. The two scripts keep separate settings
+and can run at the same time, though a curve drawn over a coloured bar is not a
+combination anyone chose.
