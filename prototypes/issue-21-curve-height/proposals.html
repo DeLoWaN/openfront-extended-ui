@@ -1,0 +1,147 @@
+<meta charset="utf-8">
+<title>issue 21 — three proposals</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin:0; background:#0f1115; color:#e7e7ea;
+    font:13px/1.4 system-ui, sans-serif; padding:18px 20px 24px; }
+  h1 { font-size:14px; margin:0 0 2px; letter-spacing:.02em; }
+  .sub { opacity:.5; font-size:11px; margin:0 0 18px; }
+  h2 { font-size:12px; margin:20px 0 3px; color:#b3adff; letter-spacing:.03em; }
+  .note { opacity:.55; font-size:11px; margin:0 0 9px; max-width:760px; }
+  .row { display:flex; align-items:center; gap:10px; margin:5px 0; }
+  .state { width:96px; text-align:right; font-size:11px; opacity:.5;
+    font-variant-numeric:tabular-nums; }
+
+  /* The game's own troop bar, copied from ControlPanel.ts at 332e5410e. */
+  .cell { flex:1; max-width:560px; }
+  .bar { position:relative; width:100%; height:24px; border:1px solid #4b5563;
+    border-radius:6px; background:rgba(17,24,39,.6); overflow:hidden; }
+  .troops, .committed { position:absolute; top:0; bottom:0; left:0; width:100%;
+    transform-origin:left; }
+  .troops { background:#0084d1; }
+  .committed { background:#3fa9f5; }
+  .numbers { position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; gap:3px; font-size:15px; font-weight:700;
+    line-height:1; pointer-events:none; color:#fff;
+    text-shadow:0 1px 1px rgba(0,0,0,.8); font-variant-numeric:tabular-nums; }
+
+  /* Ours. Violet only. */
+  .zone { position:absolute; left:0; bottom:0; height:5px; background:#7f77dd;
+    box-shadow:0 0 2px rgba(0,0,0,.95); }
+  .zone::before, .zone::after { content:""; position:absolute; bottom:0; width:2px;
+    height:11px; background:#7f77dd; box-shadow:0 0 2px rgba(0,0,0,.95); }
+  .zone::before { left:0; }
+  .zone::after { right:0; }
+  .peak { position:absolute; top:0; bottom:0; width:3px; margin-left:-1.5px;
+    background:#b3adff; box-shadow:0 0 0 1px rgba(0,0,0,.85), 0 0 3px rgba(0,0,0,.9); }
+  .spend { position:absolute; top:0; bottom:0;
+    background:repeating-linear-gradient(115deg,
+      rgba(179,173,255,.95) 0 2px, rgba(179,173,255,0) 2px 6px);
+    box-shadow:inset 0 0 0 1px rgba(179,173,255,.95); }
+  .gap { position:absolute; top:0; bottom:0;
+    background:repeating-linear-gradient(115deg,
+      rgba(127,119,221,.55) 0 1px, rgba(127,119,221,0) 1px 7px);
+    box-shadow:inset 0 0 0 1px rgba(127,119,221,.85); }
+
+  .mult { width:64px; font-size:13px; font-weight:700; color:#b3adff;
+    font-variant-numeric:tabular-nums; text-shadow:0 1px 1px rgba(0,0,0,.8); }
+  .mult.flat { color:#6b6b78; }
+  .pill { width:70px; font-size:12px; font-weight:700; padding:2px 4px;
+    border:1px solid; border-radius:6px; text-align:center;
+    font-variant-numeric:tabular-nums; }
+</style>
+
+<h1>Issue #21 — three proposals, on the real bar geometry</h1>
+<p class="sub">24 px tall, 1 px border, 6 px corners. Violet only. Nothing added above or below the bar.
+The green/orange chip on the left is the game's own rate pill, shown for context.</p>
+
+<div id="out"></div>
+
+<script>
+  const M = 1_000_000;
+  const rate = (x) => (10 + Math.pow(x * M, 0.73) / 4) * (1 - x);
+  let best = 0;
+  for (let i = 1; i < 1000; i++) best = Math.max(best, rate(i / 1000));
+  const share = (x) => rate(x) / best;
+  const slower = (x) => 1 / share(x);
+
+  const PEAK = 0.422;
+  const ZONE_LO = 0.306;   // x1.05 or better
+  const ZONE_HI = 0.543;
+
+  // Troop levels to show: below the zone, inside it, just past it, well past it.
+  const STATES = [0.14, 0.25, 0.46, 0.62, 0.82];
+
+  function pillFor(x) {
+    const rising = x < PEAK;
+    return `<div class="pill" style="border-color:${rising ? "#4ade80" : "#fb923c"};
+      color:${rising ? "#4ade80" : "#fb923c"}">+${Math.round(rate(x) / 6)}/s</div>`;
+  }
+
+  function bar(x, parts) {
+    const committed = 0.06;
+    return `<div class="cell"><div class="bar">
+      <div class="troops" style="transform:scaleX(${x})"></div>
+      <div class="committed" style="transform:translateX(${x * 100}%) scaleX(${committed})"></div>
+      <div class="numbers">${(x * 100).toFixed(0)}K / 100K</div>
+      ${parts}
+    </div></div>`;
+  }
+
+  const zoneStrip = `
+    <div class="zone" style="left:${ZONE_LO * 100}%;width:${(ZONE_HI - ZONE_LO) * 100}%"></div>
+    <div class="peak" style="left:${PEAK * 100}%"></div>`;
+
+  function spendSegment(x) {
+    if (x > ZONE_HI) {
+      return `<div class="spend" style="left:${ZONE_HI * 100}%;width:${(x - ZONE_HI) * 100}%"></div>`;
+    }
+    if (x < ZONE_LO) {
+      return `<div class="gap" style="left:${x * 100}%;width:${(ZONE_LO - x) * 100}%"></div>`;
+    }
+    return "";
+  }
+
+  function mult(x) {
+    const v = slower(x);
+    const flat = v < 1.05 ? " flat" : "";
+    return `<div class="mult${flat}">${v < 1.05 ? "&mdash;" : "&times;" + v.toFixed(2)}</div>`;
+  }
+
+  function label(x) {
+    const where = x < ZONE_LO ? "below zone" : x > ZONE_HI ? "past zone" : "in the zone";
+    return `<div class="state">${(x * 100).toFixed(0)}% &middot; ${where}</div>`;
+  }
+
+  const sections = [
+    {
+      title: "A — the zone, and a cost only when there is one",
+      note: "A violet strip along the bottom edge marks every level within 5% of your best rate, with a brighter notch at 42.2%. The number on the right is how much longer troops take to arrive than they would at the peak. It shows a dash inside the zone, because there is nothing to report there.",
+      parts: (x) => zoneStrip,
+      right: mult,
+    },
+    {
+      title: "B — the segment you should spend",
+      note: "Past the zone, the excess part of your fill is hatched: that is idle capital, and its width is how much to send. Below the zone, the gap you still have to grow is outlined instead. The notch marks 42.2%. Nothing is drawn at all while you are in the zone.",
+      parts: (x) => `<div class="peak" style="left:${PEAK * 100}%"></div>` + spendSegment(x),
+      right: () => "",
+    },
+    {
+      title: "C — both",
+      note: "The strip gives you the landmark at a glance, the hatching gives you the amount to act on, and the number gives you the real cost.",
+      parts: (x) => zoneStrip + spendSegment(x),
+      right: mult,
+    },
+  ];
+
+  document.getElementById("out").innerHTML = sections
+    .map(
+      (s) =>
+        `<h2>${s.title}</h2><p class="note">${s.note}</p>` +
+        STATES.map(
+          (x) =>
+            `<div class="row">${label(x)}${pillFor(x)}${bar(x, s.parts(x))}${s.right(x)}</div>`,
+        ).join(""),
+    )
+    .join("");
+</script>

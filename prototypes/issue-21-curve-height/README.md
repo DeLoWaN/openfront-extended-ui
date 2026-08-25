@@ -26,13 +26,29 @@ on this branch as the record of how the answer was reached.
 
 ## The answer
 
-None of the four heights was kept. The curve above the bar was looked at and turned
-down, so `curve-height.user.js` is now the record of a direction that was tried.
+Three directions were tried, in this order. The first two were turned down after
+being looked at.
 
-`gradient.user.js` is the live direction. It drops the curve and colours the troop
-bar itself instead. The section at the end of this file covers it, including three
-conflicts with decisions already written down. Record the answer on
+| | | |
+| --- | --- | --- |
+| `curve-height.user.js` | a curve above the bar, at four heights | turned down |
+| `gradient.user.js` | the rate as colour across the bar | turned down |
+| `zone.user.js` | the band where the rate is near its best | live |
+
+`zone.user.js` is the one to look at. `proposals.html` is the sheet of options that
+led to it, and it can be opened straight in a browser. The two earlier scripts stay
+as the record of what was tried. Record the answer on
 [issue #21](https://github.com/DeLoWaN/openfront-extended-ui/issues/21).
+
+## Why the first two failed, in one paragraph
+
+Both were faithful drawings of the share of best rate, and that is the problem. The
+share hardly changes anywhere near the 42.2% level: five points either side costs
+about 1%, and ten points costs 4%. So both drawings had nothing to say exactly where
+the decision gets made. The fault was never the encoding. It was that **the optimum is
+not a point, it is a wide band** &mdash; every level from 30.6% to 54.3% full sits
+within 5% of your best rate. Draw the band and the flatness stops being a problem and
+becomes the message.
 
 ## Running it
 
@@ -309,3 +325,67 @@ Same as above, with `gradient.user.js` in place of `curve-height.user.js`.
 `window.__ofxProto21g.destroy()` removes it. The two scripts keep separate settings
 and can run at the same time, though a curve drawn over a coloured bar is not a
 combination anyone chose.
+
+# The zone
+
+`zone.user.js`. The live direction, and the third attempt.
+
+Two things are drawn, both inside the existing bar. Nothing is added above or below
+it.
+
+- A **band** covering every troop level whose regeneration is near your best.
+- A **number** at the bar's far right: your share of that best. 100% is as fast as you
+  can go, and 50% means troops arrive at half speed.
+
+## What was decided on the way here
+
+**No mark at 42.2%.** The middle of the band reads as the peak on its own. The two
+agree closely at every band width: the widest band's midpoint sits at 42.75%, which is
+0.55 of a percentage point off the real peak and far under the width of any mark that
+could show it.
+
+**The number counts up, not down.** An earlier draft showed how much *slower* you are,
+where 1.00 was the best case and 2.00 meant half speed. This shows the share instead,
+so the good end is the big number. Same quantity, read the other way round.
+
+**No hatched segment.** A draft marked the stretch between your fill edge and the
+band, to say how many troops to spend. It was dropped because it is already there to
+be read: the gap between your fill edge and the band's edge is that same distance, so
+the hatching only restated it.
+
+**The band draws over the game's fills and under its troop numbers.** The bar lists
+its fills first and its numbers second, and every one of them is positioned with no
+`z-index`, so a node inserted between the two lands in exactly that order. The white
+troop figures stay fully legible on top of the band. This was checked by measuring the
+stacking order, not by eye alone.
+
+## The two things still open
+
+The band's width is the real question, so it cycles with `◀` and `▶`. Each is a
+defensible reading of the word "optimal".
+
+| | Troop levels | Width | What it claims |
+| --- | --- | --- | --- |
+| `99` | 36.9% to 47.5% full | 10.6 points | within 1% of your best |
+| `95` | 30.6% to 54.3% full | 23.7 points | within 5% of your best |
+| `90` | 26.0% to 59.5% full | 33.5 points | within 10% of your best |
+
+How the band is drawn cycles on its own button: `veil + edges`, `veil` alone, or
+`edges` alone. The number switches off separately.
+
+## The known weak point
+
+Violet on the bar's blue is low contrast, and this is the third design to run into it.
+A violet veil over `#0084d1` reads as a slightly purple patch of blue rather than as a
+mark of its own, so the two bright edges end up doing most of the work of showing where
+the band starts and stops. That is why `edges` is in the mix at all.
+
+If none of the three styles reads well enough, the next thing to try is the inverse:
+leave the band alone and dim the bar outside it, so the band is the only part at full
+strength. That needs no new colour at all. It is a larger change to how the game's own
+bar looks, which is why it is not in here yet.
+
+## Running the zone
+
+Same as above, with `zone.user.js` in place of `curve-height.user.js`.
+`window.__ofxProto21z.destroy()` removes it.
