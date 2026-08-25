@@ -1,0 +1,79 @@
+<meta charset="utf-8">
+<title>issue 21 — veil strengths</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin:0; background:#0f1115; color:#e7e7ea;
+    font:13px/1.4 system-ui, sans-serif; padding:18px 20px 26px; }
+  h1 { font-size:14px; margin:0 0 2px; }
+  .sub { opacity:.5; font-size:11px; margin:0 0 16px; }
+  h2 { font-size:12px; margin:18px 0 6px; color:#cfc8ff; }
+  .row { display:flex; align-items:center; gap:10px; margin:4px 0; }
+  .state { width:150px; text-align:right; font-size:11px; opacity:.5;
+    font-variant-numeric:tabular-nums; }
+
+  /* The game's own troop bar, from ControlPanel.ts at 332e5410e. */
+  .cell { flex:1; max-width:520px; }
+  .bar { position:relative; width:100%; height:24px; border:1px solid #4b5563;
+    border-radius:6px; background:rgba(17,24,39,.6); overflow:hidden; }
+  .fills { position:relative; height:100%; }
+  .troops, .committed { position:absolute; top:0; bottom:0; left:0; width:100%;
+    transform-origin:left; }
+  .troops { background:#0084d1; }
+  .committed { background:#3fa9f5; }
+  .numbers { position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-size:15px; font-weight:700; line-height:1;
+    color:#fff; text-shadow:0 1px 1px rgba(0,0,0,.8);
+    font-variant-numeric:tabular-nums; pointer-events:none; }
+
+  /* Ours, matching zone.user.js exactly. */
+  .band { position:absolute; top:0; bottom:0; pointer-events:none; }
+  .band > div { position:absolute; top:0; bottom:0; width:2px;
+    background:#cfc8ff; box-shadow:0 0 2px rgba(0,0,0,.9); }
+  .pct { position:absolute; top:0; bottom:0; right:5px; display:flex;
+    align-items:center; font-weight:700; font-size:13px; line-height:1;
+    color:#c9c4ff; text-shadow:0 1px 1px rgba(0,0,0,.9);
+    font-variant-numeric:tabular-nums; pointer-events:none; }
+</style>
+
+<h1>Issue #21 — veil strength, with both edges fixed</h1>
+<p class="sub">Band = 95% of best, 30.6% to 54.3% full. Veil colour rgb(182,152,255).
+Each row is a different troop level, so the band crosses the troop fill, the committed fill and the dark track.</p>
+
+<div id="out"></div>
+
+<script>
+  const M = 1_000_000;
+  const rate = (x) => (10 + Math.pow(x * M, 0.73) / 4) * (1 - x);
+  let best = 0;
+  for (let i = 1; i < 1000; i++) best = Math.max(best, rate(i / 1000));
+  const share = (x) => rate(x) / best;
+
+  const LO = 0.306, HI = 0.543;
+  const VEIL_RGB = "182,152,255";
+  const LEVELS = [["off", 0], ["medium", 0.34], ["strong", 0.58], ["full", 0.8]];
+  const STATES = [0.22, 0.42, 0.62, 0.88];
+
+  function row(x, alpha) {
+    const bg = alpha === 0 ? "transparent" : `rgba(${VEIL_RGB},${alpha})`;
+    return `<div class="row">
+      <div class="state">${(x * 100).toFixed(0)}% full &middot; ${(share(x) * 100).toFixed(0)}% of best</div>
+      <div class="cell"><div class="bar">
+        <div class="fills">
+          <div class="troops" style="transform:scaleX(${x})"></div>
+          <div class="committed" style="transform:translateX(${x * 100}%) scaleX(0.06)"></div>
+        </div>
+        <div class="band" style="left:${LO * 100}%;width:${(HI - LO) * 100}%;background:${bg}">
+          <div style="left:0"></div><div style="right:0"></div>
+        </div>
+        <div class="pct">${Math.round(share(x) * 100)}%</div>
+        <div class="numbers">${(x * 100).toFixed(0)}K / 100K</div>
+      </div></div>
+    </div>`;
+  }
+
+  document.getElementById("out").innerHTML = LEVELS.map(
+    ([name, alpha]) =>
+      `<h2>veil: ${name}${alpha ? ` (alpha ${alpha})` : ""}</h2>` +
+      STATES.map((x) => row(x, alpha)).join(""),
+  ).join("");
+</script>

@@ -81,20 +81,26 @@
     90: bandFor(0.9),
   };
 
-  const VIOLET_EDGE = "#b3adff";
-  const VIOLET_FILL = "rgba(158,150,240,0.34)";
+  const VIOLET_EDGE = "#cfc8ff";
   const VIOLET_TEXT = "#c9c4ff";
+
+  // The veil has to read on three different backgrounds at once: the troop fill's
+  // blue, the committed fill's lighter blue, and the bar's dark track. A light violet
+  // is the one that lifts all three in the same direction.
+  const VEIL_RGB = "182,152,255";
 
   const SHADOW_TEXT = "0 1px 1px rgba(0,0,0,0.9)";
   const SHADOW_LINE = "0 0 2px rgba(0,0,0,0.9)";
   const EDGE_WIDTH = 2;
 
-  const STYLES = ["both", "veil", "edges"];
-  const STYLE_LABELS = { both: "veil + edges", veil: "veil", edges: "edges" };
+  // How strongly the veil covers what is under it. The edges are always drawn, so
+  // `off` leaves the band marked by its two ends alone.
+  const VEILS = ["strong", "full", "medium", "off"];
+  const VEIL_ALPHA = { off: 0, medium: 0.34, strong: 0.58, full: 0.8 };
 
   const STORE = {
     width: "ofx-proto-issue21z-width",
-    style: "ofx-proto-issue21z-style",
+    veil: "ofx-proto-issue21z-veil",
     percentage: "ofx-proto-issue21z-percentage",
   };
 
@@ -147,20 +153,27 @@
       "pointer-events:none",
     ].join(";");
 
-    // The two ends are their own lines rather than borders on the band. A border
-    // needs a shadow to survive on the bar's blue, and a shadow on the band draws a
-    // dark halo round the whole width instead of sharpening the two ends.
-    const edges = [document.createElement("div"), document.createElement("div")];
-    edges[0].style.cssText = [
-      "position:absolute",
-      "top:0",
-      "bottom:0",
-      "left:0",
-      `width:${EDGE_WIDTH}px`,
-      `background:${VIOLET_EDGE}`,
-      `box-shadow:${SHADOW_LINE}`,
-    ].join(";");
-    edges[1].style.cssText = edges[0].style.cssText.replace("left:0", "right:0");
+    // The two ends are their own lines rather than borders on the band. A border needs
+    // a shadow to survive on the bar's blue, and a shadow on the band draws a dark halo
+    // round the whole width instead of sharpening the two ends.
+    //
+    // Each line is built from its own list. Reading `cssText` back and patching the
+    // string does not work: the browser returns its own serialisation, so `left:0`
+    // comes back as `left: 0px` and a search for the original text finds nothing.
+    const edge = (side) => {
+      const el = document.createElement("div");
+      el.style.cssText = [
+        "position:absolute",
+        "top:0",
+        "bottom:0",
+        `${side}:0`,
+        `width:${EDGE_WIDTH}px`,
+        `background:${VIOLET_EDGE}`,
+        `box-shadow:${SHADOW_LINE}`,
+      ].join(";");
+      return el;
+    };
+    const edges = [edge("left"), edge("right")];
     band.append(...edges);
 
     // The number sits at the bar's far right, which the game leaves empty. Its own
@@ -217,11 +230,9 @@
         this.band.style.left = `${lo * 100}%`;
         this.band.style.width = `${(hi - lo) * 100}%`;
 
-        const style = options.style();
-        this.band.style.background = style === "edges" ? "transparent" : VIOLET_FILL;
-        for (const edge of this.edges) {
-          edge.style.display = style === "veil" ? "none" : "block";
-        }
+        const alpha = VEIL_ALPHA[options.veil()];
+        this.band.style.background =
+          alpha === 0 ? "transparent" : `rgba(${VEIL_RGB},${alpha})`;
 
         this.percentage.style.display = options.percentage() ? "flex" : "none";
         this.update(this.lastFraction, true);
@@ -262,9 +273,9 @@
 
   const options = {
     width: () => width,
-    style: () => {
-      const value = read(STORE.style, STYLES[0]);
-      return STYLES.includes(value) ? value : STYLES[0];
+    veil: () => {
+      const value = read(STORE.veil, VEILS[0]);
+      return VEILS.includes(value) ? value : VEILS[0];
     },
     percentage: () => read(STORE.percentage, "on") === "on",
     onFraction: (fraction) => stats.render(fraction),
@@ -329,9 +340,9 @@
   const widthLabel = document.createElement("span");
   widthLabel.style.cssText = "min-width:190px;text-align:center;font-weight:700";
 
-  const styleToggle = button("", () => {
-    const index = STYLES.indexOf(options.style());
-    localStorage.setItem(STORE.style, STYLES[(index + 1) % STYLES.length]);
+  const veilToggle = button("", () => {
+    const index = VEILS.indexOf(options.veil());
+    localStorage.setItem(STORE.veil, VEILS[(index + 1) % VEILS.length]);
     paint();
     applyAll();
   });
@@ -367,7 +378,7 @@
     button("◀", () => step(-1)),
     widthLabel,
     button("▶", () => step(1)),
-    styleToggle,
+    veilToggle,
     percentageToggle,
     stats.el,
   );
@@ -378,7 +389,7 @@
       hi * 100
     ).toFixed(1)}%`;
 
-    styleToggle.textContent = `band: ${STYLE_LABELS[options.style()]}`;
+    veilToggle.textContent = `veil: ${options.veil()}`;
     const on = options.percentage();
     percentageToggle.textContent = `number: ${on ? "on" : "off"}`;
     percentageToggle.style.background = on ? "#ff2bd1" : "#333";

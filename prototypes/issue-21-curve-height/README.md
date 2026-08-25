@@ -370,20 +370,44 @@ defensible reading of the word "optimal".
 | `95` | 30.6% to 54.3% full | 23.7 points | within 5% of your best |
 | `90` | 26.0% to 59.5% full | 33.5 points | within 10% of your best |
 
-How the band is drawn cycles on its own button: `veil + edges`, `veil` alone, or
-`edges` alone. The number switches off separately.
+The band's two ends are always drawn. How strongly the veil between them covers what
+is under it cycles on its own button, and `veils.html` shows all four levels at four
+troop levels for comparison without starting a match.
 
-## The known weak point
+| | Alpha | |
+| --- | --- | --- |
+| `strong` | 0.58 | the default, and the best balance of the four |
+| `full` | 0.8 | clearest band, but it flattens the fill edge inside the band |
+| `medium` | 0.34 | too quiet on the blue fill |
+| `off` | 0 | the two ends alone, which is cleaner than it sounds |
 
-Violet on the bar's blue is low contrast, and this is the third design to run into it.
-A violet veil over `#0084d1` reads as a slightly purple patch of blue rather than as a
-mark of its own, so the two bright edges end up doing most of the work of showing where
-the band starts and stops. That is why `edges` is in the mix at all.
+The number switches off separately.
 
-If none of the three styles reads well enough, the next thing to try is the inverse:
-leave the band alone and dim the bar outside it, so the band is the only part at full
-strength. That needs no new colour at all. It is a larger change to how the game's own
-bar looks, which is why it is not in here yet.
+## Why the veil has a strength at all
+
+The band crosses up to three different backgrounds at once: the troop fill's
+`#0084d1`, the committed fill's lighter `#3fa9f5`, and the bar's dark track. One fixed
+translucent colour therefore lands at a different contrast on each. A light violet,
+`rgb(182,152,255)`, is the one that lifts all three in the same direction.
+
+The strength is a real trade rather than a preference. A stronger veil separates the
+band better, and it also compresses whatever is underneath, so the fill edge gets
+harder to see when it sits inside the band. At `full` that edge is nearly gone, and the
+fill edge is your own position. `strong` keeps both.
+
+## A bug worth recording
+
+The band's right end was missing for the first run of this script, and the cause is
+worth writing down because it looks like working code:
+
+```js
+edges[1].style.cssText = edges[0].style.cssText.replace("left:0", "right:0");
+```
+
+Reading `cssText` back gives the browser's own serialisation, not the string that was
+written. `left:0` comes back as `left: 0px`, so the search found nothing, both ends got
+`left: 0`, and the two lines drew on top of each other at the band's start. Each line
+is now built from its own list.
 
 ## Running the zone
 
