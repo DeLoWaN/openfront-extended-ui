@@ -58,11 +58,22 @@
   // uses uTerritoryAlpha, but the SAM radius pass reads the palette directly.
   const FILL_ALPHA = 150 / 255;
 
+  // The game divides by a fixed ten to turn ticks into seconds, at
+  // PlayerPanel.ts:150 and PlayerInfoOverlay.ts:233. Singleplayer scales the real
+  // rate with its speed setting, so both the game's countdown and this one run
+  // wrong under fast forward. Copy the game rather than correct it: two clocks that
+  // disagree read as a bug, and this one exists to match what the game shows.
+  const TICKS_PER_SECOND = 10;
+
   const STORE_KEY = "ofx-proto-issue14";
   const HOLD_CODE = "Backquote";
   // The re-assert only repairs a palette the game overwrote. Both causes are rare,
   // so a slow beat is enough and it keeps the upload counter honest.
   const REASSERT_MS = 4000;
+  // A fade has to redraw as the clock runs, so it needs a faster beat than repair.
+  const FADE_MS = 2000;
+  // The countdown text costs nothing to redraw, so it runs at one second.
+  const CLOCK_MS = 1000;
   // A long ally list must not stretch the bar off screen.
   const MAX_NAMES_SHOWN = 8;
 
@@ -71,6 +82,10 @@
   const SUBJECT = [1.0, 1.0, 1.0];
   const ALLY = [0.498, 0.467, 0.867]; // #7f77dd, the package's signature violet
   const ALLY_OF_ALLY = [0.29, 0.271, 0.522];
+  // Where the fade lands when an alliance is nearly over. It keeps the violet hue,
+  // because the grey has none. An ally about to lapse must still read as an ally,
+  // so the fade stops here instead of going all the way to the grey.
+  const ALLY_EXPIRING = [0.25, 0.22, 0.42];
 
   const TRIGGERS = ["hover", "click", "hold"];
   const TRIGGER_NAMES = {
@@ -87,6 +102,12 @@
     web: "Allies violet, allies-of-allies dim",
   };
 
+  const EXPIRIES = ["fade", "off"];
+  const EXPIRY_NAMES = {
+    fade: "Ally brightness carries the time left",
+    off: "Flat ally colour, time only in the readout",
+  };
+
   if (window.__ofxProto14) {
     window.__ofxProto14.destroy();
   }
@@ -97,6 +118,7 @@
     on: true,
     trigger: "hover",
     scheme: "two",
+    expiry: "fade",
     grey: 0.22,
     alpha: DEFAULT_TERRITORY_ALPHA,
     names: true,
@@ -113,6 +135,7 @@
     if (typeof stored.names === "boolean") s.names = stored.names;
     if (TRIGGERS.includes(stored.trigger)) s.trigger = stored.trigger;
     if (SCHEMES.includes(stored.scheme)) s.scheme = stored.scheme;
+    if (EXPIRIES.includes(stored.expiry)) s.expiry = stored.expiry;
     if (Number.isFinite(stored.grey)) s.grey = clamp(stored.grey, 0.05, 0.6);
     if (Number.isFinite(stored.alpha)) s.alpha = clamp(stored.alpha, 0.3, 1);
     return s;
@@ -207,6 +230,19 @@
     ];
   }
 
+  function darken(c, amount) {
+    return [c[0] * amount, c[1] * amount, c[2] * amount];
+  }
+
+  // t of 0 gives a, t of 1 gives b.
+  function mix(a, b, t) {
+    return [
+      a[0] + (b[0] - a[0]) * t,
+      a[1] + (b[1] - a[1]) * t,
+      a[2] + (b[2] - a[2]) * t,
+    ];
+  }
+
   function toUnit(colord) {
     const rgb = colord.toRgb();
     return [rgb.r / 255, rgb.g / 255, rgb.b / 255];
@@ -238,6 +274,48 @@
     }
   }
 
+  // Every alliance ends. alliances() carries the tick each one expires at, and the
+  // game builds it for every player rather than only the local one, so a hovered
+  // stranger's clocks are readable too.
+  //
+  // The game shows this figure only for an alliance you are in, at
+  // PlayerInfoOverlay.ts:394. Reading it for somebody else is the same move the
+  // colouring already makes: the reference point shifts from you to whoever you
+  // point at, and nothing is shown that the game does not draw for one player.
+  function expiryBySmallID(game, subject, allies) {
+    const out = new Map();
+    let views = [];
+    try {
+      views = subject.alliances() ?? [];
+    } catch {
+      return out;
+    }
+    // AllianceView.other is a PlayerID string, so the allies are keyed by that.
+    const byPlayerID = new Map();
+    for (const a of allies) {
+      try {
+        byPlayerID.set(a.id(), a.smallID());
+      } catch {
+        /* a player the view cannot resolve simply gets no clock */
+      }
+    }
+
+    const now = game.ticks();
+    const duration = Math.max(1, game.config().allianceDuration());
+    for (const v of views) {
+      const smallID = byPlayerID.get(v.other);
+      if (smallID === undefined) continue;
+      const remaining = Math.max(0, v.expiresAt - now);
+      out.set(smallID, {
+        remainingTicks: remaining,
+        // The same ratio the game's own on-map alliance icon uses, at
+        // PlayerStatus.ts:168.
+        fraction: Math.max(0, Math.min(1, remaining / duration)),
+      });
+    }
+    return out;
+  }
+
   // This finds the hovered player, the players allied with them, and the players
   // allied with those. Only the `web` scheme draws the third ring.
   function alliance(game, subjectID) {
@@ -256,7 +334,8 @@
         secondIDs.add(id);
       }
     }
-    return { subject, direct, directIDs, secondIDs };
+    const expiry = expiryBySmallID(game, subject, direct);
+    return { subject, direct, directIDs, secondIDs, expiry };
   }
 
   function alliancePalette(game, subjectID) {
@@ -277,28 +356,37 @@
       writeSlot(scratch, smallID, fill, lighten(fill, 0.4));
     };
 
+    // A full alliance draws at `full`. One about to lapse draws at `spent`. Only the
+    // direct ring fades: the second ring is already dim, and the subject is not in
+    // an alliance with itself.
+    const fadeFor = (smallID, full, spent) => {
+      if (state.expiry !== "fade") return full;
+      const clock = web.expiry.get(smallID);
+      if (!clock) return full;
+      return mix(spent, full, clock.fraction);
+    };
+
+    const ally = (id) => colour(id, fadeFor(id, ALLY, ALLY_EXPIRING));
+
     if (state.scheme === "one") {
       colour(subjectID, ALLY);
-      for (const id of web.directIDs) colour(id, ALLY);
+      for (const id of web.directIDs) ally(id);
     } else if (state.scheme === "two") {
       colour(subjectID, SUBJECT);
-      for (const id of web.directIDs) colour(id, ALLY);
+      for (const id of web.directIDs) ally(id);
     } else if (state.scheme === "own") {
-      const keepOwn = (id) => {
+      const keepOwn = (id, fade) => {
         const p = real.get(id);
         if (!p) return;
-        writeSlot(
-          scratch,
-          id,
-          toUnit(p.territoryColor()),
-          toUnit(p.borderColor()),
-        );
+        const own = toUnit(p.territoryColor());
+        const fill = fade ? fadeFor(id, own, darken(own, 0.45)) : own;
+        writeSlot(scratch, id, fill, toUnit(p.borderColor()));
       };
-      keepOwn(subjectID);
-      for (const id of web.directIDs) keepOwn(id);
+      keepOwn(subjectID, false);
+      for (const id of web.directIDs) keepOwn(id, true);
     } else {
       colour(subjectID, SUBJECT);
-      for (const id of web.directIDs) colour(id, ALLY);
+      for (const id of web.directIDs) ally(id);
       for (const id of web.secondIDs) colour(id, ALLY_OF_ALLY);
     }
 
@@ -323,6 +411,9 @@
     cursorY: 0,
     // True while the mode paints. The timer re-asserts only then.
     active: false,
+    // The web from the last paint. The clock re-renders its text every second
+    // without a palette upload.
+    lastWeb: null,
     game: null,
     settings: null,
     savedAlpha: DEFAULT_TERRITORY_ALPHA,
@@ -386,6 +477,7 @@
     if (!state.on || wanted === 0) {
       h.view.updatePalette(realPalette(h.game));
       mode.active = false;
+      mode.lastWeb = null;
       bar.render(null);
       return;
     }
@@ -393,6 +485,7 @@
     const { arr, web } = alliancePalette(h.game, wanted);
     h.view.updatePalette(arr);
     mode.active = true;
+    mode.lastWeb = web;
     bar.render(web);
   }
 
@@ -543,6 +636,12 @@
         }),
       );
       root.appendChild(
+        this.button("expiry", () => {
+          state.expiry = next(EXPIRIES, state.expiry);
+          commit(true);
+        }),
+      );
+      root.appendChild(
         this.button("names", () => {
           state.names = !state.names;
           commit(true);
@@ -630,6 +729,9 @@
       this.buttons.trigger.title = TRIGGER_NAMES[state.trigger];
       this.buttons.scheme.textContent = state.scheme;
       this.buttons.scheme.title = SCHEME_NAMES[state.scheme];
+      this.buttons.expiry.textContent =
+        state.expiry === "fade" ? "fade" : "no fade";
+      this.buttons.expiry.title = EXPIRY_NAMES[state.expiry];
       this.buttons.names.textContent = state.names ? "names" : "no names";
       this.buttons.grey.textContent = "grey " + state.grey.toFixed(2);
       this.buttons.alpha.textContent = "alpha " + state.alpha.toFixed(2);
@@ -637,6 +739,14 @@
       this.readout.textContent = describe(web);
     },
   };
+
+  // The game divides ticks by a fixed ten, so this does too. See TICKS_PER_SECOND.
+  function mmss(remainingTicks) {
+    const total = Math.max(0, Math.floor(remainingTicks / TICKS_PER_SECOND));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return m + ":" + String(s).padStart(2, "0");
+  }
 
   function counts() {
     return mode.uploads + " uploads, " + mode.keepAlives + " keep-alive";
@@ -653,8 +763,22 @@
             : "point at a player";
       return hint + "\n" + counts();
     }
-    const all = web.direct.map((p) => p.displayName()).sort();
-    const shown = all.slice(0, MAX_NAMES_SHOWN).join(", ");
+    // Soonest to lapse first. Which alliance breaks next is the useful order, and
+    // alphabetical order buries it.
+    const all = web.direct
+      .map((p) => {
+        const clock = web.expiry.get(p.smallID());
+        return {
+          name: p.displayName(),
+          ticks: clock ? clock.remainingTicks : Infinity,
+          label: clock ? " " + mmss(clock.remainingTicks) : " —",
+        };
+      })
+      .sort((a, b) => a.ticks - b.ticks || a.name.localeCompare(b.name));
+    const shown = all
+      .slice(0, MAX_NAMES_SHOWN)
+      .map((a) => a.name + a.label)
+      .join(", ");
     const rest =
       all.length > MAX_NAMES_SHOWN
         ? " and " + (all.length - MAX_NAMES_SHOWN) + " more"
@@ -695,10 +819,30 @@
   //
   // This rebuilds the palette. A replay of the last upload would draw a player who
   // spawned since then in black, because nothing wrote their slot.
-  const reassert = setInterval(() => {
-    if (!state.on || !mode.active) return;
-    paint(true, true);
-  }, REASSERT_MS);
+  //
+  // The beat is a self-scheduled timer rather than an interval, because the fade has
+  // to redraw as the clock runs and repair alone does not.
+  let reassert = 0;
+
+  function scheduleReassert() {
+    const delay = state.expiry === "fade" ? FADE_MS : REASSERT_MS;
+    reassert = setTimeout(() => {
+      if (state.on && mode.active) paint(true, true);
+      scheduleReassert();
+    }, delay);
+  }
+
+  // The countdown is text, so it redraws without a palette upload. It has to
+  // recompute the clocks: the numbers on the cached web were read at paint time and
+  // do not move on their own.
+  const clock = setInterval(() => {
+    const web = mode.lastWeb;
+    if (!state.on || !mode.active || !web) return;
+    const h = hooks();
+    if (!h) return;
+    web.expiry = expiryBySmallID(h.game, web.subject, web.direct);
+    bar.render(web);
+  }, CLOCK_MS);
 
   // --------------------------------------------------------------- wire it up
 
@@ -713,13 +857,15 @@
   // loads on the main menu as a row of empty buttons.
   bar.render(null);
   paint(true);
+  scheduleReassert();
 
   window.__ofxProto14 = {
     state,
     mode,
     repaint: () => paint(true),
     destroy() {
-      clearInterval(reassert);
+      clearTimeout(reassert);
+      clearInterval(clock);
       if (wheelTimer) clearTimeout(wheelTimer);
       window.removeEventListener("mousemove", onMouseMove, true);
       window.removeEventListener("mousedown", onMouseDown, true);
