@@ -370,30 +370,37 @@ defensible reading of the word "optimal".
 | `95` | 30.6% to 54.3% full | 23.7 points | within 5% of your best |
 | `90` | 26.0% to 59.5% full | 33.5 points | within 10% of your best |
 
-The band's two ends are always drawn. How strongly the veil between them covers what
-is under it cycles on its own button, and `veils.html` shows all four levels at four
-troop levels for comparison without starting a match.
+The band's two ends are always drawn, full height. Between them a solid strip runs
+along the bar's bottom edge. Its height cycles on its own button, and `strips.html`
+compares the four settings at four troop levels without starting a match.
 
-| | Alpha | |
-| --- | --- | --- |
-| `strong` | 0.58 | the default, and the best balance of the four |
-| `full` | 0.8 | clearest band, but it flattens the fill edge inside the band |
-| `medium` | 0.34 | too quiet on the blue fill |
-| `off` | 0 | the two ends alone, which is cleaner than it sounds |
+| | |
+| --- | --- |
+| `5px` | the default |
+| `8px` | more present, and it starts to crowd the digits above it |
+| `3px` | quieter, still legible |
+| `off` | the two ends alone, which reads as a bracket |
 
 The number switches off separately.
 
-## Why the veil has a strength at all
+## Why the strip is solid, and why that took three tries
 
-The band crosses up to three different backgrounds at once: the troop fill's
-`#0084d1`, the committed fill's lighter `#3fa9f5`, and the bar's dark track. One fixed
-translucent colour therefore lands at a different contrast on each. A light violet,
-`rgb(182,152,255)`, is the one that lifts all three in the same direction.
+The band crosses up to three backgrounds at once: the troop fill's `#0084d1`, the
+committed fill's lighter `#3fa9f5`, and the bar's dark track. Any one translucent
+colour therefore lands at a different contrast on each, and every violet close enough
+to the signature colour disappears against the blue.
 
-The strength is a real trade rather than a preference. A stronger veil separates the
-band better, and it also compresses whatever is underneath, so the fill edge gets
-harder to see when it sits inside the band. At `full` that edge is nearly gone, and the
-fill edge is your own position. `strong` keeps both.
+A veil across the whole bar height had to stay translucent, because going opaque would
+have hidden the fill's own edge, and that edge is your position. Staying translucent is
+what kept it too faint to read. Two problems, one cause.
+
+Moving the strip below the game's troop numbers removes both at once. The fill is a
+flat colour, so covering its bottom few pixels hides nothing, which means the strip can
+be fully opaque. Solid `#9d93f5` reads clearly on the blue and on the dark track, and
+the fill edge stays visible in the 17 px above it.
+
+The two end lines still cross the text, because they need the height to be found at a
+glance. They are 2 px wide and they draw under the numbers, so the digits stay whole.
 
 ## A bug worth recording
 

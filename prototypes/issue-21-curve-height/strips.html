@@ -1,12 +1,12 @@
 <meta charset="utf-8">
-<title>issue 21 — veil strengths</title>
+<title>issue 21 — strip heights</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin:0; background:#0f1115; color:#e7e7ea;
     font:13px/1.4 system-ui, sans-serif; padding:18px 20px 26px; }
   h1 { font-size:14px; margin:0 0 2px; }
-  .sub { opacity:.5; font-size:11px; margin:0 0 16px; }
-  h2 { font-size:12px; margin:18px 0 6px; color:#cfc8ff; }
+  .sub { opacity:.5; font-size:11px; margin:0 0 16px; max-width:760px; }
+  h2 { font-size:12px; margin:18px 0 6px; color:#d5cfff; }
   .row { display:flex; align-items:center; gap:10px; margin:4px 0; }
   .state { width:150px; text-align:right; font-size:11px; opacity:.5;
     font-variant-numeric:tabular-nums; }
@@ -21,23 +21,26 @@
   .troops { background:#0084d1; }
   .committed { background:#3fa9f5; }
   .numbers { position:absolute; inset:0; display:flex; align-items:center;
-    justify-content:center; font-size:15px; font-weight:700; line-height:1;
+    justify-content:center; font-size:18px; font-weight:700; line-height:1;
     color:#fff; text-shadow:0 1px 1px rgba(0,0,0,.8);
     font-variant-numeric:tabular-nums; pointer-events:none; }
 
   /* Ours, matching zone.user.js exactly. */
   .band { position:absolute; top:0; bottom:0; pointer-events:none; }
-  .band > div { position:absolute; top:0; bottom:0; width:2px;
-    background:#cfc8ff; box-shadow:0 0 2px rgba(0,0,0,.9); }
+  .edge { position:absolute; top:0; bottom:0; width:2px;
+    background:#d5cfff; box-shadow:0 0 2px rgba(0,0,0,.9); }
+  .strip { position:absolute; left:0; right:0; bottom:0;
+    background:#9d93f5; box-shadow:0 0 2px rgba(0,0,0,.9); }
   .pct { position:absolute; top:0; bottom:0; right:5px; display:flex;
     align-items:center; font-weight:700; font-size:13px; line-height:1;
     color:#c9c4ff; text-shadow:0 1px 1px rgba(0,0,0,.9);
     font-variant-numeric:tabular-nums; pointer-events:none; }
 </style>
 
-<h1>Issue #21 — veil strength, with both edges fixed</h1>
-<p class="sub">Band = 95% of best, 30.6% to 54.3% full. Veil colour rgb(182,152,255).
-Each row is a different troop level, so the band crosses the troop fill, the committed fill and the dark track.</p>
+<h1>Issue #21 — strip height, below the text</h1>
+<p class="sub">Band = 95% of best, 30.6% to 54.3% full. The strip is solid
+<code>#9d93f5</code> and runs along the bar's bottom edge, clear of the troop numbers.
+The two ends stay full height. Troop text is 18 px, matching the game's desktop bar.</p>
 
 <div id="out"></div>
 
@@ -49,12 +52,10 @@ Each row is a different troop level, so the band crosses the troop fill, the com
   const share = (x) => rate(x) / best;
 
   const LO = 0.306, HI = 0.543;
-  const VEIL_RGB = "182,152,255";
-  const LEVELS = [["off", 0], ["medium", 0.34], ["strong", 0.58], ["full", 0.8]];
+  const HEIGHTS = [["5px", 5], ["8px", 8], ["3px", 3], ["off", 0]];
   const STATES = [0.22, 0.42, 0.62, 0.88];
 
-  function row(x, alpha) {
-    const bg = alpha === 0 ? "transparent" : `rgba(${VEIL_RGB},${alpha})`;
+  function row(x, h) {
     return `<div class="row">
       <div class="state">${(x * 100).toFixed(0)}% full &middot; ${(share(x) * 100).toFixed(0)}% of best</div>
       <div class="cell"><div class="bar">
@@ -62,8 +63,9 @@ Each row is a different troop level, so the band crosses the troop fill, the com
           <div class="troops" style="transform:scaleX(${x})"></div>
           <div class="committed" style="transform:translateX(${x * 100}%) scaleX(0.06)"></div>
         </div>
-        <div class="band" style="left:${LO * 100}%;width:${(HI - LO) * 100}%;background:${bg}">
-          <div style="left:0"></div><div style="right:0"></div>
+        <div class="band" style="left:${LO * 100}%;width:${(HI - LO) * 100}%">
+          ${h ? `<div class="strip" style="height:${h}px"></div>` : ""}
+          <div class="edge" style="left:0"></div><div class="edge" style="right:0"></div>
         </div>
         <div class="pct">${Math.round(share(x) * 100)}%</div>
         <div class="numbers">${(x * 100).toFixed(0)}K / 100K</div>
@@ -71,9 +73,7 @@ Each row is a different troop level, so the band crosses the troop fill, the com
     </div>`;
   }
 
-  document.getElementById("out").innerHTML = LEVELS.map(
-    ([name, alpha]) =>
-      `<h2>veil: ${name}${alpha ? ` (alpha ${alpha})` : ""}</h2>` +
-      STATES.map((x) => row(x, alpha)).join(""),
+  document.getElementById("out").innerHTML = HEIGHTS.map(
+    ([name, h]) => `<h2>strip: ${name}</h2>` + STATES.map((x) => row(x, h)).join(""),
   ).join("");
 </script>

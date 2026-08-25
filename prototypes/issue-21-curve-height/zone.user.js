@@ -27,9 +27,13 @@
 // No mark at 42.2%. The middle of the band already reads as the peak, and the two
 // agree to within 0.6 of a percentage point at every width above.
 //
-// The band draws over the game's fills and under the game's troop numbers, so it
-// never hides them. The bar lists the fills first and the numbers second, so a node
-// inserted between the two lands in that order with no z-index of its own.
+// The band is marked two ways. Two full-height lines give its ends, and a solid strip
+// along the bar's bottom edge joins them. The strip stays clear of the game's troop
+// numbers, which sit on the middle line of the bar.
+//
+// Everything also draws under those numbers, not only below them. The bar lists its
+// fills first and its numbers second, and none of them sets a z-index, so a node
+// inserted between the two lands in that order.
 //
 // The debug bar is magenta on purpose. Violet is under judgement here, so nothing
 // that is not under judgement may be violet.
@@ -81,26 +85,21 @@
     90: bandFor(0.9),
   };
 
-  const VIOLET_EDGE = "#cfc8ff";
+  const VIOLET_EDGE = "#d5cfff";
+  const VIOLET_STRIP = "#9d93f5";
   const VIOLET_TEXT = "#c9c4ff";
-
-  // The veil has to read on three different backgrounds at once: the troop fill's
-  // blue, the committed fill's lighter blue, and the bar's dark track. A light violet
-  // is the one that lifts all three in the same direction.
-  const VEIL_RGB = "182,152,255";
 
   const SHADOW_TEXT = "0 1px 1px rgba(0,0,0,0.9)";
   const SHADOW_LINE = "0 0 2px rgba(0,0,0,0.9)";
   const EDGE_WIDTH = 2;
 
-  // How strongly the veil covers what is under it. The edges are always drawn, so
-  // `off` leaves the band marked by its two ends alone.
-  const VEILS = ["strong", "full", "medium", "off"];
-  const VEIL_ALPHA = { off: 0, medium: 0.34, strong: 0.58, full: 0.8 };
+  // The strip runs along the bar's bottom edge, clear of the game's troop numbers.
+  // How tall it is, in pixels. `0` leaves the band marked by its two ends alone.
+  const STRIPS = [5, 8, 3, 0];
 
   const STORE = {
     width: "ofx-proto-issue21z-width",
-    veil: "ofx-proto-issue21z-veil",
+    strip: "ofx-proto-issue21z-strip",
     percentage: "ofx-proto-issue21z-percentage",
   };
 
@@ -174,7 +173,22 @@
       return el;
     };
     const edges = [edge("left"), edge("right")];
-    band.append(...edges);
+
+    // The strip is solid, not translucent. It sits below the game's troop numbers and
+    // it covers only the bottom of the fill, which is a flat colour, so nothing is
+    // hidden by it. A veil across the whole height had to stay translucent to keep the
+    // fill's own edge visible, and that is what made it too faint to read.
+    const strip = document.createElement("div");
+    strip.style.cssText = [
+      "position:absolute",
+      "left:0",
+      "right:0",
+      "bottom:0",
+      `background:${VIOLET_STRIP}`,
+      `box-shadow:${SHADOW_LINE}`,
+    ].join(";");
+
+    band.append(strip, ...edges);
 
     // The number sits at the bar's far right, which the game leaves empty. Its own
     // troop figures are centred, and its soldier icon stops well short of the end.
@@ -205,6 +219,7 @@
     const readout = {
       bar,
       band,
+      strip,
       edges,
       percentage,
       lastFraction: null,
@@ -230,9 +245,9 @@
         this.band.style.left = `${lo * 100}%`;
         this.band.style.width = `${(hi - lo) * 100}%`;
 
-        const alpha = VEIL_ALPHA[options.veil()];
-        this.band.style.background =
-          alpha === 0 ? "transparent" : `rgba(${VEIL_RGB},${alpha})`;
+        const height = options.strip();
+        this.strip.style.display = height === 0 ? "none" : "block";
+        this.strip.style.height = `${height}px`;
 
         this.percentage.style.display = options.percentage() ? "flex" : "none";
         this.update(this.lastFraction, true);
@@ -273,9 +288,9 @@
 
   const options = {
     width: () => width,
-    veil: () => {
-      const value = read(STORE.veil, VEILS[0]);
-      return VEILS.includes(value) ? value : VEILS[0];
+    strip: () => {
+      const value = Number(read(STORE.strip, String(STRIPS[0])));
+      return STRIPS.includes(value) ? value : STRIPS[0];
     },
     percentage: () => read(STORE.percentage, "on") === "on",
     onFraction: (fraction) => stats.render(fraction),
@@ -340,9 +355,9 @@
   const widthLabel = document.createElement("span");
   widthLabel.style.cssText = "min-width:190px;text-align:center;font-weight:700";
 
-  const veilToggle = button("", () => {
-    const index = VEILS.indexOf(options.veil());
-    localStorage.setItem(STORE.veil, VEILS[(index + 1) % VEILS.length]);
+  const stripToggle = button("", () => {
+    const index = STRIPS.indexOf(options.strip());
+    localStorage.setItem(STORE.strip, String(STRIPS[(index + 1) % STRIPS.length]));
     paint();
     applyAll();
   });
@@ -378,7 +393,7 @@
     button("◀", () => step(-1)),
     widthLabel,
     button("▶", () => step(1)),
-    veilToggle,
+    stripToggle,
     percentageToggle,
     stats.el,
   );
@@ -389,7 +404,8 @@
       hi * 100
     ).toFixed(1)}%`;
 
-    veilToggle.textContent = `veil: ${options.veil()}`;
+    const height = options.strip();
+    stripToggle.textContent = `strip: ${height === 0 ? "off" : height + "px"}`;
     const on = options.percentage();
     percentageToggle.textContent = `number: ${on ? "on" : "off"}`;
     percentageToggle.style.background = on ? "#ff2bd1" : "#333";
