@@ -18,7 +18,7 @@
 // ==/UserScript==
 
 (function() {
-	//#region \0./main-Cm99ev9u.js
+	//#region \0./main-BM26rp2O.js
 	var package_default = ".ofx-tick-marker{color:#fff;white-space:nowrap;pointer-events:none;background:#000;border-radius:2px;margin-bottom:2px;padding:1px 4px;font:10px/1.4 system-ui,sans-serif;position:absolute;bottom:100%;left:0}";
 	/**
 	* Whether a live local player is on the board, with numbers worth a read.
@@ -47,10 +47,14 @@
 	/**
 	* One node per host, drawn inside it.
 	*
-	* A host is `position: static`, so this sets `position: relative` on it. That
-	* is the only change the package makes to one of the game's own elements, and
-	* `remove` undoes it exactly. Without it a node inside the host cannot place
-	* itself against the host.
+	* Use this for a readout that needs a node above the game's element. A host is
+	* `position: static`, so this sets `position: relative` on it, and `remove`
+	* undoes that exactly. Without it a node inside the host cannot place itself
+	* against the host. `position` is the only property the package writes on
+	* anything of the game's own.
+	*
+	* A readout with no label above its element draws inside that element instead,
+	* and needs none of this. See docs/adr/0003.
 	*/
 	function injectedNodes(deps) {
 		const drawn = /* @__PURE__ */ new Map();
@@ -266,8 +270,15 @@
 						logError("no event bus on the panel, so this listener never fires");
 						return;
 					}
-					bus.on(type, handler);
-					cleanups.push(() => bus.off(type, handler));
+					const guarded = (event) => {
+						try {
+							handler(event);
+						} catch (error) {
+							logError("a game event handler failed", error);
+						}
+					};
+					bus.on(type, guarded);
+					cleanups.push(() => bus.off(type, guarded));
 				},
 				onDetach(cleanup) {
 					cleanups.push(cleanup);
@@ -337,10 +348,11 @@
 			},
 			isEnabled: (id) => settings.isEnabled(id),
 			setEnabled(id, enabled) {
+				const feature = features.find((candidate) => candidate.id === id);
+				if (!feature) return;
 				settings.setEnabled(id, enabled);
 				if (enabled) {
-					const feature = features.find((candidate) => candidate.id === id);
-					if (feature && currentMatch) attach(feature, currentMatch);
+					if (currentMatch) attach(feature, currentMatch);
 				} else detach(id);
 			}
 		};
@@ -475,7 +487,7 @@
 	* The userscript entry point.
 	*
 	* The script takes no grants, so this runs in the page's own context and
-	* `window` is the page's window. See docs/adr/0005.
+	* `window` is the page's window. See docs/adr/0007.
 	*/
 	var PANEL = "control-panel";
 	var HANDLE = "openfrontExtendedUi";
