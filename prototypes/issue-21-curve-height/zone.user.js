@@ -27,9 +27,12 @@
 // No mark at 42.2%. The middle of the band already reads as the peak, and the two
 // agree to within 0.6 of a percentage point at every width above.
 //
-// The band is marked two ways. Two full-height lines give its ends, and a solid strip
-// along the bar's bottom edge joins them. The strip stays clear of the game's troop
-// numbers, which sit on the middle line of the bar.
+// A solid strip along the bar's bottom edge marks the band. It stays clear of the
+// game's troop numbers, which sit on the middle line of the bar.
+//
+// Two full-height lines can mark the band's ends as well. They are off by default,
+// because a strip with a start and a stop already has ends, and the lines cross the
+// troop numbers to say the same thing twice.
 //
 // Everything also draws under those numbers, not only below them. The bar lists its
 // fills first and its numbers second, and none of them sets a z-index, so a node
@@ -100,6 +103,7 @@
   const STORE = {
     width: "ofx-proto-issue21z-width",
     strip: "ofx-proto-issue21z-strip",
+    ends: "ofx-proto-issue21z-ends",
     percentage: "ofx-proto-issue21z-percentage",
   };
 
@@ -249,6 +253,11 @@
         this.strip.style.display = height === 0 ? "none" : "block";
         this.strip.style.height = `${height}px`;
 
+        const ends = options.ends();
+        for (const edge of this.edges) {
+          edge.style.display = ends ? "block" : "none";
+        }
+
         this.percentage.style.display = options.percentage() ? "flex" : "none";
         this.update(this.lastFraction, true);
       },
@@ -292,6 +301,7 @@
       const value = Number(read(STORE.strip, String(STRIPS[0])));
       return STRIPS.includes(value) ? value : STRIPS[0];
     },
+    ends: () => read(STORE.ends, "off") === "on",
     percentage: () => read(STORE.percentage, "on") === "on",
     onFraction: (fraction) => stats.render(fraction),
   };
@@ -362,6 +372,12 @@
     applyAll();
   });
 
+  const endsToggle = button("", () => {
+    localStorage.setItem(STORE.ends, options.ends() ? "off" : "on");
+    paint();
+    applyAll();
+  });
+
   const percentageToggle = button("", () => {
     localStorage.setItem(STORE.percentage, options.percentage() ? "off" : "on");
     paint();
@@ -394,6 +410,7 @@
     widthLabel,
     button("▶", () => step(1)),
     stripToggle,
+    endsToggle,
     percentageToggle,
     stats.el,
   );
@@ -406,6 +423,11 @@
 
     const height = options.strip();
     stripToggle.textContent = `strip: ${height === 0 ? "off" : height + "px"}`;
+    const ends = options.ends();
+    endsToggle.textContent = `ends: ${ends ? "on" : "off"}`;
+    endsToggle.style.background = ends ? "#ff2bd1" : "#333";
+    endsToggle.style.color = ends ? "#111" : "#fff";
+
     const on = options.percentage();
     percentageToggle.textContent = `number: ${on ? "on" : "off"}`;
     percentageToggle.style.background = on ? "#ff2bd1" : "#333";

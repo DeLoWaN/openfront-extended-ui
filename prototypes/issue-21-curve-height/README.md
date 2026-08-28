@@ -370,16 +370,22 @@ defensible reading of the word "optimal".
 | `95` | 30.6% to 54.3% full | 23.7 points | within 5% of your best |
 | `90` | 26.0% to 59.5% full | 33.5 points | within 10% of your best |
 
-The band's two ends are always drawn, full height. Between them a solid strip runs
-along the bar's bottom edge. Its height cycles on its own button, and `strips.html`
-compares the four settings at four troop levels without starting a match.
+A solid strip along the bar's bottom edge marks the band. Its height cycles on its own
+button, and `strips.html` compares the settings at four troop levels without starting a
+match.
 
 | | |
 | --- | --- |
 | `5px` | the default |
 | `8px` | more present, and it starts to crowd the digits above it |
 | `3px` | quieter, still legible |
-| `off` | the two ends alone, which reads as a bracket |
+| `off` | nothing drawn unless the ends are on |
+
+Two full-height lines can mark the band's ends as well. They are **off** by default.
+A strip already has a start and a stop, so the lines repeat what the strip says and
+cross the troop numbers to do it. Compared side by side, the strip alone reads as one
+clean underline and the version with ends reads as three marks that have to be put
+together. Turn them on if you disagree.
 
 The number switches off separately.
 
@@ -399,8 +405,10 @@ flat colour, so covering its bottom few pixels hides nothing, which means the st
 be fully opaque. Solid `#9d93f5` reads clearly on the blue and on the dark track, and
 the fill edge stays visible in the 17 px above it.
 
-The two end lines still cross the text, because they need the height to be found at a
-glance. They are 2 px wide and they draw under the numbers, so the digits stay whole.
+The end lines were kept full height at first, on the argument that they needed the
+height to be found at a glance. Seeing them next to the strip alone settled it the
+other way: the height is what makes them cross the digits, and the strip does not need
+help being found. They stay in the script as an option and nothing more.
 
 ## A bug worth recording
 
