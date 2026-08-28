@@ -17,7 +17,8 @@ An addition that changes how the map is coloured instead of reporting a number. 
 Where an addition draws. There are two, the HUD and the map. A decision about one carries nothing to the other.
 
 **Signature colour**:
-Violet, the one colour the game never uses. It marks a figure the package worked out itself. The game's own colours keep the game's meanings, so gold stays yellow and troops stay blue.
+Violet. It marks a figure the package worked out itself. The game's own colours keep the game's meanings, so gold stays yellow and troops stay blue.
+The game does use a little purple, so violet is not unused: `PlayerPanel.ts` marks a Nation with indigo and a Bot with purple, and two modals use `bg-indigo-600` for their primary button. None of it appears on the HUD's bottom row, which is the only place these readouts draw, so violet still reads as foreign there.
 _Avoid_: accent, brand colour, highlight
 
 ### The game's own furniture
@@ -59,7 +60,8 @@ The troop level where regeneration peaks. It is a limit the game approaches as y
 _Avoid_: the optimum, the sweet spot, the threshold
 
 **The plateau**:
-The flat top of the regeneration curve. Any level from about 31% to 54% full stays within 5% of your best rate. This is why the 42.2% level is not a cliff.
+The flat top of the regeneration curve. Every level from 30.6% to 54.3% full stays within 5% of your best rate. This is why the 42.2% level is not a cliff, and it is the thing the troop bar readout draws.
+_Avoid_: the optimal zone, the sweet spot, the band (say "the plateau", and "the strip" for the mark that draws it)
 
 **Crossing**:
 Passing the 42.2% level from below. It is the signal to spend troops, because troops above the level are unspent, not because regeneration collapsed.

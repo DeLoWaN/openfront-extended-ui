@@ -1,5 +1,11 @@
 # The 42.2% level is drawn as a fixed point, although the real peak moves
 
+> **Superseded by [ADR-0004](0004-the-optimal-troop-level-is-drawn-as-a-band.md).**
+> No point is drawn any more. The package marks a band of troop levels instead, and a
+> band a quarter of the bar wide is unaffected by the peak moving, so the problem this
+> decision managed no longer exists. The reasoning below is kept because it records why
+> a sliding landmark was rejected, which still holds for the band's own edges.
+
 Regeneration peaks where `(10 + troops^0.73 / 4) x (1 - troops / maxTroops)` is largest. The familiar `0.73 / 1.73 = 42.2%` result drops the constant `10`. With that constant included, the true peak sits below 42.2% and creeps right as an army grows: 41.52% at 5,000 displayed troops, 42.17% at 500,000. The package draws the mark at a fixed 42.2% anyway, and reads the dot's height and the percentage off that same fixed curve.
 
 ## Consequences
