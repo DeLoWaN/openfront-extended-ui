@@ -45,6 +45,24 @@ describe("a feature context", () => {
     expect(cleanedUp).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps a throw from a game event handler away from the game", () => {
+    const complaint = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { panel, context } = setup();
+    class GoldEvent {}
+    const laterListener = vi.fn();
+
+    context.onGameEvent(GoldEvent, () => {
+      throw new Error("a feature's event handler is broken");
+    });
+    // The game's own code, queued behind the feature on the shared bus.
+    panel.eventBus.on(GoldEvent, laterListener);
+
+    expect(() => panel.eventBus.emit(GoldEvent, new GoldEvent())).not.toThrow();
+
+    expect(laterListener).toHaveBeenCalledTimes(1);
+    expect(complaint).toHaveBeenCalled();
+  });
+
   it("says so loudly when there is no event bus to listen on", () => {
     const complaint = vi.spyOn(console, "error").mockImplementation(() => {});
     // Before the first match the panel carries neither a game nor a bus.

@@ -19,7 +19,12 @@ export interface FeatureContext {
   /** The `<control-panel>` element. The same object for the whole page. */
   readonly panel: ControlPanel;
 
-  /** Listens on the game's event bus. Removed on detach. */
+  /**
+   * Listens on the game's event bus. Removed on detach.
+   *
+   * A throw from the handler is caught here, because the game's own bus has no
+   * try/catch around the listeners it calls.
+   */
   onGameEvent(type: GameEventType, handler: GameEventHandler): void;
 
   /** Runs on detach. Cleanups run in reverse order of registration. */
@@ -48,8 +53,20 @@ export function createFeatureContext(deps: {
         logError("no event bus on the panel, so this listener never fires");
         return;
       }
-      bus.on(type, handler);
-      cleanups.push(() => bus.off(type, handler));
+      // The game calls every listener in a plain loop with no try/catch. A
+      // throw from here would reach the game code that sent the event, and the
+      // listeners queued behind this one would never run.
+      const guarded: GameEventHandler = (event) => {
+        try {
+          handler(event);
+        } catch (error) {
+          logError("a game event handler failed", error);
+        }
+      };
+
+      bus.on(type, guarded);
+      // `off` matches by function reference, so it takes the wrapper.
+      cleanups.push(() => bus.off(type, guarded));
     },
 
     onDetach(cleanup) {
