@@ -326,3 +326,19 @@ describe("switching a feature back on", () => {
     expect(troopBar.attach).not.toHaveBeenCalled();
   });
 });
+
+describe("switching a feature that the package does not ship", () => {
+  it("writes nothing, so a feature shipped under that id later starts on", () => {
+    const write = vi.fn();
+    const settings = createSettings({ read: () => null, write });
+    const registry = createRegistry({
+      features: [feature("troop-bar")],
+      settings,
+    });
+
+    registry.setEnabled("no-such-feature", false);
+
+    expect(write).not.toHaveBeenCalled();
+    expect(registry.isEnabled("no-such-feature")).toBe(true);
+  });
+});

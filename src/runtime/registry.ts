@@ -95,10 +95,14 @@ export function createRegistry(deps: {
     isEnabled: (id) => settings.isEnabled(id),
 
     setEnabled(id, enabled) {
+      const feature = features.find((candidate) => candidate.id === id);
+      // An unknown id must never reach storage. A feature shipped under that
+      // id later would start switched off, and nobody would know why.
+      if (!feature) return;
+
       settings.setEnabled(id, enabled);
       if (enabled) {
-        const feature = features.find((candidate) => candidate.id === id);
-        if (feature && currentMatch) attach(feature, currentMatch);
+        if (currentMatch) attach(feature, currentMatch);
       } else {
         detach(id);
       }
