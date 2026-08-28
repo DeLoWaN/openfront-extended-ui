@@ -27,10 +27,14 @@ export interface InjectedNodes {
 /**
  * One node per host, drawn inside it.
  *
- * A host is `position: static`, so this sets `position: relative` on it. That
- * is the only change the package makes to one of the game's own elements, and
- * `remove` undoes it exactly. Without it a node inside the host cannot place
- * itself against the host.
+ * Use this for a readout that needs a node above the game's element. A host is
+ * `position: static`, so this sets `position: relative` on it, and `remove`
+ * undoes that exactly. Without it a node inside the host cannot place itself
+ * against the host. `position` is the only property the package writes on
+ * anything of the game's own.
+ *
+ * A readout with no label above its element draws inside that element instead,
+ * and needs none of this. See docs/adr/0003.
  */
 export function injectedNodes(deps: {
   findHosts: () => HTMLElement[];

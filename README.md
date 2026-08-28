@@ -82,7 +82,6 @@ A **feature** is any one of the six things the package adds. `src/runtime/featur
 export interface Feature {
   readonly id: FeatureId;
   readonly name: string;
-  readonly surface: Surface;
   attach(context: FeatureContext): FeatureSession | void;
 }
 ```
@@ -91,9 +90,9 @@ A feature is handed a `FeatureContext` when a match starts. It returns what to d
 
 Two rules shape everything else.
 
-**A feature takes nothing from the page directly.** It listens on the game's event bus through the context, and it claims the nodes it drew through the context. The runtime undoes all of it when the match ends or the feature is switched off. The reason is that the game's event bus is shared by the whole page, it never forgets a listener, and it removes one only when handed the same function object it was given. A feature that cleaned up by hand would eventually forget, and the leak would last as long as the browser tab.
+**A feature takes nothing from the page directly.** It listens on the game's event bus through the context, and it registers its cleanup through the context. The runtime undoes all of it when the match ends or the feature is switched off. The reason is that the game's event bus is shared by the whole page, it never forgets a listener, and it removes one only when handed the same function object it was given. A feature that cleaned up by hand would eventually forget, and the leak would last as long as the browser tab.
 
-**Nothing a feature does runs outside a `try`/`catch`.** Per-tick work runs inside the game's own controller loop, which has no `try`/`catch` of its own. An error escaping from there skips every controller after `control-panel`, which breaks the game's own HUD. Wrapping each feature keeps the damage inside the feature that caused it.
+**Nothing a feature does runs outside a `try`/`catch`.** The runtime wraps `attach`, the session's `tick`, every cleanup, and every game event handler the context registers. Two of those need it badly. Per-tick work runs inside the game's own controller loop, which has no `try`/`catch` of its own, and an error escaping from there skips every controller after `control-panel` and breaks the game's own HUD. The game's event bus has none either, so an error escaping a listener reaches the game code that sent the event and the listeners queued behind it never run.
 
 ### Following the game from match to match
 
