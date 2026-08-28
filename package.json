@@ -18,7 +18,7 @@
     "jsdom": "^25.0.1",
     "typescript": "^5.7.2",
     "vite": "^8.2.2",
-    "vite-plugin-monkey": "^5.0.8",
+    "vite-plugin-monkey": "^8.1.0",
     "vitest": "^4.1.11"
   }
 }
