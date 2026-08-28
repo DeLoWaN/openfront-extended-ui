@@ -99,27 +99,74 @@ export function createFakeControlPanel(): FakeControlPanel {
 }
 
 /**
- * The game's own markup around the troop bar.
+ * The game's own markup for one troop bar, copied class for class.
  *
- * The bar is the grandparent of the blue fill and hides its overflow. The cell
- * above the bar is the node the package draws into. The game keeps a desktop
- * copy and a mobile copy in the page at all times and hides one of them.
+ * Read from `renderDesktopTroopBar` and `renderMobileTroopBar` in
+ * `src/client/hud/layers/ControlPanel.ts` at OpenFrontIO commit 332e5410e. Four
+ * things about it matter to the package, so the copy keeps all four:
+ *
+ * - The bar hides its overflow and is already positioned.
+ * - The two fills sit together in one node, two levels below the bar.
+ * - The troops fill comes first and the committed troops fill second.
+ * - The troop numbers come after the fills, with no `z-index` anywhere.
+ */
+function buildTroopBar(): HTMLElement {
+  const bar = document.createElement("div");
+  bar.className =
+    "w-full h-6 border border-gray-600 rounded-md bg-gray-900/60 overflow-hidden relative";
+
+  const fills = document.createElement("div");
+  fills.className = "relative h-full";
+  for (const colour of ["bg-malibu-blue", "bg-aquarius"]) {
+    const fill = document.createElement("div");
+    fill.className = `absolute inset-y-0 left-0 w-full origin-left ${colour} transition-transform duration-200 ease-out`;
+    fills.append(fill);
+  }
+
+  const numbers = document.createElement("div");
+  numbers.className =
+    "absolute inset-0 flex items-center text-lg font-bold leading-none pointer-events-none";
+
+  bar.append(fills, numbers);
+  return bar;
+}
+
+/**
+ * Adds troop bars to the panel and returns them.
+ *
+ * The game keeps a wide bar and a narrow bar in the page at all times and hides
+ * one of them with CSS, so the default is two. Each bar sits in a cell of the
+ * HUD's own row, which the package never touches.
  */
 export function addTroopBars(panel: HTMLElement, count = 2): HTMLElement[] {
-  const cells: HTMLElement[] = [];
+  const bars: HTMLElement[] = [];
   for (let i = 0; i < count; i++) {
     const cell = document.createElement("div");
     cell.className = "troop-cell";
-    const bar = document.createElement("div");
-    bar.className = "overflow-hidden";
-    const track = document.createElement("div");
-    const fill = document.createElement("div");
-    fill.className = "bg-malibu-blue";
-    track.append(fill);
-    bar.append(track);
+    const bar = buildTroopBar();
     cell.append(bar);
     panel.append(cell);
-    cells.push(cell);
+    bars.push(bar);
   }
-  return cells;
+  return bars;
+}
+
+/**
+ * Draws a troop level on a bar the way the game draws it.
+ *
+ * `level` and `committed` are fractions of the maximum. The game clamps the two
+ * fills so they never sum past a full bar, and writes both as an inline
+ * transform, which is the only place the package reads them from.
+ */
+export function setTroopBarFill(
+  bar: HTMLElement,
+  level: number,
+  committed = 0,
+): void {
+  const troops = bar.querySelector<HTMLElement>(".bg-malibu-blue")!;
+  const committedTroops = bar.querySelector<HTMLElement>(".bg-aquarius")!;
+  const green = Math.max(0, Math.min(100, level * 100));
+  const orange = Math.max(0, Math.min(100 - green, committed * 100));
+  troops.style.transform = `scaleX(${green / 100})`;
+  committedTroops.style.transform = `translateX(${green}%) scaleX(${orange / 100})`;
 }

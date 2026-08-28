@@ -19,11 +19,33 @@
 
 (function() {
 	"use strict";
-	var package_default = ".ofx-tick-marker{color:#fff;white-space:nowrap;pointer-events:none;background:#000;border-radius:2px;margin-bottom:2px;padding:1px 4px;font:10px/1.4 system-ui,sans-serif;position:absolute;bottom:100%;left:0}";
+	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}";
 	function isMatchLive(game) {
 		if (game.inSpawnPhase()) return false;
 		const me = game.myPlayer();
 		return me !== null && me.isAlive();
+	}
+	var MARKER = "data-openfront-extended-ui";
+	var HIDDEN = "ofx-hidden";
+	function createStyleSheet(css) {
+		const injected = new Map();
+		return {
+			injectInto(root) {
+				if (injected.has(root)) return;
+				const style = document.createElement("style");
+				style.setAttribute(MARKER, "");
+				style.textContent = css;
+				styleHostOf(root).append(style);
+				injected.set(root, style);
+			},
+			remove() {
+				for (const style of injected.values()) style.remove();
+				injected.clear();
+			}
+		};
+	}
+	function styleHostOf(root) {
+		return root.nodeType === Node.DOCUMENT_NODE ? root.head : root;
 	}
 	var PREFIX = "[openfront-extended-ui]";
 	function logInfo(message, ...details) {
@@ -33,9 +55,13 @@
 		console.error(PREFIX, message, ...details);
 	}
 	function injectedNodes(deps) {
-		const drawn = new Map();
-		const priorPosition = new Map();
-		const styleAttributeAdded = new Set();
+		const drawings = new Map();
+		function isInPage(drawn) {
+			return deps.nodesOf(drawn).every((node) => node.isConnected);
+		}
+		function erase(drawn) {
+			for (const node of deps.nodesOf(drawn)) node.remove();
+		}
 		return {
 			sync() {
 				let hosts;
@@ -43,72 +69,149 @@
 					hosts = deps.findHosts();
 				} catch (error) {
 					logError("could not look for a place to draw", error);
-					return [...drawn.values()];
+					return [...drawings.values()];
+				}
+				for (const [host, drawn] of drawings) {
+					if (hosts.includes(host)) continue;
+					erase(drawn);
+					drawings.delete(host);
 				}
 				for (const host of hosts) {
-					if (drawn.get(host)?.isConnected) continue;
-					if (!priorPosition.has(host)) {
-						if (!host.hasAttribute("style")) styleAttributeAdded.add(host);
-						priorPosition.set(host, host.style.position || null);
+					const existing = drawings.get(host);
+					if (existing && isInPage(existing)) continue;
+					if (existing) erase(existing);
+					const drawn = deps.draw(host);
+					if (drawn === null) {
+						drawings.delete(host);
+						continue;
 					}
-					host.style.position = "relative";
-					const node = deps.build();
-					host.append(node);
-					drawn.set(host, node);
+					drawings.set(host, drawn);
 				}
-				return [...drawn.values()];
+				return [...drawings.values()];
 			},
 			remove() {
-				for (const node of drawn.values()) node.remove();
-				drawn.clear();
-				for (const [host, position] of priorPosition) {
-					if (position === null) host.style.removeProperty("position");
-					else host.style.position = position;
-					if (styleAttributeAdded.has(host) && host.style.length === 0) host.removeAttribute("style");
-				}
-				priorPosition.clear();
-				styleAttributeAdded.clear();
+				for (const drawn of drawings.values()) erase(drawn);
+				drawings.clear();
 			}
 		};
 	}
-	var TROOP_FILL = ".bg-malibu-blue";
-	var BAR_CLIPS = "overflow-hidden";
-	function findTroopBarCells(panel) {
-		const cells = [];
-		for (const fill of panel.querySelectorAll(TROOP_FILL)) {
-			const bar = fill.parentElement?.parentElement;
-			if (!bar?.classList.contains(BAR_CLIPS)) continue;
-			const cell = bar.parentElement;
-			if (cell instanceof HTMLElement) cells.push(cell);
-		}
-		return cells;
+	function rate(internalTroops, internalMaxTroops) {
+		return (10 + Math.pow(internalTroops, .73) / 4) * (1 - internalTroops / internalMaxTroops);
 	}
-	var CLASS = "ofx-tick-marker";
-	var tickMarker = {
-		id: "tick-marker",
-		name: "Tick counter (throwaway)",
+	var REFERENCE_MAX_TROOPS = 1e6;
+	var PLATEAU_SHARE = .95;
+	function rateAtLevel(level) {
+		return rate(level * REFERENCE_MAX_TROOPS, REFERENCE_MAX_TROOPS);
+	}
+	function clampToBar(level) {
+		return Math.min(1, Math.max(0, level));
+	}
+	function findPeak() {
+		let low = 0;
+		let high = 1;
+		for (let step = 0; step < 200; step++) {
+			const third = (high - low) / 3;
+			const left = low + third;
+			const right = high - third;
+			if (rateAtLevel(left) < rateAtLevel(right)) low = left;
+			else high = right;
+		}
+		return (low + high) / 2;
+	}
+	var PEAK = findPeak();
+	var BEST_RATE = rateAtLevel(PEAK);
+	function shareOfBestRate(level) {
+		return rateAtLevel(clampToBar(level)) / BEST_RATE;
+	}
+	function findCrossing(share, side) {
+		let reaches = PEAK;
+		let fallsShort = side === "below" ? 0 : 1;
+		for (let step = 0; step < 100; step++) {
+			const middle = (reaches + fallsShort) / 2;
+			if (shareOfBestRate(middle) >= share) reaches = middle;
+			else fallsShort = middle;
+		}
+		return (reaches + fallsShort) / 2;
+	}
+	var PLATEAU = {
+		lo: findCrossing(PLATEAU_SHARE, "below"),
+		hi: findCrossing(PLATEAU_SHARE, "above")
+	};
+	var TROOPS_FILL = ".bg-malibu-blue";
+	var BAR_CLIPS = "overflow-hidden";
+	function findTroopBars(panel) {
+		const bars = [];
+		for (const troops of panel.querySelectorAll(TROOPS_FILL)) {
+			const bar = troops.parentElement?.parentElement;
+			if (!bar?.classList.contains(BAR_CLIPS)) continue;
+			bars.push(bar);
+		}
+		return bars;
+	}
+	function findFills(bar) {
+		return bar.querySelector(TROOPS_FILL)?.parentElement ?? null;
+	}
+	var SCALE_X = /^\s*scaleX\(\s*([-\d.e+]+)\s*\)\s*$/i;
+	function readTroopLevel(bar) {
+		const troops = bar.querySelector(TROOPS_FILL);
+		if (!troops) return null;
+		const scale = SCALE_X.exec(troops.style.transform);
+		if (!scale) return null;
+		const level = Number(scale[1]);
+		if (!Number.isFinite(level)) return null;
+		return Math.min(1, Math.max(0, level));
+	}
+	var STRIP = "ofx-troop-strip";
+	var SHARE = "ofx-troop-share";
+	var PERCENTAGE_OPTION = "percentage";
+	var troopBar = {
+		id: "troop-bar",
+		name: "Troop bar plateau",
+		options: [{
+			key: PERCENTAGE_OPTION,
+			name: "Share of best rate",
+			whenUnset: true
+		}],
 		attach(context) {
-			const badges = injectedNodes({
-				findHosts: () => findTroopBarCells(context.panel),
-				build: buildBadge
+			const readouts = injectedNodes({
+				findHosts: () => findTroopBars(context.panel),
+				draw,
+				nodesOf: (readout) => readout.nodes
 			});
-			context.onDetach(() => badges.remove());
+			context.onDetach(() => readouts.remove());
 			return { tick() {
 				if (!isMatchLive(context.game)) {
-					badges.remove();
+					readouts.remove();
 					return;
 				}
-				const label = `tick ${context.game.ticks()}`;
-				for (const badge of badges.sync()) badge.textContent = label;
+				const showShare = context.isOptionEnabled(PERCENTAGE_OPTION);
+				for (const readout of readouts.sync()) update(readout, showShare);
 			} };
 		}
 	};
-	function buildBadge() {
-		const badge = document.createElement("div");
-		badge.className = CLASS;
-		return badge;
+	function draw(bar) {
+		const fills = findFills(bar);
+		if (!fills) return null;
+		const strip = document.createElement("div");
+		strip.className = STRIP;
+		strip.style.left = `${PLATEAU.lo * 100}%`;
+		strip.style.width = `${(PLATEAU.hi - PLATEAU.lo) * 100}%`;
+		const share = document.createElement("div");
+		share.className = SHARE;
+		fills.after(strip, share);
+		return {
+			bar,
+			strip,
+			share,
+			nodes: [strip, share]
+		};
 	}
-	var FEATURES = [tickMarker];
+	function update(readout, showShare) {
+		const level = readTroopLevel(readout.bar);
+		readout.share.textContent = level === null ? "" : `${Math.round(shareOfBestRate(level) * 100)}%`;
+		readout.share.classList.toggle(HIDDEN, !showShare);
+	}
+	var FEATURES = [troopBar];
 	var BOUNDARY_POLL_MS = 500;
 	function startLifecycle(deps) {
 		const { panel, handlers } = deps;
@@ -173,6 +276,7 @@
 			context: {
 				game: deps.game,
 				panel: deps.panel,
+				isOptionEnabled: (option) => deps.isOptionEnabled(option),
 				onGameEvent(type, handler) {
 					const bus = deps.panel.eventBus;
 					if (!bus) {
@@ -209,11 +313,25 @@
 		const { features, settings } = deps;
 		const attached = new Map();
 		let currentMatch = null;
+		function optionOf(feature, key) {
+			return feature.options?.find((option) => option.key === key);
+		}
+		function featureOf(id) {
+			return features.find((candidate) => candidate.id === id);
+		}
 		function attach(feature, match) {
 			if (attached.has(feature.id)) return;
 			const context = createFeatureContext({
 				panel: match.panel,
-				game: match.game
+				game: match.game,
+				isOptionEnabled: (key) => {
+					const option = optionOf(feature, key);
+					if (!option) {
+						logError(`the ${feature.id} feature asked for the option ${key}, which it does not declare`);
+						return false;
+					}
+					return settings.isOptionEnabled(feature.id, key, option.whenUnset);
+				}
 			});
 			let session = null;
 			try {
@@ -256,8 +374,19 @@
 				}
 			},
 			isEnabled: (id) => settings.isEnabled(id),
+			optionsOf(id) {
+				return (featureOf(id)?.options ?? []).map((option) => ({
+					...option,
+					enabled: settings.isOptionEnabled(id, option.key, option.whenUnset)
+				}));
+			},
+			setOptionEnabled(id, option, enabled) {
+				const feature = featureOf(id);
+				if (!feature || !optionOf(feature, option)) return;
+				settings.setOptionEnabled(id, option, enabled);
+			},
 			setEnabled(id, enabled) {
-				const feature = features.find((candidate) => candidate.id === id);
+				const feature = featureOf(id);
 				if (!feature) return;
 				settings.setEnabled(id, enabled);
 				if (enabled) {
@@ -265,27 +394,6 @@
 				} else detach(id);
 			}
 		};
-	}
-	var MARKER = "data-openfront-extended-ui";
-	function createStyleSheet(css) {
-		const injected = new Map();
-		return {
-			injectInto(root) {
-				if (injected.has(root)) return;
-				const style = document.createElement("style");
-				style.setAttribute(MARKER, "");
-				style.textContent = css;
-				styleHostOf(root).append(style);
-				injected.set(root, style);
-			},
-			remove() {
-				for (const style of injected.values()) style.remove();
-				injected.clear();
-			}
-		};
-	}
-	function styleHostOf(root) {
-		return root.nodeType === Node.DOCUMENT_NODE ? root.head : root;
 	}
 	function start(deps) {
 		const registry = createRegistry({
@@ -318,27 +426,46 @@
 			list: () => deps.registry.features.map((feature) => ({
 				id: feature.id,
 				name: feature.name,
-				enabled: deps.registry.isEnabled(feature.id)
+				enabled: deps.registry.isEnabled(feature.id),
+				options: deps.registry.optionsOf(feature.id).map((option) => ({
+					key: option.key,
+					name: option.name,
+					enabled: option.enabled
+				}))
 			})),
 			enable: (id) => deps.registry.setEnabled(id, true),
 			disable: (id) => deps.registry.setEnabled(id, false),
+			setOption: (id, option, enabled) => deps.registry.setOptionEnabled(id, option, enabled),
 			stop: () => deps.stop()
 		};
 	}
 	var STORAGE_KEY = "openfront-extended-ui:features";
+	function optionKey(id, option) {
+		return `${id}:${option}`;
+	}
 	function createSettings(store) {
 		const enabled = readEnabled(store);
+		function save() {
+			try {
+				store.write(JSON.stringify(enabled));
+			} catch (error) {
+				logError("could not save the settings", error);
+			}
+		}
 		return {
 			isEnabled(id) {
 				return enabled[id] ?? true;
 			},
 			setEnabled(id, value) {
 				enabled[id] = value;
-				try {
-					store.write(JSON.stringify(enabled));
-				} catch (error) {
-					logError("could not save the settings", error);
-				}
+				save();
+			},
+			isOptionEnabled(id, option, whenUnset) {
+				return enabled[optionKey(id, option)] ?? whenUnset;
+			},
+			setOptionEnabled(id, option, value) {
+				enabled[optionKey(id, option)] = value;
+				save();
 			}
 		};
 	}

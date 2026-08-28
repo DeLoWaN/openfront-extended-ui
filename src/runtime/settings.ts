@@ -17,12 +17,40 @@ export interface Settings {
   /** A feature nobody has switched off is on. */
   isEnabled(id: FeatureId): boolean;
   setEnabled(id: FeatureId, enabled: boolean): void;
+
+  /**
+   * Whether one of a feature's own options is switched on.
+   *
+   * `whenUnset` is what the option means before a player has chosen, so each
+   * option carries its own default instead of the runtime assuming one.
+   */
+  isOptionEnabled(id: FeatureId, option: string, whenUnset: boolean): boolean;
+  setOptionEnabled(id: FeatureId, option: string, enabled: boolean): void;
 }
 
 const STORAGE_KEY = "openfront-extended-ui:features";
 
+/**
+ * The stored key for one of a feature's options.
+ *
+ * A feature id never contains a colon, so an option can never collide with a
+ * feature. Both live in the one stored object.
+ */
+function optionKey(id: FeatureId, option: string): string {
+  return `${id}:${option}`;
+}
+
 export function createSettings(store: SettingsStore): Settings {
   const enabled = readEnabled(store);
+
+  function save(): void {
+    try {
+      store.write(JSON.stringify(enabled));
+    } catch (error) {
+      // The choice still applies to this page. It is lost on reload.
+      logError("could not save the settings", error);
+    }
+  }
 
   return {
     isEnabled(id) {
@@ -31,12 +59,16 @@ export function createSettings(store: SettingsStore): Settings {
 
     setEnabled(id, value) {
       enabled[id] = value;
-      try {
-        store.write(JSON.stringify(enabled));
-      } catch (error) {
-        // The choice still applies to this page. It is lost on reload.
-        logError("could not save the settings", error);
-      }
+      save();
+    },
+
+    isOptionEnabled(id, option, whenUnset) {
+      return enabled[optionKey(id, option)] ?? whenUnset;
+    },
+
+    setOptionEnabled(id, option, value) {
+      enabled[optionKey(id, option)] = value;
+      save();
     },
   };
 }

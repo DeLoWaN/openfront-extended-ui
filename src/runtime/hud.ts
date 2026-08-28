@@ -7,89 +7,89 @@ import { logError } from "./log";
  * See docs/adr/0003.
  *
  * A host is one of the game's own elements. This knows nothing about which
- * element that is. A feature says where its nodes go, and this puts them there
- * and takes them away again.
+ * element that is, or where inside it a readout draws. A feature says how to
+ * find its hosts and how to draw in one, and this keeps the drawings in step
+ * with the page.
+ *
+ * It writes no property on any host. A readout that needs a node placed above
+ * the game's element has to set `position: relative` on it and undo that on
+ * detach, which is the one property ADR-0003 allows. No readout needs it yet.
  */
 
-export interface InjectedNodes {
+/** What a feature drew in one host. `Drawn` is the feature's own type. */
+export interface InjectedNodes<Drawn> {
   /**
-   * Draws one node in every host that has none, and returns every node drawn.
+   * Draws in every host with nothing in it, and returns every live drawing.
    *
    * Call this on each tick. The game renders its HUD after a match starts, so
-   * the hosts are not always in the page at once, and a change of top-level
-   * template can take a drawn node away again.
+   * the hosts are not in the page from the beginning, and a host can leave the
+   * page or lose a drawn node at any time.
    */
-  sync(): HTMLElement[];
-  /** Takes every node out and puts the hosts back as they were. */
+  sync(): Drawn[];
+  /** Takes every drawing out of the page and forgets it. */
   remove(): void;
 }
 
-/**
- * One node per host, drawn inside it.
- *
- * Use this for a readout that needs a node above the game's element. A host is
- * `position: static`, so this sets `position: relative` on it, and `remove`
- * undoes that exactly. Without it a node inside the host cannot place itself
- * against the host. `position` is the only property the package writes on
- * anything of the game's own.
- *
- * A readout with no label above its element draws inside that element instead,
- * and needs none of this. See docs/adr/0003.
- */
-export function injectedNodes(deps: {
-  findHosts: () => HTMLElement[];
-  build: () => HTMLElement;
-}): InjectedNodes {
-  const drawn = new Map<HTMLElement, HTMLElement>();
-  /** What each host's own inline `position` was, so it can go back. */
-  const priorPosition = new Map<HTMLElement, string | null>();
-  /** Hosts that had no `style` attribute at all until the package wrote one. */
-  const styleAttributeAdded = new Set<HTMLElement>();
+export function injectedNodes<Drawn>(deps: {
+  findHosts: () => readonly HTMLElement[];
+  /**
+   * Draws inside one host and returns the drawing.
+   *
+   * Returns null when the host is not ready to be drawn in. The next sync tries
+   * that host again.
+   */
+  draw: (host: HTMLElement) => Drawn | null;
+  /** The nodes the drawing added, so they can be checked and taken out. */
+  nodesOf: (drawn: Drawn) => readonly HTMLElement[];
+}): InjectedNodes<Drawn> {
+  const drawings = new Map<HTMLElement, Drawn>();
+
+  function isInPage(drawn: Drawn): boolean {
+    return deps.nodesOf(drawn).every((node) => node.isConnected);
+  }
+
+  function erase(drawn: Drawn): void {
+    for (const node of deps.nodesOf(drawn)) node.remove();
+  }
 
   return {
     sync() {
-      let hosts: HTMLElement[];
+      let hosts: readonly HTMLElement[];
       try {
         hosts = deps.findHosts();
       } catch (error) {
         logError("could not look for a place to draw", error);
-        return [...drawn.values()];
+        return [...drawings.values()];
+      }
+
+      // A host the game has replaced or hidden away is gone for good. Its
+      // drawing would otherwise be counted as live for the rest of the match.
+      for (const [host, drawn] of drawings) {
+        if (hosts.includes(host)) continue;
+        erase(drawn);
+        drawings.delete(host);
       }
 
       for (const host of hosts) {
-        const existing = drawn.get(host);
-        if (existing?.isConnected) continue;
+        const existing = drawings.get(host);
+        if (existing && isInPage(existing)) continue;
+        // A part-drawn host keeps whatever is left of the old drawing, which
+        // would be drawn over rather than replaced.
+        if (existing) erase(existing);
 
-        if (!priorPosition.has(host)) {
-          if (!host.hasAttribute("style")) styleAttributeAdded.add(host);
-          priorPosition.set(host, host.style.position || null);
+        const drawn = deps.draw(host);
+        if (drawn === null) {
+          drawings.delete(host);
+          continue;
         }
-        host.style.position = "relative";
-
-        const node = deps.build();
-        host.append(node);
-        drawn.set(host, node);
+        drawings.set(host, drawn);
       }
-      return [...drawn.values()];
+      return [...drawings.values()];
     },
 
     remove() {
-      for (const node of drawn.values()) node.remove();
-      drawn.clear();
-
-      // Only `position` goes back. The game can set its own inline styles on a
-      // host while a match runs, and those must survive untouched.
-      for (const [host, position] of priorPosition) {
-        if (position === null) host.style.removeProperty("position");
-        else host.style.position = position;
-
-        // An empty style attribute the package created is still a trace of it.
-        if (styleAttributeAdded.has(host) && host.style.length === 0) {
-          host.removeAttribute("style");
-        }
-      }
-      priorPosition.clear();
-      styleAttributeAdded.clear();
+      for (const drawn of drawings.values()) erase(drawn);
+      drawings.clear();
     },
   };
 }

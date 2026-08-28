@@ -8,6 +8,21 @@ import type { FeatureContext } from "./context";
  */
 export type FeatureId = string;
 
+/**
+ * One choice a feature offers beyond being switched on or off.
+ *
+ * A feature declares its options so the runtime can refuse a key nothing
+ * offers, the same way it refuses an unknown feature id.
+ */
+export interface FeatureOption {
+  /** The key the choice is stored under. It never changes once it ships. */
+  readonly key: string;
+  /** The name a player reads when they choose. */
+  readonly name: string;
+  /** What the option means before a player has chosen. */
+  readonly whenUnset: boolean;
+}
+
 /** What a feature does for as long as one match lasts. */
 export interface FeatureSession {
   /**
@@ -30,6 +45,8 @@ export interface Feature {
   readonly id: FeatureId;
   /** The name a player reads when they choose what to switch off. */
   readonly name: string;
+  /** The choices this feature offers beyond on and off. */
+  readonly options?: readonly FeatureOption[];
 
   /**
    * Runs once when a match starts, or when a player switches the feature on

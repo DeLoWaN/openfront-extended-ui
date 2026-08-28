@@ -9,6 +9,14 @@
 
 const MARKER = "data-openfront-extended-ui";
 
+/**
+ * The class that hides one of the package's own nodes.
+ *
+ * Every readout shares it, so a node switched off looks the same everywhere.
+ * It never goes on one of the game's own elements.
+ */
+export const HIDDEN = "ofx-hidden";
+
 export interface StyleSheet {
   /** Adds the stylesheet to a root. Adding it twice to one root does nothing. */
   injectInto(root: Document | ShadowRoot): void;

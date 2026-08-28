@@ -1,29 +1,44 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { start } from "./boot";
 import { createSettings } from "./settings";
-import { tickMarker } from "../features/tick-marker";
+import { HIDDEN } from "./styles";
+import { troopBar } from "../features/troop-bar";
 import {
   addTroopBars,
   createFakeControlPanel,
   FakeGameView,
+  setTroopBarFill,
 } from "../test/fakes";
 
 /**
- * The whole skeleton, driven the way the game drives it.
+ * The whole package, driven the way the game drives it.
  *
- * This is the ticket's own finishing test: the marker appears in a live match,
- * goes when the match ends, comes back in a second match with no page reload,
- * and can be switched off.
+ * This is the finishing test for the troop bar readout: it appears on both of
+ * the game's bars in a live match, goes when the match ends, comes back in a
+ * second match with no page reload, can be switched off, and leaves the game's
+ * markup exactly as it found it.
  */
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
-const CSS = ".ofx-tick-marker{color:red}";
+const CSS = ".ofx-troop-strip{background:violet}";
+
+function cellMarkup(panel: HTMLElement): string[] {
+  return [...panel.querySelectorAll<HTMLElement>(".troop-cell")].map(
+    (cell) => cell.outerHTML,
+  );
+}
 
 function setup() {
   const panel = createFakeControlPanel();
-  addTroopBars(panel, 2);
+  const bars = addTroopBars(panel, 2);
+  // A troop level below the plateau, so the readout has a share to print from
+  // the first tick.
+  for (const bar of bars) setTroopBarFill(bar, 0.25);
+
+  // Taken before the package runs, so it is the game's markup untouched.
+  const untouched = cellMarkup(panel);
 
   let stored = "{}";
   const settings = createSettings({
@@ -35,7 +50,7 @@ function setup() {
 
   const pkg = start({
     panel: panel.asControlPanel(),
-    features: [tickMarker],
+    features: [troopBar],
     settings,
     css: CSS,
   });
@@ -43,31 +58,45 @@ function setup() {
   return {
     panel,
     pkg,
+    untouched,
     /** Runs the boundary poll, then one game tick. */
     play(ticks = 1) {
       vi.advanceTimersByTime(600);
       for (let i = 0; i < ticks; i++) panel.tick();
     },
-    markers: () => document.querySelectorAll(".ofx-tick-marker"),
+    strips: () => document.querySelectorAll(".ofx-troop-strip"),
+    shares: () => document.querySelectorAll<HTMLElement>(".ofx-troop-share"),
   };
 }
 
 describe("the package in a live match", () => {
-  it("shows the marker on both troop bars", () => {
-    const { panel, play, markers } = setup();
+  it("marks the plateau on both of the game's troop bars", () => {
+    const { panel, play, strips } = setup();
 
     panel.game = new FakeGameView();
     play();
 
-    expect(markers()).toHaveLength(2);
+    expect(strips()).toHaveLength(2);
+  });
+
+  it("prints the share of best rate on both bars", () => {
+    const { panel, play, shares } = setup();
+
+    panel.game = new FakeGameView();
+    play();
+
+    expect([...shares()].map((share) => share.textContent)).toEqual([
+      "89%",
+      "89%",
+    ]);
   });
 
   it("shows nothing before a match starts", () => {
-    const { play, markers } = setup();
+    const { play, strips } = setup();
 
     play();
 
-    expect(markers()).toHaveLength(0);
+    expect(strips()).toHaveLength(0);
   });
 
   it("puts the package's stylesheet into the page", () => {
@@ -90,18 +119,18 @@ describe("the package in a live match", () => {
 });
 
 describe("the package across the match boundary", () => {
-  it("takes the marker away when the game goes back to the lobby", () => {
-    const { panel, play, markers } = setup();
+  it("takes the readout away when the game goes back to the lobby", () => {
+    const { panel, play, strips } = setup();
     panel.game = new FakeGameView();
     play();
 
     document.dispatchEvent(new Event("leave-lobby"));
 
-    expect(markers()).toHaveLength(0);
+    expect(strips()).toHaveLength(0);
   });
 
   it("shows it again in a second match, with no page reload", () => {
-    const { panel, play, markers } = setup();
+    const { panel, play, strips } = setup();
     panel.game = new FakeGameView();
     play();
     document.dispatchEvent(new Event("leave-lobby"));
@@ -109,18 +138,18 @@ describe("the package across the match boundary", () => {
     panel.game = new FakeGameView();
     play();
 
-    expect(markers()).toHaveLength(2);
+    expect(strips()).toHaveLength(2);
   });
 
   it("shows it again when one match is replaced by the next", () => {
-    const { panel, play, markers } = setup();
+    const { panel, play, strips } = setup();
     panel.game = new FakeGameView();
     play();
 
     panel.game = new FakeGameView();
     play();
 
-    expect(markers()).toHaveLength(2);
+    expect(strips()).toHaveLength(2);
   });
 
   it("gives the game its own tick back between matches", () => {
@@ -134,80 +163,110 @@ describe("the package across the match boundary", () => {
   });
 });
 
-describe("switching the marker off", () => {
+describe("switching the readout off", () => {
   it("takes it off the screen at once", () => {
-    const { panel, pkg, play, markers } = setup();
+    const { panel, pkg, play, strips } = setup();
     panel.game = new FakeGameView();
     play();
 
-    pkg.registry.setEnabled("tick-marker", false);
+    pkg.registry.setEnabled("troop-bar", false);
 
-    expect(markers()).toHaveLength(0);
+    expect(strips()).toHaveLength(0);
   });
 
   it("keeps it off through the next tick", () => {
-    const { panel, pkg, play, markers } = setup();
+    const { panel, pkg, play, strips } = setup();
     panel.game = new FakeGameView();
     play();
-    pkg.registry.setEnabled("tick-marker", false);
+    pkg.registry.setEnabled("troop-bar", false);
 
     play(2);
 
-    expect(markers()).toHaveLength(0);
+    expect(strips()).toHaveLength(0);
   });
 
   it("keeps it off in the next match", () => {
-    const { panel, pkg, play, markers } = setup();
+    const { panel, pkg, play, strips } = setup();
     panel.game = new FakeGameView();
     play();
-    pkg.registry.setEnabled("tick-marker", false);
+    pkg.registry.setEnabled("troop-bar", false);
 
     panel.game = new FakeGameView();
     play();
 
-    expect(markers()).toHaveLength(0);
+    expect(strips()).toHaveLength(0);
   });
 
   it("brings it back when it is switched on again", () => {
-    const { panel, pkg, play, markers } = setup();
+    const { panel, pkg, play, strips } = setup();
     panel.game = new FakeGameView();
     play();
-    pkg.registry.setEnabled("tick-marker", false);
+    pkg.registry.setEnabled("troop-bar", false);
 
-    pkg.registry.setEnabled("tick-marker", true);
+    pkg.registry.setEnabled("troop-bar", true);
     play();
 
-    expect(markers()).toHaveLength(2);
+    expect(strips()).toHaveLength(2);
+  });
+});
+
+describe("switching the share of best rate off", () => {
+  it("hides the number and leaves the strip", () => {
+    const { panel, pkg, play, strips, shares } = setup();
+    panel.game = new FakeGameView();
+    play();
+
+    pkg.registry.setOptionEnabled("troop-bar", "percentage", false);
+    play();
+
+    expect(strips()).toHaveLength(2);
+    expect([...shares()].every((share) => share.classList.contains(HIDDEN))).toBe(
+      true,
+    );
+  });
+
+  it("remembers the choice into the next match", () => {
+    const { panel, pkg, play, shares } = setup();
+    panel.game = new FakeGameView();
+    play();
+    pkg.registry.setOptionEnabled("troop-bar", "percentage", false);
+
+    panel.game = new FakeGameView();
+    play();
+
+    expect([...shares()].every((share) => share.classList.contains(HIDDEN))).toBe(
+      true,
+    );
   });
 });
 
 describe("switching the whole package off", () => {
-  it("leaves the game's markup as it found it", () => {
-    const { panel, pkg, play } = setup();
+  /**
+   * The readout writes no property on any of the game's elements, so the
+   * markup has to come back byte for byte. See docs/adr/0004.
+   */
+  it("leaves the game's markup exactly as it found it", () => {
+    const { panel, pkg, play, untouched } = setup();
     panel.game = new FakeGameView();
     play();
-    const cells = [...panel.querySelectorAll<HTMLElement>(".troop-cell")];
+    expect(cellMarkup(panel)).not.toEqual(untouched);
 
     pkg.stop();
 
-    expect(document.querySelectorAll(".ofx-tick-marker")).toHaveLength(0);
+    expect(cellMarkup(panel)).toEqual(untouched);
     expect(
       document.head.querySelectorAll("style[data-openfront-extended-ui]"),
     ).toHaveLength(0);
-    expect(cells.map((cell) => cell.getAttribute("style"))).toEqual([
-      null,
-      null,
-    ]);
     expect(Object.hasOwn(panel, "tick")).toBe(false);
   });
 
   it("stops following the game", () => {
-    const { panel, pkg, play, markers } = setup();
+    const { panel, pkg, play, strips } = setup();
 
     pkg.stop();
     panel.game = new FakeGameView();
     play();
 
-    expect(markers()).toHaveLength(0);
+    expect(strips()).toHaveLength(0);
   });
 });

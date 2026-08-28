@@ -70,3 +70,47 @@ describe("settings, when the stored value is unusable", () => {
     expect(settings.isEnabled("troop-bar")).toBe(false);
   });
 });
+
+describe("a feature's own options", () => {
+  it("reports an option as on when nothing has been stored and it defaults on", () => {
+    const settings = createSettings(memoryStore());
+
+    expect(settings.isOptionEnabled("troop-bar", "percentage", true)).toBe(true);
+  });
+
+  it("reports an option as off when nothing has been stored and it defaults off", () => {
+    const settings = createSettings(memoryStore());
+
+    expect(settings.isOptionEnabled("troop-bar", "ends", false)).toBe(false);
+  });
+
+  it("remembers an option being switched off", () => {
+    const store = memoryStore();
+    const settings = createSettings(store);
+
+    settings.setOptionEnabled("troop-bar", "percentage", false);
+
+    expect(settings.isOptionEnabled("troop-bar", "percentage", true)).toBe(false);
+    expect(
+      createSettings(store).isOptionEnabled("troop-bar", "percentage", true),
+    ).toBe(false);
+  });
+
+  // An option and the feature holding it are stored side by side, so a name
+  // that collided would switch the wrong thing off.
+  it("keeps an option apart from the feature it belongs to", () => {
+    const settings = createSettings(memoryStore());
+
+    settings.setOptionEnabled("troop-bar", "percentage", false);
+
+    expect(settings.isEnabled("troop-bar")).toBe(true);
+  });
+
+  it("keeps the same option apart on two features", () => {
+    const settings = createSettings(memoryStore());
+
+    settings.setOptionEnabled("troop-bar", "percentage", false);
+
+    expect(settings.isOptionEnabled("income", "percentage", true)).toBe(true);
+  });
+});
