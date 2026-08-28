@@ -1,0 +1,24 @@
+/*
+ * The package's own stylesheet.
+ *
+ * The package never uses one of the game's CSS classes. See docs/adr/0001.
+ *
+ * The visual language lives here: colours, space, how a threshold is drawn.
+ * None of it is decided yet. The troop bar readout writes it, because that
+ * readout is the first one that needs it. What is here now belongs to the
+ * throwaway tick marker, and it goes when the marker goes.
+ */
+
+.ofx-tick-marker {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 2px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background: #000;
+  color: #fff;
+  font: 10px/1.4 system-ui, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}

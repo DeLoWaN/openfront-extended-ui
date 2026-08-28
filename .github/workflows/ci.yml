@@ -1,0 +1,43 @@
+# Runs on every push and every pull request.
+#
+# The last step is the one that is easy to miss: dist/ is committed, because
+# the install address is a raw file link on GitHub. So the bundle in the branch
+# has to match the source in the branch, and only a rebuild can prove it does.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Check the committed bundle matches the source
+        run: |
+          if ! git diff --exit-code -- dist/; then
+            echo "::error::dist/ is out of date. Run 'npm run build' and commit the result."
+            exit 1
+          fi

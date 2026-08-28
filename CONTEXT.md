@@ -6,15 +6,19 @@ A userscript that adds readouts to the OpenFront.io game view from outside the g
 
 ### What the package adds
 
+**Feature**:
+Any one of the six things the package adds, whether it is a readout or the view mode. It is the word the code uses, because both kinds register the same way and both can be switched off on their own.
+_Avoid_: addition, module, plugin
+
 **Readout**:
-One of the package's additions that reformats numbers the game already shows, drawn in the HUD. There are five.
+One of the package's features that reformats numbers the game already shows, drawn in the HUD. There are five.
 _Avoid_: widget, panel, overlay, module
 
 **View mode**:
-An addition that changes how the map is coloured instead of reporting a number. There is one, the alliance view mode. It is not a readout.
+A feature that changes how the map is coloured instead of reporting a number. There is one, the alliance view mode. It is not a readout.
 
 **Surface**:
-Where an addition draws. There are two, the HUD and the map. A decision about one carries nothing to the other.
+Where a feature draws. There are two, the HUD and the map. A decision about one carries nothing to the other.
 
 **Signature colour**:
 Violet. It marks a figure the package worked out itself. The game's own colours keep the game's meanings, so gold stays yellow and troops stay blue.
