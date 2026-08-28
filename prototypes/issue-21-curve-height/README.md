@@ -26,6 +26,10 @@ on this branch as the record of how the answer was reached.
 
 ## The answer
 
+**A 3 px solid violet strip along the bar's bottom edge, spanning 30.6% to 54.3% full,
+with your share of best rate as a percentage at the bar's far right.** No end lines, no
+mark at 42.2%, no node above the bar, and no change to any of the game's own elements.
+
 Three directions were tried, in this order. The first two were turned down after
 being looked at.
 
@@ -376,9 +380,9 @@ match.
 
 | | |
 | --- | --- |
-| `5px` | the default |
+| `3px` | settled |
+| `5px` | heavier |
 | `8px` | more present, and it starts to crowd the digits above it |
-| `3px` | quieter, still legible |
 | `off` | nothing drawn unless the ends are on |
 
 Two full-height lines can mark the band's ends as well. They are **off** by default.

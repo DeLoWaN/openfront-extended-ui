@@ -18,10 +18,11 @@
 // number to its right is your share of that best, so 100% is as fast as you can go and
 // 50% means troops arrive at half speed.
 //
-// The width of "close to your best" is the open question, so it cycles:
+// The settled reading of "close to your best" is 95%, which covers 30.6% to 54.3%
+// full. The other two stay on the cycle as the record of what was compared:
 //
 //   99   36.9% to 47.5% full   the narrow reading
-//   95   30.6% to 54.3% full   the middle reading
+//   95   30.6% to 54.3% full   settled
 //   90   26.0% to 59.5% full   the wide reading
 //
 // No mark at 42.2%. The middle of the band already reads as the peak, and the two
@@ -98,7 +99,8 @@
 
   // The strip runs along the bar's bottom edge, clear of the game's troop numbers.
   // How tall it is, in pixels. `0` leaves the band marked by its two ends alone.
-  const STRIPS = [5, 8, 3, 0];
+  // 3 px is the settled height.
+  const STRIPS = [3, 5, 8, 0];
 
   const STORE = {
     width: "ofx-proto-issue21z-width",
