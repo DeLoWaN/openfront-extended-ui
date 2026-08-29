@@ -8,9 +8,18 @@ The vocabulary this project uses is in [CONTEXT.md](CONTEXT.md). The decisions b
 
 ## What works today
 
-The package skeleton, and one throwaway marker that proves it. The marker is a small badge above the troop bar showing the game's tick count. It is deleted when the troop bar readout is built.
+One readout, drawn on the game's own troop bar.
 
-The six real features are still to come. They are listed on [issue #1](https://github.com/DeLoWaN/openfront-extended-ui/issues/1).
+**Regeneration** is the troops the game gives you each tick for free. How fast they arrive depends on how full your army already is. The rate rises, peaks near 42% full, and falls to zero once your army is full. So a full army grows at nothing, and an army held near 42% grows fastest.
+
+The readout adds two things inside the bar.
+
+- A violet strip along the bar's bottom edge. It covers **the plateau**, meaning every troop level where regeneration stays within 5% of the best rate you could reach at any level. That runs from 30.6% to 54.3% full, about a quarter of the bar.
+- Your **share of best rate** at the bar's far right, as a percentage. It reads 100% at the peak and 0% at a full army. The game shows this figure nowhere else.
+
+Nothing marks the 42.2% level itself, and nothing changes colour when you cross it. The top of the curve is flat, so there is no cliff to draw. [ADR-0004](docs/adr/0004-the-optimal-troop-level-is-drawn-as-a-band.md) holds the reasoning and the numbers, and two drawings that were built and turned down first.
+
+The other five features are still to come. They are listed on [issue #1](https://github.com/DeLoWaN/openfront-extended-ui/issues/1).
 
 ## Install
 
@@ -35,13 +44,19 @@ Firefox needs nothing of the sort.
 There is no settings screen yet. Its shape depends on how many options the readouts turn out to have, so it cannot be designed until they exist. Until then, the browser console is the way in.
 
 ```js
-openfrontExtendedUi.list()                  // every feature, and whether it is on
-openfrontExtendedUi.disable('tick-marker')  // off now, and in later matches
-openfrontExtendedUi.enable('tick-marker')
-openfrontExtendedUi.stop()                  // undo everything on this page
+openfrontExtendedUi.list()                 // every feature, its options, and what is on
+openfrontExtendedUi.disable('troop-bar')   // off now, and in later matches
+openfrontExtendedUi.enable('troop-bar')
+openfrontExtendedUi.stop()                 // undo everything on this page
 ```
 
-Choices are kept in the browser's `localStorage` and survive a reload. Switching a feature off takes it off the screen at once, without waiting for the next match.
+A feature can also offer choices of its own. The troop bar readout offers one, which drops the percentage and keeps the strip:
+
+```js
+openfrontExtendedUi.setOption('troop-bar', 'percentage', false)
+```
+
+`list()` shows the key of every option a feature offers. Choices are kept in the browser's `localStorage` and survive a reload. Switching a feature or an option off takes it off the screen at once, without waiting for the next match.
 
 ## Develop
 
@@ -82,11 +97,14 @@ A **feature** is any one of the six things the package adds. `src/runtime/featur
 export interface Feature {
   readonly id: FeatureId;
   readonly name: string;
+  readonly options?: readonly FeatureOption[];
   attach(context: FeatureContext): FeatureSession | void;
 }
 ```
 
 A feature is handed a `FeatureContext` when a match starts. It returns what to do for the rest of that match, or nothing when it has no per-tick work.
+
+A feature declares any choice it offers beyond on and off, along with what that choice means before a player has picked. It reads the choice back through the context, where the choice is used rather than once at the start, so switching one takes effect on the next tick.
 
 Two rules shape everything else.
 

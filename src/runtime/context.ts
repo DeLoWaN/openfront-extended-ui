@@ -27,6 +27,15 @@ export interface FeatureContext {
    */
   onGameEvent(type: GameEventType, handler: GameEventHandler): void;
 
+  /**
+   * Whether one of this feature's own options is switched on.
+   *
+   * Read this where the option is used, not once at attach. A player can
+   * switch one while a match runs, and the next read is what picks that up.
+   * Asking for an option the feature never declared reports it as off.
+   */
+  isOptionEnabled(option: string): boolean;
+
   /** Runs on detach. Cleanups run in reverse order of registration. */
   onDetach(cleanup: () => void): void;
 }
@@ -39,12 +48,15 @@ export interface AttachedContext {
 export function createFeatureContext(deps: {
   panel: ControlPanel;
   game: GameView;
+  isOptionEnabled: (option: string) => boolean;
 }): AttachedContext {
   const cleanups: Array<() => void> = [];
 
   const context: FeatureContext = {
     game: deps.game,
     panel: deps.panel,
+
+    isOptionEnabled: (option) => deps.isOptionEnabled(option),
 
     onGameEvent(type, handler) {
       const bus = deps.panel.eventBus;

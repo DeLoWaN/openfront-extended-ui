@@ -3,22 +3,98 @@
  *
  * The package never uses one of the game's CSS classes. See docs/adr/0001.
  *
- * The visual language lives here: colours, space, how a threshold is drawn.
- * None of it is decided yet. The troop bar readout writes it, because that
- * readout is the first one that needs it. What is here now belongs to the
- * throwaway tick marker, and it goes when the marker goes.
+ * This holds the visual language all six features share. The troop bar readout
+ * wrote it, because it is the first feature that needed one. The other five
+ * inherit every rule here and should not decide any of it again.
+ *
+ * Three rules govern it:
+ *
+ * - Violet marks a figure the package worked out. The game's own colours keep
+ *   the game's meanings, so gold stays yellow and troops stay blue.
+ * - The measurements are the game's own. Our class names, their numbers.
+ * - No chart furniture. The package draws no axis, no tick and no gridline
+ *   anywhere. It borrows the game's own elements as its axes.
  */
 
-.ofx-tick-marker {
+:root,
+:host {
+  /* A mark drawn on top of one of the game's own elements. */
+  --ofx-mark: #9d93f5;
+  /* A figure printed on the game's dark HUD. */
+  --ofx-figure: #c9c4ff;
+
+  /*
+   * The game writes a 1 px dark shadow under every light figure on the HUD, and
+   * a mark on the troop bar needs the same to survive the bar's blue fill.
+   */
+  --ofx-shadow-figure: 0 1px 1px rgba(0, 0, 0, 0.9);
+  --ofx-shadow-mark: 0 0 2px rgba(0, 0, 0, 0.9);
+
+  --ofx-figure-size: 13px;
+}
+
+/*
+ * `!important` is the point of this class: it has to beat the `display` each
+ * node sets for itself, whatever that is.
+ */
+.ofx-hidden {
+  display: none !important;
+}
+
+/*
+ * The strip marking the plateau on the troop bar.
+ *
+ * It is solid rather than translucent, and that is what sitting below the
+ * game's troop numbers buys. It covers only the bottom of the troop fill, which
+ * is a flat colour, so it hides nothing. Its place along the bar is written
+ * inline, because it comes from the plateau the package works out.
+ * See docs/adr/0004.
+ */
+.ofx-troop-strip {
   position: absolute;
-  bottom: 100%;
-  left: 0;
-  margin-bottom: 2px;
-  padding: 1px 4px;
-  border-radius: 2px;
-  background: #000;
-  color: #fff;
-  font: 10px/1.4 system-ui, sans-serif;
-  white-space: nowrap;
+  bottom: 0;
+  height: 3px;
+  background: var(--ofx-mark);
+  box-shadow: var(--ofx-shadow-mark);
   pointer-events: none;
+}
+
+/*
+ * The share of best rate, at the troop bar's far right.
+ *
+ * The game leaves the far right of its wide bar empty: the troop figures are
+ * centred and the soldier icon stops short of the end.
+ */
+.ofx-troop-share {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  color: var(--ofx-figure);
+  font-size: var(--ofx-figure-size);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: var(--ofx-shadow-figure);
+  pointer-events: none;
+}
+
+/*
+ * The share draws in the wide layout only.
+ *
+ * The game keeps a wide bar and a narrow bar in the page at all times and hides
+ * one of them at 64rem, the `lg` breakpoint of its own Tailwind build. The strip
+ * fits either bar. This figure does not: the narrow bar writes a troop count
+ * hard against its right edge, and the two land on top of each other.
+ *
+ * The unit is the game's own, so both switches happen at the same width whatever
+ * the reader's root font size is. The browser does the switching, so a window
+ * resize needs nothing from the package. See docs/adr/0004.
+ */
+@media (width < 64rem) {
+  .ofx-troop-share {
+    display: none;
+  }
 }

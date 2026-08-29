@@ -32,6 +32,12 @@ The strip is opaque rather than translucent, and that is what the move below the
 
 The band adds no height. It fits inside the bar the game already draws, so the question of how tall a node above the bar should be never has to be answered.
 
+The share of best rate draws in the wide layout only. The game keeps a wide bar and a narrow bar in the page at all times, and hides one of them at `64rem`. The strip fits either bar and draws in both. The figure does not fit the narrow bar, which writes a troop count hard against its right edge. That is exactly where the figure goes, and the two were drawn together and overlap.
+
+So the package hides the figure below `64rem`, with a media query in its own stylesheet. The unit is the game's own, so both switches happen at the same width whatever the reader's root font size is. The browser does the switching, so a window resize needs nothing from the package.
+
+This is better than what [issue #6](https://github.com/DeLoWaN/openfront-extended-ui/issues/6) expected. #6 gave up the whole readout below that width, because a node above the bar needed the room. Only the figure is given up now.
+
 Supersedes [ADR-0002](0002-the-42-2-level-is-drawn-as-a-fixed-point.md).
 
 Settled on [issue #21](https://github.com/DeLoWaN/openfront-extended-ui/issues/21). All three drawings, and the sheets used to compare them, are on branch `prototype/issue-21-curve-height`.

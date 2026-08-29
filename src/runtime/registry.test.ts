@@ -342,3 +342,123 @@ describe("switching a feature that the package does not ship", () => {
     expect(registry.isEnabled("no-such-feature")).toBe(true);
   });
 });
+
+describe("a feature's own options", () => {
+  /** A feature that reports what its context says about two option keys. */
+  function withOptions(seen: Record<string, boolean>): TestFeature {
+    const optioned = feature("troop-bar", {
+      attach: (context) => {
+        seen.percentage = context.isOptionEnabled("percentage");
+      },
+    });
+    return {
+      ...optioned,
+      options: [
+        { key: "percentage", name: "Share of best rate", whenUnset: true },
+        { key: "ends", name: "End lines", whenUnset: false },
+      ],
+    };
+  }
+
+  it("lists what a feature declares, with each option's own default", () => {
+    const { registry } = setup([withOptions({})]);
+
+    expect(registry.optionsOf("troop-bar")).toEqual([
+      {
+        key: "percentage",
+        name: "Share of best rate",
+        whenUnset: true,
+        enabled: true,
+      },
+      { key: "ends", name: "End lines", whenUnset: false, enabled: false },
+    ]);
+  });
+
+  it("lists nothing for a feature that declares no option", () => {
+    const { registry } = setup([feature("troop-bar")]);
+
+    expect(registry.optionsOf("troop-bar")).toEqual([]);
+  });
+
+  it("lists nothing for a feature the package does not ship", () => {
+    const { registry } = setup([feature("troop-bar")]);
+
+    expect(registry.optionsOf("no-such-feature")).toEqual([]);
+  });
+
+  it("hands a running feature the option a player chose", () => {
+    const seen: Record<string, boolean> = {};
+    const { registry, match } = setup([withOptions(seen)], {
+      "troop-bar:percentage": false,
+    });
+
+    registry.attachAll(match);
+
+    expect(seen.percentage).toBe(false);
+  });
+
+  it("remembers a choice, so it holds into the next match", () => {
+    const seen: Record<string, boolean> = {};
+    const { registry, match, settings } = setup([withOptions(seen)]);
+
+    registry.setOptionEnabled("troop-bar", "percentage", false);
+
+    expect(settings.isOptionEnabled("troop-bar", "percentage", true)).toBe(false);
+    registry.attachAll(match);
+    expect(seen.percentage).toBe(false);
+  });
+
+  /**
+   * A key nothing declares must never reach storage. An option shipped under
+   * that key later would start switched off, and nobody would know why.
+   */
+  it("refuses a key the feature does not declare", () => {
+    const { registry, settings } = setup([withOptions({})]);
+
+    registry.setOptionEnabled("troop-bar", "no-such-option", false);
+
+    expect(settings.isOptionEnabled("troop-bar", "no-such-option", true)).toBe(
+      true,
+    );
+  });
+
+  it("refuses an option on a feature the package does not ship", () => {
+    const { registry, settings } = setup([withOptions({})]);
+
+    registry.setOptionEnabled("other", "percentage", false);
+
+    expect(settings.isOptionEnabled("other", "percentage", true)).toBe(true);
+  });
+
+  it("leaves a running feature attached when one of its options changes", () => {
+    const optioned = withOptions({});
+    const { registry, match } = setup([optioned]);
+    registry.attachAll(match);
+
+    registry.setOptionEnabled("troop-bar", "percentage", false);
+
+    // A readout reads its options on each tick, so nothing is reattached.
+    expect(optioned.attach).toHaveBeenCalledTimes(1);
+  });
+
+  // Silence would leave the feature sure it read a real choice.
+  it("says so loudly when a feature asks for an option it never declared", () => {
+    const complaint = vi.spyOn(console, "error").mockImplementation(() => {});
+    const seen: Record<string, boolean> = {};
+    const asksForUnknown: TestFeature = {
+      ...feature("troop-bar", {
+        attach: (context) => {
+          seen.unknown = context.isOptionEnabled("never-declared");
+        },
+      }),
+      options: [{ key: "percentage", name: "Share", whenUnset: true }],
+    };
+    const { registry, match } = setup([asksForUnknown]);
+
+    registry.attachAll(match);
+
+    expect(seen.unknown).toBe(false);
+    expect(complaint).toHaveBeenCalled();
+    complaint.mockRestore();
+  });
+});

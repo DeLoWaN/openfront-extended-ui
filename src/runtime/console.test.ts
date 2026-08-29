@@ -36,7 +36,7 @@ describe("what a player can reach from the console", () => {
     const { handle } = setup([feature("troop-bar", "Troop bar")]);
 
     expect(handle.list()).toEqual([
-      { id: "troop-bar", name: "Troop bar", enabled: true },
+      { id: "troop-bar", name: "Troop bar", enabled: true, options: [] },
     ]);
   });
 
@@ -85,5 +85,59 @@ describe("what a player can reach from the console", () => {
     handle.stop();
 
     expect(stop).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("what a player can reach from the console, for a feature's options", () => {
+  const withPercentage: Feature = {
+    id: "troop-bar",
+    name: "Troop bar",
+    options: [
+      { key: "percentage", name: "Share of best rate", whenUnset: true },
+    ],
+    attach: vi.fn(),
+  };
+
+  it("lists an option with its name and whether it is on", () => {
+    const { handle } = setup([withPercentage]);
+
+    expect(handle.list()[0]!.options).toEqual([
+      { key: "percentage", name: "Share of best rate", enabled: true },
+    ]);
+  });
+
+  it("switches an option off and on again", () => {
+    const { handle } = setup([withPercentage]);
+
+    handle.setOption("troop-bar", "percentage", false);
+    expect(handle.list()[0]!.options[0]!.enabled).toBe(false);
+
+    handle.setOption("troop-bar", "percentage", true);
+    expect(handle.list()[0]!.options[0]!.enabled).toBe(true);
+  });
+
+  it("leaves the feature itself on when one of its options goes off", () => {
+    const { handle } = setup([withPercentage]);
+
+    handle.setOption("troop-bar", "percentage", false);
+
+    expect(handle.list()[0]!.enabled).toBe(true);
+  });
+
+  it("ignores an option the feature never declared", () => {
+    const { handle } = setup([withPercentage]);
+
+    expect(() =>
+      handle.setOption("troop-bar", "no-such-option", false),
+    ).not.toThrow();
+    expect(handle.list()[0]!.options).toHaveLength(1);
+  });
+
+  it("ignores an option on a feature that does not exist", () => {
+    const { handle } = setup([withPercentage]);
+
+    expect(() =>
+      handle.setOption("no-such-feature", "percentage", false),
+    ).not.toThrow();
   });
 });

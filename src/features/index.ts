@@ -1,10 +1,10 @@
 import type { Feature } from "../runtime/feature";
-import { tickMarker } from "./tick-marker";
+import { troopBar } from "./troop-bar";
 
 /**
  * Every feature the package ships, in the order they attach.
  *
- * Six belong here in the end. The only entry now is a throwaway that proves the
- * skeleton works, and the troop bar readout replaces it.
+ * Six belong here in the end. The troop bar readout is the first, and it is
+ * where the visual language the other five inherit was written.
  */
-export const FEATURES: readonly Feature[] = [tickMarker];
+export const FEATURES: readonly Feature[] = [troopBar];

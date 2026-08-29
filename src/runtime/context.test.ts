@@ -10,7 +10,11 @@ function setup() {
   return {
     panel,
     game,
-    ...createFeatureContext({ panel: panel.asControlPanel(), game }),
+    ...createFeatureContext({
+      panel: panel.asControlPanel(),
+      game,
+      isOptionEnabled: (option) => option === "percentage",
+    }),
   };
 }
 
@@ -70,6 +74,7 @@ describe("a feature context", () => {
     const { context } = createFeatureContext({
       panel: bare,
       game: new FakeGameView(),
+      isOptionEnabled: () => true,
     });
     class GoldEvent {}
 
@@ -90,5 +95,31 @@ describe("a feature context", () => {
     detach();
 
     expect(panel.eventBus.listenerCount()).toBe(1);
+  });
+});
+
+describe("a feature context, reading the feature's own options", () => {
+  it("reports what the runtime says about an option", () => {
+    const { context } = setup();
+
+    expect(context.isOptionEnabled("percentage")).toBe(true);
+    expect(context.isOptionEnabled("ends")).toBe(false);
+  });
+
+  // A readout reads its options on every tick, so a player switching one takes
+  // effect without the feature being detached and attached again.
+  it("reads the option each time it is asked, not once at attach", () => {
+    const panel = createFakeControlPanel();
+    const game = new FakeGameView();
+    let on = false;
+    const { context } = createFeatureContext({
+      panel: panel.asControlPanel(),
+      game,
+      isOptionEnabled: () => on,
+    });
+
+    expect(context.isOptionEnabled("percentage")).toBe(false);
+    on = true;
+    expect(context.isOptionEnabled("percentage")).toBe(true);
   });
 });

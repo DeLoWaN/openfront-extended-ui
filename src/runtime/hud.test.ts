@@ -1,136 +1,176 @@
 import { describe, expect, it, vi } from "vitest";
 import { injectedNodes } from "./hud";
 
-/** Stands in for one of the game's own elements. */
+/**
+ * A drawing stands in for what a readout puts in one of the game's elements.
+ * The runtime knows only which nodes it added, so it can check them and take
+ * them out again.
+ */
+interface Drawing {
+  readonly host: HTMLElement;
+  readonly node: HTMLElement;
+}
+
 function host(): HTMLElement {
   const element = document.createElement("div");
+  element.innerHTML = "<span>the game's own content</span>";
   document.body.append(element);
   return element;
 }
 
-function marker(): HTMLElement {
-  const node = document.createElement("div");
-  node.className = "ofx-marker";
-  return node;
+function drawingsIn(hosts: readonly HTMLElement[]) {
+  return injectedNodes<Drawing>({
+    findHosts: () => hosts.filter((element) => element.isConnected),
+    draw: (element) => {
+      const node = document.createElement("div");
+      node.className = "ofx-drawing";
+      element.append(node);
+      return { host: element, node };
+    },
+    nodesOf: (drawing) => [drawing.node],
+  });
 }
 
-function nodesIn(hosts: HTMLElement[]) {
-  return injectedNodes({ findHosts: () => hosts, build: marker });
+function drawn(): NodeListOf<Element> {
+  return document.querySelectorAll(".ofx-drawing");
 }
 
-function markers(): NodeListOf<Element> {
-  return document.querySelectorAll(".ofx-marker");
-}
+describe("keeping the package's nodes in the game's HUD", () => {
+  it("draws once in every host", () => {
+    const drawings = drawingsIn([host(), host()]);
 
-describe("drawing in the game's HUD", () => {
-  it("draws one node in every host", () => {
-    const nodes = nodesIn([host(), host()]);
-
-    nodes.sync();
-
-    expect(markers()).toHaveLength(2);
+    expect(drawings.sync()).toHaveLength(2);
+    expect(drawn()).toHaveLength(2);
   });
 
-  it("adds nothing on a second sync", () => {
-    const nodes = nodesIn([host(), host()]);
+  it("leaves a host alone once it has been drawn in", () => {
+    const drawings = drawingsIn([host()]);
+    drawings.sync();
 
-    nodes.sync();
-    nodes.sync();
+    drawings.sync();
+    drawings.sync();
 
-    expect(markers()).toHaveLength(2);
+    expect(drawn()).toHaveLength(1);
   });
 
-  it("draws again after the game wiped a node in a redraw", () => {
-    const nodes = nodesIn([host()]);
-    nodes.sync();
-    markers()[0]!.remove();
+  /**
+   * `<control-panel>` never clears its own render region today. If the game ever
+   * adds an early exit to its `render()`, a drawn node starts disappearing with
+   * no error and no event, so every sync checks rather than trusts.
+   */
+  it("draws again after the game takes a node back out", () => {
+    const one = host();
+    const drawings = drawingsIn([one]);
+    drawings.sync();
 
-    nodes.sync();
+    one.replaceChildren();
 
-    expect(markers()).toHaveLength(1);
+    expect(drawings.sync()).toHaveLength(1);
+    expect(drawn()).toHaveLength(1);
   });
 
-  it("waits for the game to render before it draws anything", () => {
-    const nodes = nodesIn([]);
+  it("forgets a host that has left the page, and takes its node with it", () => {
+    const one = host();
+    const two = host();
+    const drawings = drawingsIn([one, two]);
+    drawings.sync();
 
-    expect(nodes.sync()).toHaveLength(0);
+    two.remove();
+
+    expect(drawings.sync()).toHaveLength(1);
+    expect(drawn()).toHaveLength(1);
+    expect(one.querySelector(".ofx-drawing")).not.toBeNull();
   });
 
-  it("makes the host a positioning context, which it is not by default", () => {
-    const cell = host();
-    expect(cell.style.position).toBe("");
+  /**
+   * This is what lets the troop bar readout claim it leaves no trace. It writes
+   * no property on any of the game's own elements, so switching it off has
+   * nothing to undo. See docs/adr/0004.
+   */
+  it("writes nothing on the host", () => {
+    const one = host();
+    const drawings = drawingsIn([one]);
 
-    nodesIn([cell]).sync();
+    drawings.sync();
 
-    expect(cell.style.position).toBe("relative");
+    expect(one.getAttribute("style")).toBeNull();
+    expect(one.attributes).toHaveLength(0);
   });
 
-  it("keeps quiet and draws nothing when the search for a host throws", () => {
-    const complaint = vi.spyOn(console, "error").mockImplementation(() => {});
-    const nodes = injectedNodes({
-      findHosts: () => {
-        throw new Error("the game's markup changed under us");
+  it("leaves the game's own content where it was", () => {
+    const one = host();
+    const drawings = drawingsIn([one]);
+
+    drawings.sync();
+    drawings.remove();
+
+    expect(one.innerHTML).toBe("<span>the game's own content</span>");
+  });
+
+  it("takes every node out on remove", () => {
+    const drawings = drawingsIn([host(), host()]);
+    drawings.sync();
+
+    drawings.remove();
+
+    expect(drawn()).toHaveLength(0);
+  });
+
+  it("draws again after a remove, so a feature can be switched back on", () => {
+    const one = host();
+    const drawings = drawingsIn([one]);
+    drawings.sync();
+    drawings.remove();
+
+    expect(drawings.sync()).toHaveLength(1);
+    expect(drawn()).toHaveLength(1);
+  });
+
+  it("skips a host it cannot draw in, and tries it again on the next sync", () => {
+    const one = host();
+    let ready = false;
+    const drawings = injectedNodes<Drawing>({
+      findHosts: () => [one],
+      draw: (element) => {
+        if (!ready) return null;
+        const node = document.createElement("div");
+        node.className = "ofx-drawing";
+        element.append(node);
+        return { host: element, node };
       },
-      build: marker,
+      nodesOf: (drawing) => [drawing.node],
     });
 
-    expect(() => nodes.sync()).not.toThrow();
-    expect(markers()).toHaveLength(0);
-    expect(complaint).toHaveBeenCalled();
-  });
-});
+    expect(drawings.sync()).toHaveLength(0);
 
-describe("taking the package's nodes back out", () => {
-  it("removes them", () => {
-    const nodes = nodesIn([host(), host()]);
-    nodes.sync();
+    ready = true;
 
-    nodes.remove();
-
-    expect(markers()).toHaveLength(0);
+    expect(drawings.sync()).toHaveLength(1);
   });
 
-  it("leaves no inline style on a host that had none", () => {
-    const cell = host();
-    const nodes = nodesIn([cell]);
-    nodes.sync();
+  // The game renames its markup whenever it likes. Losing the nodes already
+  // drawn on top of that would take the readout away for the rest of the match.
+  it("keeps what it has drawn when the search for hosts throws", () => {
+    const one = host();
+    const findHosts = vi
+      .fn<() => readonly HTMLElement[]>()
+      .mockReturnValueOnce([one])
+      .mockImplementation(() => {
+        throw new Error("the game's markup changed");
+      });
+    const drawings = injectedNodes<Drawing>({
+      findHosts,
+      draw: (element) => {
+        const node = document.createElement("div");
+        node.className = "ofx-drawing";
+        element.append(node);
+        return { host: element, node };
+      },
+      nodesOf: (drawing) => [drawing.node],
+    });
+    drawings.sync();
 
-    nodes.remove();
-
-    expect(cell.getAttribute("style")).toBeNull();
-  });
-
-  it("puts back a position the game had set itself", () => {
-    const cell = host();
-    cell.style.position = "absolute";
-    const nodes = nodesIn([cell]);
-    nodes.sync();
-
-    nodes.remove();
-
-    expect(cell.style.position).toBe("absolute");
-  });
-
-  it("leaves alone an inline style the game set while the match ran", () => {
-    const cell = host();
-    const nodes = nodesIn([cell]);
-    nodes.sync();
-    // The game writes its own inline style after the package has drawn.
-    cell.style.opacity = "0.5";
-
-    nodes.remove();
-
-    expect(cell.style.opacity).toBe("0.5");
-    expect(cell.style.position).toBe("");
-  });
-
-  it("draws again after a removal", () => {
-    const nodes = nodesIn([host()]);
-    nodes.sync();
-    nodes.remove();
-
-    nodes.sync();
-
-    expect(markers()).toHaveLength(1);
+    expect(drawings.sync()).toHaveLength(1);
+    expect(drawn()).toHaveLength(1);
   });
 });
