@@ -9,6 +9,24 @@ import type { FeatureContext } from "./context";
 export type FeatureId = string;
 
 /**
+ * What one of a feature's own options can be set to.
+ *
+ * A switch is a boolean. An option that holds a key code is text.
+ */
+export type OptionValue = boolean | string;
+
+/**
+ * Whether a stored value is the same kind as the option's own default.
+ *
+ * An option's default says which kind it holds. A value of the other kind
+ * reaching the option leaves the feature on its own default for good, and
+ * nothing says why.
+ */
+export function matchesOption(value: unknown, whenUnset: OptionValue): boolean {
+  return typeof value === typeof whenUnset;
+}
+
+/**
  * One choice a feature offers beyond being switched on or off.
  *
  * A feature declares its options so the runtime can refuse a key nothing
@@ -19,8 +37,13 @@ export interface FeatureOption {
   readonly key: string;
   /** The name a player reads when they choose. */
   readonly name: string;
-  /** What the option means before a player has chosen. */
-  readonly whenUnset: boolean;
+  /**
+   * What the option means before a player has chosen.
+   *
+   * Its type is the option's type. A stored value of another type is read as
+   * nothing stored, so a switch can never come back as text.
+   */
+  readonly whenUnset: OptionValue;
 }
 
 /** What a feature does for as long as one match lasts. */

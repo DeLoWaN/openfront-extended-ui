@@ -102,7 +102,7 @@ describe("what a player can reach from the console, for a feature's options", ()
     const { handle } = setup([withPercentage]);
 
     expect(handle.list()[0]!.options).toEqual([
-      { key: "percentage", name: "Share of best rate", enabled: true },
+      { key: "percentage", name: "Share of best rate", value: true },
     ]);
   });
 
@@ -110,10 +110,10 @@ describe("what a player can reach from the console, for a feature's options", ()
     const { handle } = setup([withPercentage]);
 
     handle.setOption("troop-bar", "percentage", false);
-    expect(handle.list()[0]!.options[0]!.enabled).toBe(false);
+    expect(handle.list()[0]!.options[0]!.value).toBe(false);
 
     handle.setOption("troop-bar", "percentage", true);
-    expect(handle.list()[0]!.options[0]!.enabled).toBe(true);
+    expect(handle.list()[0]!.options[0]!.value).toBe(true);
   });
 
   it("leaves the feature itself on when one of its options goes off", () => {

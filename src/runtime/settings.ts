@@ -1,4 +1,4 @@
-import type { FeatureId } from "./feature";
+import { matchesOption, type FeatureId, type OptionValue } from "./feature";
 import { logError } from "./log";
 
 /**
@@ -19,13 +19,19 @@ export interface Settings {
   setEnabled(id: FeatureId, enabled: boolean): void;
 
   /**
-   * Whether one of a feature's own options is switched on.
+   * What one of a feature's own options is set to.
    *
    * `whenUnset` is what the option means before a player has chosen, so each
-   * option carries its own default instead of the runtime assuming one.
+   * option carries its own default instead of one default for every option. It
+   * also says which type the option holds, and a stored value of another type
+   * is read as nothing stored.
    */
-  isOptionEnabled(id: FeatureId, option: string, whenUnset: boolean): boolean;
-  setOptionEnabled(id: FeatureId, option: string, enabled: boolean): void;
+  optionValue<Value extends OptionValue>(
+    id: FeatureId,
+    option: string,
+    whenUnset: Value,
+  ): Value;
+  setOptionValue(id: FeatureId, option: string, value: OptionValue): void;
 }
 
 const STORAGE_KEY = "openfront-extended-ui:features";
@@ -41,11 +47,11 @@ function optionKey(id: FeatureId, option: string): string {
 }
 
 export function createSettings(store: SettingsStore): Settings {
-  const enabled = readEnabled(store);
+  const stored = readStored(store);
 
   function save(): void {
     try {
-      store.write(JSON.stringify(enabled));
+      store.write(JSON.stringify(stored));
     } catch (error) {
       // The choice still applies to this page. It is lost on reload.
       logError("could not save the settings", error);
@@ -54,20 +60,26 @@ export function createSettings(store: SettingsStore): Settings {
 
   return {
     isEnabled(id) {
-      return enabled[id] ?? true;
+      const value = stored[id];
+      return typeof value === "boolean" ? value : true;
     },
 
     setEnabled(id, value) {
-      enabled[id] = value;
+      stored[id] = value;
       save();
     },
 
-    isOptionEnabled(id, option, whenUnset) {
-      return enabled[optionKey(id, option)] ?? whenUnset;
+    optionValue<Value extends OptionValue>(
+      id: FeatureId,
+      option: string,
+      whenUnset: Value,
+    ): Value {
+      const value = stored[optionKey(id, option)];
+      return matchesOption(value, whenUnset) ? (value as Value) : whenUnset;
     },
 
-    setOptionEnabled(id, option, value) {
-      enabled[optionKey(id, option)] = value;
+    setOptionValue(id, option, value) {
+      stored[optionKey(id, option)] = value;
       save();
     },
   };
@@ -82,34 +94,53 @@ export function localStorageStore(key: string = STORAGE_KEY): SettingsStore {
 }
 
 /**
- * Anything that is not an object of booleans is treated as absent, so a value
- * left by an older version of the package can never switch a feature off.
+ * Reads one JSON object out of a store.
+ *
+ * Every problem gives back an empty object, so a caller always has something to
+ * read. `report` names the problem in plain words, for a caller that wants to
+ * say so. A caller that does not pass one hears nothing.
  */
-function readEnabled(store: SettingsStore): Record<string, boolean> {
-  let stored: string | null;
+export function readStoredObject(
+  store: SettingsStore,
+  report: (problem: string, error?: unknown) => void = () => {},
+): Record<string, unknown> {
+  let raw: string | null;
   try {
-    stored = store.read();
+    raw = store.read();
   } catch (error) {
-    logError("could not read the settings", error);
+    report("could not be read", error);
     return {};
   }
-  if (stored === null) return {};
+  if (raw === null) return {};
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(stored);
+    parsed = JSON.parse(raw);
   } catch {
-    logError("the stored settings are not valid JSON, using the defaults");
+    report("are not valid JSON");
     return {};
   }
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    logError("the stored settings are not an object, using the defaults");
+    report("are not an object");
     return {};
   }
+  return parsed as Record<string, unknown>;
+}
 
-  const enabled: Record<string, boolean> = {};
-  for (const [id, value] of Object.entries(parsed)) {
-    if (typeof value === "boolean") enabled[id] = value;
+/**
+ * Anything that is not a boolean or a string is treated as absent, so a value
+ * left by an older version of the package can never switch a feature off.
+ */
+function readStored(store: SettingsStore): Record<string, OptionValue> {
+  const stored = readStoredObject(store, (problem, error) =>
+    logError(`the stored settings ${problem}, using the defaults`, error),
+  );
+
+  const values: Record<string, OptionValue> = {};
+  for (const [id, value] of Object.entries(stored)) {
+    if (typeof value === "boolean" || typeof value === "string") {
+      values[id] = value;
+    }
   }
-  return enabled;
+  return values;
 }

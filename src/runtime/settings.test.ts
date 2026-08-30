@@ -75,24 +75,24 @@ describe("a feature's own options", () => {
   it("reports an option as on when nothing has been stored and it defaults on", () => {
     const settings = createSettings(memoryStore());
 
-    expect(settings.isOptionEnabled("troop-bar", "percentage", true)).toBe(true);
+    expect(settings.optionValue("troop-bar", "percentage", true)).toBe(true);
   });
 
   it("reports an option as off when nothing has been stored and it defaults off", () => {
     const settings = createSettings(memoryStore());
 
-    expect(settings.isOptionEnabled("troop-bar", "ends", false)).toBe(false);
+    expect(settings.optionValue("troop-bar", "ends", false)).toBe(false);
   });
 
   it("remembers an option being switched off", () => {
     const store = memoryStore();
     const settings = createSettings(store);
 
-    settings.setOptionEnabled("troop-bar", "percentage", false);
+    settings.setOptionValue("troop-bar", "percentage", false);
 
-    expect(settings.isOptionEnabled("troop-bar", "percentage", true)).toBe(false);
+    expect(settings.optionValue("troop-bar", "percentage", true)).toBe(false);
     expect(
-      createSettings(store).isOptionEnabled("troop-bar", "percentage", true),
+      createSettings(store).optionValue("troop-bar", "percentage", true),
     ).toBe(false);
   });
 
@@ -101,7 +101,7 @@ describe("a feature's own options", () => {
   it("keeps an option apart from the feature it belongs to", () => {
     const settings = createSettings(memoryStore());
 
-    settings.setOptionEnabled("troop-bar", "percentage", false);
+    settings.setOptionValue("troop-bar", "percentage", false);
 
     expect(settings.isEnabled("troop-bar")).toBe(true);
   });
@@ -109,8 +109,56 @@ describe("a feature's own options", () => {
   it("keeps the same option apart on two features", () => {
     const settings = createSettings(memoryStore());
 
-    settings.setOptionEnabled("troop-bar", "percentage", false);
+    settings.setOptionValue("troop-bar", "percentage", false);
 
-    expect(settings.isOptionEnabled("income", "percentage", true)).toBe(true);
+    expect(settings.optionValue("income", "percentage", true)).toBe(true);
+  });
+});
+
+describe("an option that holds text rather than a switch", () => {
+  it("reports the option's own default when nothing has been stored", () => {
+    const settings = createSettings(memoryStore());
+
+    expect(settings.optionValue("alliance-view", "hold-key", "Backquote")).toBe(
+      "Backquote",
+    );
+  });
+
+  it("remembers a key a player chose", () => {
+    const store = memoryStore();
+    const settings = createSettings(store);
+
+    settings.setOptionValue("alliance-view", "hold-key", "KeyJ");
+
+    expect(settings.optionValue("alliance-view", "hold-key", "Backquote")).toBe(
+      "KeyJ",
+    );
+    expect(
+      createSettings(store).optionValue("alliance-view", "hold-key", "Backquote"),
+    ).toBe("KeyJ");
+  });
+
+  /**
+   * A feature that shipped a switch under a key and now ships text there reads
+   * `false` as the key code, which matches no key at all and never fires.
+   */
+  it("reads a stored value of the wrong type as nothing stored", () => {
+    const settings = createSettings(memoryStore());
+
+    settings.setOptionValue("alliance-view", "hold-key", false);
+
+    expect(settings.optionValue("alliance-view", "hold-key", "Backquote")).toBe(
+      "Backquote",
+    );
+    expect(settings.optionValue("alliance-view", "hold-key", true)).toBe(false);
+  });
+
+  it("keeps a stored key across a reload", () => {
+    const store = memoryStore();
+    createSettings(store).setOptionValue("alliance-view", "hold-key", "KeyJ");
+
+    expect(
+      createSettings(store).optionValue("alliance-view", "hold-key", "Backquote"),
+    ).toBe("KeyJ");
   });
 });

@@ -216,7 +216,7 @@ describe("switching the share of best rate off", () => {
     panel.game = new FakeGameView();
     play();
 
-    pkg.registry.setOptionEnabled("troop-bar", "percentage", false);
+    pkg.registry.setOption("troop-bar", "percentage", false);
     play();
 
     expect(strips()).toHaveLength(2);
@@ -229,7 +229,7 @@ describe("switching the share of best rate off", () => {
     const { panel, pkg, play, shares } = setup();
     panel.game = new FakeGameView();
     play();
-    pkg.registry.setOptionEnabled("troop-bar", "percentage", false);
+    pkg.registry.setOption("troop-bar", "percentage", false);
 
     panel.game = new FakeGameView();
     play();
