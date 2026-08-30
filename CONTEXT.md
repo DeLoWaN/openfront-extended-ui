@@ -17,6 +17,10 @@ _Avoid_: widget, panel, overlay, module
 **View mode**:
 A feature that changes how the map is coloured instead of reporting a number. There is one, the alliance view mode. It is not a readout.
 
+**Subject**:
+The player the alliance view mode draws its map around. The cursor picks it, and it stays until the cursor reaches another player, so the subject is not always the player under the cursor.
+_Avoid_: hovered player, target, focus
+
 **Surface**:
 Where a feature draws. There are two, the HUD and the map. A decision about one carries nothing to the other.
 
