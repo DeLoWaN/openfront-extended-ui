@@ -20,7 +20,7 @@ function setup(options: { percentage?: boolean } = {}) {
   const attached = createFeatureContext({
     panel: panel.asControlPanel(),
     game,
-    isOptionEnabled: (option) =>
+    optionValue: (option: string) =>
       option === "percentage" ? (options.percentage ?? true) : false,
   });
   const session = troopBar.attach(attached.context);
@@ -200,7 +200,7 @@ describe("the share of best rate", () => {
     const attached = createFeatureContext({
       panel: panel.asControlPanel(),
       game,
-      isOptionEnabled: () => percentage,
+      optionValue: () => percentage,
     });
     const session = troopBar.attach(attached.context)!;
     setTroopBarFill(bars[0]!, 0.4);

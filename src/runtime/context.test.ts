@@ -13,7 +13,7 @@ function setup() {
     ...createFeatureContext({
       panel: panel.asControlPanel(),
       game,
-      isOptionEnabled: (option) => option === "percentage",
+      optionValue: (option: string) => option === "percentage",
     }),
   };
 }
@@ -74,7 +74,7 @@ describe("a feature context", () => {
     const { context } = createFeatureContext({
       panel: bare,
       game: new FakeGameView(),
-      isOptionEnabled: () => true,
+      optionValue: () => true,
     });
     class GoldEvent {}
 
@@ -98,6 +98,59 @@ describe("a feature context", () => {
   });
 });
 
+describe("a feature context, listening on the page's own window", () => {
+  it("hands the feature every event of that kind", () => {
+    const { context } = setup();
+    const seen: string[] = [];
+    context.onWindowEvent("keydown", (event) => seen.push(event.code));
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyJ" }));
+
+    expect(seen).toEqual(["KeyJ"]);
+  });
+
+  it("stops listening on detach", () => {
+    const { context, detach } = setup();
+    const seen: string[] = [];
+    context.onWindowEvent("keydown", (event) => seen.push(event.code));
+
+    detach();
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyJ" }));
+
+    expect(seen).toEqual([]);
+  });
+
+  /**
+   * `removeEventListener` matches on the capture flag as well as the function,
+   * so a listener added one way and removed the other stays registered for the
+   * rest of the page's life.
+   */
+  it("stops listening on detach for a listener in the capture phase", () => {
+    const { context, detach } = setup();
+    const seen: string[] = [];
+    context.onWindowEvent("keydown", (event) => seen.push(event.code), {
+      capture: true,
+    });
+
+    detach();
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyJ" }));
+
+    expect(seen).toEqual([]);
+  });
+
+  // Nothing a feature does runs outside a try/catch.
+  it("catches a throw from the feature's own handler", () => {
+    const { context } = setup();
+    context.onWindowEvent("keydown", () => {
+      throw new Error("this handler is broken");
+    });
+
+    expect(() =>
+      window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyJ" })),
+    ).not.toThrow();
+  });
+});
+
 describe("a feature context, reading the feature's own options", () => {
   it("reports what the runtime says about an option", () => {
     const { context } = setup();
@@ -115,11 +168,51 @@ describe("a feature context, reading the feature's own options", () => {
     const { context } = createFeatureContext({
       panel: panel.asControlPanel(),
       game,
-      isOptionEnabled: () => on,
+      optionValue: () => on,
     });
 
     expect(context.isOptionEnabled("percentage")).toBe(false);
     on = true;
     expect(context.isOptionEnabled("percentage")).toBe(true);
+  });
+
+  it("reports the text of an option that holds a key code", () => {
+    const panel = createFakeControlPanel();
+    const game = new FakeGameView();
+    const { context } = createFeatureContext({
+      panel: panel.asControlPanel(),
+      game,
+      optionValue: () => "Backquote",
+    });
+
+    expect(context.optionText("hold-key")).toBe("Backquote");
+  });
+
+  /**
+   * A feature asking the wrong way round must get a value it can act on. An
+   * empty key code matches no key, and a switch read as off draws nothing.
+   */
+  it("reports an empty string for an option that holds a switch", () => {
+    const panel = createFakeControlPanel();
+    const game = new FakeGameView();
+    const { context } = createFeatureContext({
+      panel: panel.asControlPanel(),
+      game,
+      optionValue: () => true,
+    });
+
+    expect(context.optionText("percentage")).toBe("");
+  });
+
+  it("reports an option that holds text as switched off", () => {
+    const panel = createFakeControlPanel();
+    const game = new FakeGameView();
+    const { context } = createFeatureContext({
+      panel: panel.asControlPanel(),
+      game,
+      optionValue: () => "Backquote",
+    });
+
+    expect(context.isOptionEnabled("hold-key")).toBe(false);
   });
 });

@@ -1,11 +1,12 @@
-import type { FeatureId } from "./feature";
+import type { FeatureId, OptionValue } from "./feature";
 import type { Registry } from "./registry";
 
 /** One of a feature's own choices, as a player sees it. */
 export interface ListedOption {
   readonly key: string;
   readonly name: string;
-  readonly enabled: boolean;
+  /** A switch reads `true` or `false`. An option holding a key code reads text. */
+  readonly value: OptionValue;
 }
 
 /**
@@ -26,11 +27,12 @@ export interface ConsoleHandle {
   enable(id: FeatureId): void;
   disable(id: FeatureId): void;
   /**
-   * Switches one of a feature's own options on or off.
+   * Sets one of a feature's own options.
    *
-   * A key the feature does not declare is ignored. `list` shows the keys.
+   * A key the feature does not declare is ignored, and so is a value of the
+   * wrong type. `list` shows the keys and what each one holds now.
    */
-  setOption(id: FeatureId, option: string, enabled: boolean): void;
+  setOption(id: FeatureId, option: string, value: OptionValue): void;
   /** Undoes everything the package did to the page. */
   stop(): void;
 }
@@ -48,13 +50,13 @@ export function createConsoleHandle(deps: {
         options: deps.registry.optionsOf(feature.id).map((option) => ({
           key: option.key,
           name: option.name,
-          enabled: option.enabled,
+          value: option.value,
         })),
       })),
     enable: (id) => deps.registry.setEnabled(id, true),
     disable: (id) => deps.registry.setEnabled(id, false),
-    setOption: (id, option, enabled) =>
-      deps.registry.setOptionEnabled(id, option, enabled),
+    setOption: (id, option, value) =>
+      deps.registry.setOption(id, option, value),
     stop: () => deps.stop(),
   };
 }

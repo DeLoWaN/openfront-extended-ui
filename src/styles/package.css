@@ -98,3 +98,60 @@
     display: none;
   }
 }
+
+/*
+ * The layer the alliance view mode draws its clocks on.
+ *
+ * The map is one WebGL canvas with no element per territory, so the clocks need
+ * a layer of the package's own. This is the one place the package draws over
+ * the page rather than inside one of the game's elements, and it is allowed
+ * only because the map offers nothing to draw inside. See docs/adr/0005.
+ *
+ * The layer sits above the map and below every panel the game draws. The game's
+ * lowest panel is at 100 and its HUD row at 200. A clock can therefore land
+ * under one of those panels. Raising the layer over them would cover the HUD
+ * instead, which is worse.
+ */
+.ofx-alliance-clocks {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/*
+ * One clock, under its ally's own name.
+ *
+ * Its place and its size are written inline, because both come from where the
+ * game has drawn that player's name and how large it has drawn it.
+ *
+ * The figures are white rather than violet. Violet marks a figure the package
+ * worked out, and this one is the game's own number read for somebody else.
+ * The heavy shadow is what keeps it readable over both the grey and a real
+ * player's colour.
+ */
+.ofx-alliance-clock {
+  position: absolute;
+  transform: translateX(-50%);
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-shadow:
+    0 0 3px rgba(0, 0, 0, 0.95),
+    0 0 3px rgba(0, 0, 0, 0.95),
+    0 0 3px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+}
+
+/*
+ * A clock the game is offering to renew now.
+ *
+ * Red says "act on this", not merely "nearly over". It starts exactly on the
+ * game's own renewal window, so it appears when the game's renew prompt does.
+ */
+.ofx-alliance-clock-urgent {
+  color: #ff4d4d;
+}

@@ -12,12 +12,19 @@
  */
 
 import type {
+  Alliance,
+  BuildMenu,
+  Colour,
   ControlPanel,
   EventBus,
+  GameConfig,
   GameEventHandler,
   GameEventType,
   GameView,
+  MapRenderer,
+  NameLocation,
   PlayerView,
+  TransformHandler,
 } from "../game/types";
 
 export class FakeEventBus implements EventBus {
@@ -49,10 +56,69 @@ export class FakeEventBus implements EventBus {
   }
 }
 
+/** A colour, in the shape the game's own accessors return. */
+export function fakeColour(r: number, g: number, b: number): Colour {
+  return { toRgb: () => ({ r, g, b, a: 1 }) };
+}
+
 export class FakePlayerView implements PlayerView {
   alive = true;
+  allyList: FakePlayerView[] = [];
+  allianceList: Alliance[] = [];
+  /** Undefined stands for a player the renderer has not placed yet. */
+  nameData: NameLocation | undefined = { x: 0, y: 0, size: 40 };
+  player = true;
+
+  constructor(
+    readonly small = 1,
+    readonly playerID = `player-${small}`,
+    readonly territory: Colour = fakeColour(200, 100, 50),
+    readonly border: Colour = fakeColour(220, 120, 70),
+  ) {}
+
   isAlive(): boolean {
     return this.alive;
+  }
+  smallID(): number {
+    return this.small;
+  }
+  id(): string {
+    return this.playerID;
+  }
+  isPlayer(): boolean {
+    return this.player;
+  }
+  allies(): PlayerView[] {
+    return this.allyList;
+  }
+  alliances(): Alliance[] {
+    return this.allianceList;
+  }
+  territoryColor(): Colour {
+    return this.territory;
+  }
+  borderColor(): Colour {
+    return this.border;
+  }
+  nameLocation(): NameLocation | undefined {
+    return this.nameData;
+  }
+
+  /** Allies both players and writes the alliance row on each of them. */
+  allyWith(other: FakePlayerView, expiresAt: number): void {
+    this.allyList.push(other);
+    other.allyList.push(this);
+    this.allianceList.push({ other: other.id(), expiresAt });
+    other.allianceList.push({ other: this.id(), expiresAt });
+  }
+}
+
+/** The game's own alliance figures, as a live match reports them. */
+export class FakeGameConfig implements GameConfig {
+  extensionOffset = 300;
+
+  allianceExtensionPromptOffset(): number {
+    return this.extensionOffset;
   }
 }
 
@@ -60,6 +126,12 @@ export class FakeGameView implements GameView {
   player: FakePlayerView | null = new FakePlayerView();
   spawnPhase = false;
   tickCount = 1;
+  readonly settings = new FakeGameConfig();
+  readonly width = 100;
+
+  private readonly roster: FakePlayerView[] = [];
+  private readonly owners = new Map<number, number>();
+  private readonly water = new Set<number>();
 
   myPlayer(): PlayerView | null {
     return this.player;
@@ -69,6 +141,88 @@ export class FakeGameView implements GameView {
   }
   ticks(): number {
     return this.tickCount;
+  }
+  players(): PlayerView[] {
+    return this.roster;
+  }
+  playerBySmallID(id: number): PlayerView {
+    const found = this.roster.find((candidate) => candidate.smallID() === id);
+    // The real one throws for an id it does not know, so this one does too.
+    if (!found) throw new Error(`no player with smallID ${id}`);
+    return found;
+  }
+  config(): GameConfig {
+    return this.settings;
+  }
+  ref(x: number, y: number): number {
+    return y * this.width + x;
+  }
+  isValidCoord(x: number, y: number): boolean {
+    return x >= 0 && y >= 0 && x < this.width && y < this.width;
+  }
+  isLand(ref: number): boolean {
+    return !this.water.has(ref);
+  }
+  tileState(ref: number): number {
+    return this.owners.get(ref) ?? 0;
+  }
+
+  add(player: FakePlayerView): FakePlayerView {
+    this.roster.push(player);
+    return player;
+  }
+  /** Gives one tile to a player. A smallID of 0 leaves it unclaimed. */
+  own(x: number, y: number, smallID: number): void {
+    this.owners.set(this.ref(x, y), smallID);
+  }
+  makeWater(x: number, y: number): void {
+    this.water.add(this.ref(x, y));
+  }
+}
+
+/**
+ * The map renderer the game leaves on `window.__webglView`.
+ *
+ * `updatePalette` copies what it is given, so this copies too. The package
+ * reuses one array for every call, and a stored reference would make every
+ * recorded palette read as the last one.
+ */
+export class FakeMapRenderer implements MapRenderer {
+  readonly palettes: Float32Array[] = [];
+
+  updatePalette(palette: Float32Array): void {
+    this.palettes.push(palette.slice());
+  }
+
+  get last(): Float32Array | undefined {
+    return this.palettes.at(-1);
+  }
+}
+
+/** The camera, with a straight scale and no offset. */
+export class FakeTransformHandler implements TransformHandler {
+  scale = 2;
+  offsetX = 0;
+  offsetY = 0;
+
+  screenToWorldCoordinates(
+    screenX: number,
+    screenY: number,
+  ): { x: number; y: number } {
+    return {
+      x: Math.floor(screenX / this.scale + this.offsetX),
+      y: Math.floor(screenY / this.scale + this.offsetY),
+    };
+  }
+
+  worldToScreenCoordinates(cell: { x: number; y: number }): {
+    x: number;
+    y: number;
+  } {
+    return {
+      x: (cell.x - this.offsetX) * this.scale,
+      y: (cell.y - this.offsetY) * this.scale,
+    };
   }
 }
 
@@ -86,6 +240,21 @@ export class FakeControlPanel extends HTMLElement {
   asControlPanel(): ControlPanel {
     return this as unknown as ControlPanel;
   }
+}
+
+/**
+ * The `<build-menu>` element, which carries the camera.
+ *
+ * A plain element rather than a custom one: the package reads one property off
+ * it and never touches its markup.
+ */
+export function createFakeBuildMenu(
+  camera: TransformHandler = new FakeTransformHandler(),
+): BuildMenu {
+  const menu = document.createElement("build-menu") as BuildMenu;
+  menu.transformHandler = camera;
+  document.body.append(menu);
+  return menu;
 }
 
 const TAG = "control-panel";

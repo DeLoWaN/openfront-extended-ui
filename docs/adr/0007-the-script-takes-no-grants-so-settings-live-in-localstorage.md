@@ -14,7 +14,7 @@ Settings are kept per address. A player who tries the package on a local copy of
 
 Clearing site data for the game clears the package's settings too.
 
-The stored value is one JSON object of feature id to `true` or `false`, under the key `openfront-extended-ui:features`. Anything else found there is read as "nothing stored", so a value left by an older version can never switch a feature off by accident.
+The stored value is one JSON object under the key `openfront-extended-ui:features`. A feature id maps to `true` or `false`. An option of a feature maps to `true` or `false` when the option is a switch, and to a piece of text when it holds something else, such as the key the alliance view mode is held on. Anything else found there is read as "nothing stored", so a value left by an older version can never switch a feature off by accident.
 
 Everything that touches storage is behind `SettingsStore` in `src/runtime/settings.ts`, which is two methods. Moving to `GM_setValue` later means writing one more implementation of it, and adding the matching `@grant` lines.
 

@@ -2,7 +2,7 @@
   "name": "openfront-extended-ui",
   "version": "0.1.1",
   "private": true,
-  "description": "A userscript that adds readouts to the OpenFront.io game view from outside the game.",
+  "description": "A userscript that adds readouts and an alliance view mode to the OpenFront.io game view from outside the game.",
   "type": "module",
   "homepage": "https://github.com/DeLoWaN/openfront-extended-ui",
   "bugs": "https://github.com/DeLoWaN/openfront-extended-ui/issues",

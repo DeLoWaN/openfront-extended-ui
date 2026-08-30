@@ -368,9 +368,9 @@ describe("a feature's own options", () => {
         key: "percentage",
         name: "Share of best rate",
         whenUnset: true,
-        enabled: true,
+        value: true,
       },
-      { key: "ends", name: "End lines", whenUnset: false, enabled: false },
+      { key: "ends", name: "End lines", whenUnset: false, value: false },
     ]);
   });
 
@@ -401,9 +401,9 @@ describe("a feature's own options", () => {
     const seen: Record<string, boolean> = {};
     const { registry, match, settings } = setup([withOptions(seen)]);
 
-    registry.setOptionEnabled("troop-bar", "percentage", false);
+    registry.setOption("troop-bar", "percentage", false);
 
-    expect(settings.isOptionEnabled("troop-bar", "percentage", true)).toBe(false);
+    expect(settings.optionValue("troop-bar", "percentage", true)).toBe(false);
     registry.attachAll(match);
     expect(seen.percentage).toBe(false);
   });
@@ -415,9 +415,9 @@ describe("a feature's own options", () => {
   it("refuses a key the feature does not declare", () => {
     const { registry, settings } = setup([withOptions({})]);
 
-    registry.setOptionEnabled("troop-bar", "no-such-option", false);
+    registry.setOption("troop-bar", "no-such-option", false);
 
-    expect(settings.isOptionEnabled("troop-bar", "no-such-option", true)).toBe(
+    expect(settings.optionValue("troop-bar", "no-such-option", true)).toBe(
       true,
     );
   });
@@ -425,9 +425,35 @@ describe("a feature's own options", () => {
   it("refuses an option on a feature the package does not ship", () => {
     const { registry, settings } = setup([withOptions({})]);
 
-    registry.setOptionEnabled("other", "percentage", false);
+    registry.setOption("other", "percentage", false);
 
-    expect(settings.isOptionEnabled("other", "percentage", true)).toBe(true);
+    expect(settings.optionValue("other", "percentage", true)).toBe(true);
+  });
+
+  /**
+   * A switch stored as text reads as the option's own default forever after,
+   * so the player sees no change and nothing says why.
+   */
+  it("refuses a value of the wrong type for the option", () => {
+    const { registry, settings } = setup([withOptions({})]);
+
+    registry.setOption("troop-bar", "percentage", "KeyJ");
+
+    expect(settings.optionValue("troop-bar", "percentage", true)).toBe(true);
+  });
+
+  it("stores a key code for an option that holds text", () => {
+    const keyed: TestFeature = {
+      ...feature("alliance-view"),
+      options: [{ key: "hold-key", name: "Hold key", whenUnset: "Backquote" }],
+    };
+    const { registry, settings } = setup([keyed]);
+
+    registry.setOption("alliance-view", "hold-key", "KeyJ");
+
+    expect(settings.optionValue("alliance-view", "hold-key", "Backquote")).toBe(
+      "KeyJ",
+    );
   });
 
   it("leaves a running feature attached when one of its options changes", () => {
@@ -435,7 +461,7 @@ describe("a feature's own options", () => {
     const { registry, match } = setup([optioned]);
     registry.attachAll(match);
 
-    registry.setOptionEnabled("troop-bar", "percentage", false);
+    registry.setOption("troop-bar", "percentage", false);
 
     // A readout reads its options on each tick, so nothing is reattached.
     expect(optioned.attach).toHaveBeenCalledTimes(1);

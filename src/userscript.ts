@@ -29,7 +29,7 @@ export const USERSCRIPT = {
   name: "OpenFront Extended UI",
   namespace: REPO,
   description:
-    "Adds readouts to the OpenFront.io game view. Changes nothing in the game.",
+    "Adds readouts and an alliance view mode to the OpenFront.io game view. Changes nothing in the game.",
   author: "DeLoWaN",
   license: "MIT",
   match: MATCH,

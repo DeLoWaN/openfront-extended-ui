@@ -1,10 +1,12 @@
 import type { ControlPanel, GameView } from "../game/types";
 import { createFeatureContext, type AttachedContext } from "./context";
-import type {
-  Feature,
-  FeatureId,
-  FeatureOption,
-  FeatureSession,
+import {
+  matchesOption,
+  type Feature,
+  type FeatureId,
+  type FeatureOption,
+  type FeatureSession,
+  type OptionValue,
 } from "./feature";
 import { logError } from "./log";
 import type { Settings } from "./settings";
@@ -35,9 +37,9 @@ export interface Registry {
   isEnabled(id: FeatureId): boolean;
   setEnabled(id: FeatureId, enabled: boolean): void;
 
-  /** The options one feature declares, and whether each is switched on. */
-  optionsOf(id: FeatureId): Array<FeatureOption & { enabled: boolean }>;
-  setOptionEnabled(id: FeatureId, option: string, enabled: boolean): void;
+  /** The options one feature declares, and what each is set to. */
+  optionsOf(id: FeatureId): Array<FeatureOption & { value: OptionValue }>;
+  setOption(id: FeatureId, option: string, value: OptionValue): void;
 }
 
 export function createRegistry(deps: {
@@ -68,7 +70,7 @@ export function createRegistry(deps: {
     const context = createFeatureContext({
       panel: match.panel,
       game: match.game,
-      isOptionEnabled: (key) => {
+      optionValue: (key) => {
         const option = optionOf(feature, key);
         if (!option) {
           logError(
@@ -76,7 +78,7 @@ export function createRegistry(deps: {
           );
           return false;
         }
-        return settings.isOptionEnabled(feature.id, key, option.whenUnset);
+        return settings.optionValue(feature.id, key, option.whenUnset);
       },
     });
 
@@ -132,16 +134,23 @@ export function createRegistry(deps: {
       const feature = featureOf(id);
       return (feature?.options ?? []).map((option) => ({
         ...option,
-        enabled: settings.isOptionEnabled(id, option.key, option.whenUnset),
+        value: settings.optionValue(id, option.key, option.whenUnset),
       }));
     },
 
-    // A readout reads its options on each tick, so nothing has to be
+    // A feature reads its options where it uses them, so nothing has to be
     // reattached for a change to show.
-    setOptionEnabled(id, option, enabled) {
+    setOption(id, option, value) {
       const feature = featureOf(id);
-      if (!feature || !optionOf(feature, option)) return;
-      settings.setOptionEnabled(id, option, enabled);
+      const declared = feature && optionOf(feature, option);
+      if (!declared) return;
+      if (!matchesOption(value, declared.whenUnset)) {
+        logError(
+          `the ${option} option of ${id} takes a ${typeof declared.whenUnset}, not a ${typeof value}`,
+        );
+        return;
+      }
+      settings.setOptionValue(id, option, value);
     },
 
     setEnabled(id, enabled) {

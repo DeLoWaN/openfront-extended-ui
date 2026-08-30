@@ -3,7 +3,7 @@
 // @namespace    https://github.com/DeLoWaN/openfront-extended-ui
 // @version      0.1.1
 // @author       DeLoWaN
-// @description  Adds readouts to the OpenFront.io game view. Changes nothing in the game.
+// @description  Adds readouts and an alliance view mode to the OpenFront.io game view. Changes nothing in the game.
 // @license      MIT
 // @homepage     https://github.com/DeLoWaN/openfront-extended-ui
 // @homepageURL  https://github.com/DeLoWaN/openfront-extended-ui
