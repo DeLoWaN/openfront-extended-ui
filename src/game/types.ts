@@ -59,6 +59,37 @@ export interface PlayerView {
   borderColor(): Colour;
   /** Undefined until the renderer has placed this player's name. `:436`. */
   nameLocation(): NameLocation | undefined;
+  /** The gold you hold now. `:506`. */
+  gold(): bigint;
+}
+
+/**
+ * One item of the hotbar, with the price the game worked out. `Game.ts:893`.
+ *
+ * The game computes the price in its own simulation worker and hands it over
+ * ready-made, so the package rewrites no price formula and none can drift.
+ */
+export interface BuildableUnit {
+  /** A `UnitType` value, such as "City". `Game.ts:179`. */
+  type: string;
+  /** The price now, in gold. `Game.ts:898`. */
+  cost: bigint;
+}
+
+/**
+ * The `<unit-display>` element, which draws the hotbar. `UnitDisplay.ts:33`.
+ *
+ * `index.html:339` writes it into the page as a sibling of `<control-panel>`,
+ * so it lives for the whole page. `createRenderRoot()` returns the element
+ * itself, so it has no shadow DOM and the package's own stylesheet reaches
+ * inside it. `UnitDisplay.ts:50`.
+ *
+ * `playerBuildables` is marked private in the game's TypeScript, which is a
+ * compile-time word only. At run time it is a plain property on the element.
+ * It is null until the first prices arrive. `:36` and `:97`.
+ */
+export interface UnitDisplay extends HTMLElement {
+  playerBuildables?: BuildableUnit[] | null;
 }
 
 /** The match's own rules. `src/core/configuration/Config.ts`. */
