@@ -7,11 +7,11 @@ A userscript that adds readouts to the OpenFront.io game view from outside the g
 ### What the package adds
 
 **Feature**:
-Any one of the six things the package adds, whether it is a readout or the view mode. It is the word the code uses, because both kinds register the same way and both can be switched off on their own.
+Any one of the five things the package adds, whether it is a readout or the view mode. It is the word the code uses, because both kinds register the same way and both can be switched off on their own.
 _Avoid_: addition, module, plugin
 
 **Readout**:
-One of the package's features that reformats numbers the game already shows, drawn in the HUD. There are five.
+One of the package's features that reformats numbers the game already shows, drawn in the HUD. There are four.
 _Avoid_: widget, panel, overlay, module
 
 **View mode**:
@@ -75,10 +75,6 @@ _Avoid_: the optimal zone, the sweet spot, the band (say "the plateau", and "the
 Passing the 42.2% level from below. It is the signal to spend troops, because troops above the level are unspent, not because regeneration collapsed.
 
 ### Gold
-
-**Flat income**:
-The gold every player receives each tick whatever they own. A lobby setting scales it.
-_Avoid_: base income, passive income
 
 **Trade income**:
 Gold from a trade ship arriving at your port.
