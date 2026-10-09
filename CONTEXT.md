@@ -27,7 +27,12 @@ Where a feature draws. There are two, the HUD and the map. A decision about one 
 **Signature colour**:
 Violet. It marks a figure the package worked out itself. The game's own colours keep the game's meanings, so gold stays yellow and troops stay blue.
 The game does use a little purple, so violet is not unused: `PlayerPanel.ts` marks a Nation with indigo and a Bot with purple, and two modals use `bg-indigo-600` for their primary button. None of it appears on the HUD's bottom row, which is the only place these readouts draw, so violet still reads as foreign there.
+The rule covers figures. A mark that carries no figure picks its own colour, from what it has to cut through rather than from this entry. The step marks are amber for that reason.
 _Avoid_: accent, brand colour, highlight
+
+**Step marks**:
+The three short marks the package draws under a hotbar icon. The number of lit marks is the price step of the next city, port or factory. They are amber while you can build it and light grey while you cannot.
+_Avoid_: chip, pips, dots, progress bar
 
 ### The game's own furniture
 
@@ -37,6 +42,13 @@ _Avoid_: toolbar, interface, control panel (`control-panel` names one element in
 
 **Troop bar**:
 The bar in the HUD that fills as your army grows, drawing your troops against your maximum.
+
+**Hotbar**:
+The row of ten build icons under the control panel, which the game names in `HotbarIcons.ts` and builds in `UnitDisplay.ts`. One click on an icon starts placement. The game removes it below 64rem.
+_Avoid_: unit display, build bar, toolbar
+
+**Build menu**:
+The grid of ten build buttons that opens on Ctrl and click. It is one of three build surfaces, with the hotbar and the radial menu, and it is the only one that keeps shadow DOM.
 
 ### Troops
 
@@ -86,3 +98,16 @@ _Avoid_: trade gold, port income
 
 **Captured ship**:
 A trade ship taken by another player before it reached its destination, so its gold goes to the captor instead.
+
+### Building prices
+
+**Price step**:
+One of the three prices a city, a port or a factory passes through before the price stops rising: 125,000, then 250,000, then 500,000. The fourth price is one million and it never changes again.
+_Avoid_: tier, level, bracket
+
+**Price pool**:
+The count a price is worked out from. A port and a factory share one pool, so building either one raises the price of both. A city has a pool of its own. Losing a structure lowers the pool, so the next one gets cheaper.
+
+**The cheap window**:
+The part of a match where the next city, port or factory still costs less than one million. It is short, it falls at the start, and missing it is what the hotbar readout exists to prevent.
+_Avoid_: early game, opening
