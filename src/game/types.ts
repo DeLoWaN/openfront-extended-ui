@@ -51,6 +51,8 @@ export interface PlayerView {
   isPlayer(): boolean;
   /** The players this one is allied with. Teammates are not included. `:496`. */
   allies(): PlayerView[];
+  /** Always false in a match without teams. True for the player itself otherwise. `:535`. */
+  isOnSameTeam(other: PlayerView): boolean;
   /** Every alliance this player is in, with its end tick. `:547`. */
   alliances(): Alliance[];
   /** The territory fill colour. `:285`. */
@@ -116,6 +118,35 @@ export interface MapRenderer {
    * can serve every call.
    */
   updatePalette(palette: Float32Array): void;
+  /**
+   * The renderer's live settings object. `:350`.
+   *
+   * The game edits it in place and the renderer reads it, so a change made here
+   * reaches the screen. It is an empty object while the WebGL context is lost.
+   */
+  getSettings(): RenderSettings;
+  /** Bakes the terrain texture again from `getSettings().terrain`. `:236`. */
+  rebuildTerrain(): void;
+}
+
+/** The part of the renderer's settings the package reads. `RenderSettings.ts:62`. */
+export interface RenderSettings {
+  terrain?: TerrainColours;
+}
+
+/**
+ * The base colour of each kind of terrain, as `#rrggbb`.
+ *
+ * Each tile's colour is worked out from one of these. Shallow water is mixed
+ * from the ocean colour, and deep water and relief shift it a little.
+ * See `encodeTerrainTile` in `ColorUtils.ts`.
+ */
+export interface TerrainColours {
+  oceanColor: string;
+  sandColor: string;
+  plainsColor: string;
+  highlandColor: string;
+  mountainColor: string;
 }
 
 /**

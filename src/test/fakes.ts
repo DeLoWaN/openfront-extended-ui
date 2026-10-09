@@ -24,6 +24,8 @@ import type {
   MapRenderer,
   NameLocation,
   PlayerView,
+  RenderSettings,
+  TerrainColours,
   TransformHandler,
 } from "../game/types";
 
@@ -68,6 +70,8 @@ export class FakePlayerView implements PlayerView {
   /** Undefined stands for a player the renderer has not placed yet. */
   nameData: NameLocation | undefined = { x: 0, y: 0, size: 40 };
   player = true;
+  /** Null in a match without teams, as the game has it. */
+  team: string | null = null;
 
   constructor(
     readonly small = 1,
@@ -90,6 +94,9 @@ export class FakePlayerView implements PlayerView {
   }
   allies(): PlayerView[] {
     return this.allyList;
+  }
+  isOnSameTeam(other: PlayerView): boolean {
+    return this.team !== null && this.team === (other as FakePlayerView).team;
   }
   alliances(): Alliance[] {
     return this.allianceList;
@@ -180,6 +187,15 @@ export class FakeGameView implements GameView {
   }
 }
 
+/** The game's default terrain colours. `render-settings.json:19`. */
+export const DEFAULT_TERRAIN: TerrainColours = {
+  oceanColor: "#4785b5",
+  sandColor: "#CCCB9E",
+  plainsColor: "#BEDC8A",
+  highlandColor: "#DCCB9E",
+  mountainColor: "#e6e6e6",
+};
+
 /**
  * The map renderer the game leaves on `window.__webglView`.
  *
@@ -189,9 +205,21 @@ export class FakeGameView implements GameView {
  */
 export class FakeMapRenderer implements MapRenderer {
   readonly palettes: Float32Array[] = [];
+  /** The live settings object, edited in place as the game's own is. */
+  readonly settings: RenderSettings = { terrain: { ...DEFAULT_TERRAIN } };
+  /** The terrain colours at each bake, oldest first. */
+  readonly bakes: TerrainColours[] = [];
 
   updatePalette(palette: Float32Array): void {
     this.palettes.push(palette.slice());
+  }
+
+  getSettings(): RenderSettings {
+    return this.settings;
+  }
+
+  rebuildTerrain(): void {
+    if (this.settings.terrain) this.bakes.push({ ...this.settings.terrain });
   }
 
   get last(): Float32Array | undefined {

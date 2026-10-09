@@ -104,7 +104,7 @@
 		const allies = readAllies(subject, subjectID);
 		const expiry = readExpiry(game, subject);
 		const window = renewalWindow(game);
-		const coloured = new Set([subjectID]);
+		const coloured = new Set([subjectID, ...readTeammates(game, subject)]);
 		const web = [];
 		for (const [smallID, player] of allies) {
 			coloured.add(smallID);
@@ -145,6 +145,21 @@
 			allies.set(smallID, ally);
 		}
 		return allies;
+	}
+	function readTeammates(game, subject) {
+		let players;
+		try {
+			players = game.players();
+		} catch {
+			return [];
+		}
+		const teammates = [];
+		for (const player of players) try {
+			if (subject.isOnSameTeam(player)) teammates.push(player.smallID());
+		} catch {
+			continue;
+		}
+		return teammates;
 	}
 	function readExpiry(game, subject) {
 		const remaining = new Map();
@@ -364,6 +379,16 @@
 	var PALETTE_SIZE = 4096;
 	var FILL_ALPHA = 150 / 255;
 	var GREY = .22;
+	var OWN_SATURATION = .25;
+	var FILL_LIGHTNESS = {
+		base: .14,
+		range: .22
+	};
+	var BORDER_LIGHTNESS = {
+		base: .34,
+		range: .22
+	};
+	var SHARED_GREY_SHARE = .5;
 	function createPalette() {
 		return new Float32Array(PALETTE_SIZE * 2 * 4);
 	}
@@ -373,22 +398,25 @@
 	}
 	function paintAlliance(palette, players, coloured) {
 		palette.fill(0);
-		const greyBorder = .493;
 		for (const player of players) {
 			if (coloured.has(player.smallID())) {
 				writeOwn(palette, player);
 				continue;
 			}
-			writeSlot(palette, player.smallID(), [
-				GREY,
-				GREY,
-				GREY
-			], [
-				greyBorder,
-				greyBorder,
-				greyBorder
-			]);
+			const grey = greyOf(player.territoryColor());
+			writeSlot(palette, player.smallID(), grey.fill, grey.border);
 		}
+	}
+	function greyOf(colour) {
+		const [hue, saturation, lightness] = toHsl(toUnit(colour));
+		const ownSaturation = saturation * OWN_SATURATION;
+		const greyBorder = .493;
+		const ownFill = fromHsl(hue, ownSaturation, FILL_LIGHTNESS.base + FILL_LIGHTNESS.range * lightness);
+		const ownBorder = fromHsl(hue, ownSaturation, BORDER_LIGHTNESS.base + BORDER_LIGHTNESS.range * lightness);
+		return {
+			fill: towards(ownFill, GREY, SHARED_GREY_SHARE),
+			border: towards(ownBorder, greyBorder, SHARED_GREY_SHARE)
+		};
 	}
 	function writeOwn(palette, player) {
 		writeSlot(palette, player.smallID(), toUnit(player.territoryColor()), toUnit(player.borderColor()));
@@ -413,6 +441,155 @@
 			rgb.b / 255
 		];
 	}
+	function towards(rgb, grey, share) {
+		return [
+			rgb[0] + (grey - rgb[0]) * share,
+			rgb[1] + (grey - rgb[1]) * share,
+			rgb[2] + (grey - rgb[2]) * share
+		];
+	}
+	function toHsl([r, g, b]) {
+		const max = Math.max(r, g, b);
+		const min = Math.min(r, g, b);
+		const lightness = (max + min) / 2;
+		const chroma = max - min;
+		if (chroma === 0) return [
+			0,
+			0,
+			lightness
+		];
+		const saturation = chroma / (1 - Math.abs(2 * lightness - 1));
+		let hue;
+		if (max === r) hue = (g - b) / chroma % 6;
+		else if (max === g) hue = (b - r) / chroma + 2;
+		else hue = (r - g) / chroma + 4;
+		hue *= 60;
+		return [
+			hue < 0 ? hue + 360 : hue,
+			saturation,
+			lightness
+		];
+	}
+	function fromHsl(hue, saturation, lightness) {
+		const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+		const x = chroma * (1 - Math.abs(hue / 60 % 2 - 1));
+		const m = lightness - chroma / 2;
+		const sector = Math.floor(hue / 60) % 6;
+		const [r, g, b] = [
+			[
+				chroma,
+				x,
+				0
+			],
+			[
+				x,
+				chroma,
+				0
+			],
+			[
+				0,
+				chroma,
+				x
+			],
+			[
+				0,
+				x,
+				chroma
+			],
+			[
+				x,
+				0,
+				chroma
+			],
+			[
+				chroma,
+				0,
+				x
+			]
+		][sector];
+		return [
+			r + m,
+			g + m,
+			b + m
+		];
+	}
+	var TERRAIN_KEYS = [
+		"oceanColor",
+		"sandColor",
+		"plainsColor",
+		"highlandColor",
+		"mountainColor"
+	];
+	var OWN_COLOUR_SHARE = .15;
+	var GREY_BRIGHTNESS = .42;
+	var BLUE_LIFT = 1.08;
+	function createTerrainShade() {
+		let dimmedView = null;
+		let original = null;
+		let written = null;
+		return {
+			dim(view) {
+				const terrain = view.getSettings().terrain;
+				if (!terrain) return;
+				if (dimmedView === view && written && sameColours(terrain, written)) return;
+				original = copyColours(terrain);
+				written = greyTerrain(original);
+				Object.assign(terrain, written);
+				dimmedView = view;
+				view.rebuildTerrain();
+			},
+			restore() {
+				if (!dimmedView || !original || !written) return;
+				const terrain = dimmedView.getSettings().terrain;
+				if (terrain && sameColours(terrain, written)) {
+					Object.assign(terrain, original);
+					dimmedView.rebuildTerrain();
+				}
+				dimmedView = null;
+				original = null;
+				written = null;
+			}
+		};
+	}
+	function greyTerrain(colours) {
+		const grey = copyColours(colours);
+		for (const key of TERRAIN_KEYS) {
+			const rgb = parseHex(colours[key]);
+			if (!rgb) continue;
+			const level = (.299 * rgb[0] + .587 * rgb[1] + .114 * rgb[2]) * GREY_BRIGHTNESS;
+			const target = [
+				level,
+				level,
+				Math.min(255, level * BLUE_LIFT)
+			];
+			grey[key] = toHex(rgb.map((channel, i) => channel * OWN_COLOUR_SHARE + target[i] * .85));
+		}
+		return grey;
+	}
+	function copyColours(colours) {
+		return {
+			oceanColor: colours.oceanColor,
+			sandColor: colours.sandColor,
+			plainsColor: colours.plainsColor,
+			highlandColor: colours.highlandColor,
+			mountainColor: colours.mountainColor
+		};
+	}
+	function sameColours(a, b) {
+		return TERRAIN_KEYS.every((key) => a[key] === b[key]);
+	}
+	function parseHex(value) {
+		const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(value);
+		if (!match) return null;
+		return [
+			parseInt(match[1], 16),
+			parseInt(match[2], 16),
+			parseInt(match[3], 16)
+		];
+	}
+	function toHex(rgb) {
+		return `#${rgb.map((channel) => Math.round(Math.max(0, Math.min(255, channel))).toString(16).padStart(2, "0")).join("")}`;
+	}
 	var HOLD_KEY_OPTION = "hold-key";
 	var DEFAULT_HOLD_KEY = "Backquote";
 	var REASSERT_FRAMES = 240;
@@ -431,6 +608,7 @@
 			const gameKeybinds = localStorageStore(GAME_KEYBINDS_KEY);
 			const palette = createPalette();
 			const clocks = createClockLayer();
+			const terrain = createTerrainShade();
 			let holding = false;
 			let alternateViewHeld = false;
 			let subjectID = 0;
@@ -470,10 +648,12 @@
 					writtenSignature = signature;
 					framesSinceWrite = 0;
 				}
+				terrain.dim(hooks.view);
 				clocks.place(clocksOf(web), hooks.camera);
 			}
 			function standDown(hooks) {
 				clocks.hide();
+				terrain.restore();
 				if (!painted) return;
 				paintReal(palette, playersOf(context.game));
 				hooks.view.updatePalette(palette);
@@ -560,6 +740,7 @@
 				stopLoop();
 				const hooks = readHooks();
 				if (hooks) standDown(hooks);
+				terrain.restore();
 				clocks.remove();
 			});
 		}

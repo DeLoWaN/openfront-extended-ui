@@ -23,13 +23,15 @@ Nothing marks the 42.2% level itself, and nothing changes colour when you cross 
 
 ### The alliance view mode
 
-Hold the backquote key, which is the key it comes with. The whole map turns grey, except one player and everyone they are allied with. Those two keep their own colours.
+Hold the backquote key, which is the key it comes with. The whole map turns grey, except one player, everyone they are allied with, and their teammates in a team match. Those keep their own colours.
 
 That player is the **subject**. The cursor picks it, and it sticks: it changes only when the cursor reaches another player. So sweeping across ocean does not throw it away. The first press has no subject, so the map greys and nothing is coloured until the cursor finds someone. Let go and the subject is forgotten, so the next press is a fresh look.
 
-Only the subject's own alliance partners are coloured. An ally's own allies get nothing.
+Only the subject's own alliance partners and teammates are coloured. An ally's own allies get nothing.
 
-Each ally carries a clock under their name, saying how long that alliance has left. It turns red once the game starts offering to renew that alliance. The subject carries no clock, and that is the only thing that tells the two apart. The mode never marks a player's colour to say something, because a player is known on the map by that colour. [ADR-0008](docs/adr/0008-information-by-position-and-text-never-by-changing-a-real-colour.md) holds the reasoning.
+Every other player turns a dark grey of their own. Each grey keeps a faint trace of that player's colour, so the border between two greyed neighbours stays visible. The land and the sea turn grey as well. Late in a match you may be allied to everyone, and nobody is left to grey. The grey terrain still tells you the mode is on.
+
+Each ally carries a clock under their name, saying how long that alliance has left. It turns red once the game starts offering to renew that alliance. The subject carries no clock, and that is the only thing that tells the two apart. A teammate has no alliance, so it carries no clock either. The mode never marks a player's colour to say something, because a player is known on the map by that colour. [ADR-0008](docs/adr/0008-information-by-position-and-text-never-by-changing-a-real-colour.md) holds the reasoning.
 
 The mode stands down while one of the game's own pop-up panels is open, such as the chat or the leaderboard, because the game dims the map behind those. It stands down again while you hold the game's own view key, normally space. Under that view the game draws no territory at all, so there is nothing left to colour.
 

@@ -77,6 +77,90 @@ describe("the web the map is drawn around", () => {
   });
 });
 
+describe("teammates in the web", () => {
+  function teams(): {
+    game: FakeGameView;
+    add: (smallID: number, team: string | null) => FakePlayerView;
+  } {
+    const { game, add } = match();
+    return {
+      game,
+      add: (smallID, team) => {
+        const player = add(smallID);
+        player.team = team;
+        return player;
+      },
+    };
+  }
+
+  /** The game's `allies` leaves teammates out, so they need their own read. */
+  it("colours every teammate of the subject", () => {
+    const { game, add } = teams();
+    add(1, "Red");
+    add(2, "Red");
+    add(3, "Red");
+    add(4, "Blue");
+
+    const web = readWeb(game, 1);
+
+    expect([...web!.coloured].sort()).toEqual([1, 2, 3]);
+  });
+
+  /** A clock tells an alliance's time left. A teammate has no alliance. */
+  it("gives a teammate no clock", () => {
+    const { game, add } = teams();
+    add(1, "Red");
+    add(2, "Red");
+
+    expect(readWeb(game, 1)?.allies).toEqual([]);
+  });
+
+  it("colours both teammates and allies of a subject who has both", () => {
+    const { game, add } = teams();
+    const subject = add(1, "Red");
+    add(2, "Red");
+    const ally = add(3, "Blue");
+    add(4, "Blue");
+    subject.allyWith(ally, 2000);
+
+    const web = readWeb(game, 1);
+
+    expect([...web!.coloured].sort()).toEqual([1, 2, 3]);
+    expect(web?.allies.map((a) => a.smallID)).toEqual([3]);
+  });
+
+  it("colours no teammate in a match without teams", () => {
+    const { game, add } = teams();
+    add(1, null);
+    add(2, null);
+
+    expect([...readWeb(game, 1)!.coloured]).toEqual([1]);
+  });
+
+  it("skips a teammate whose own view throws, and keeps the others", () => {
+    const { game, add } = teams();
+    add(1, "Red");
+    const broken = add(2, "Red");
+    add(3, "Red");
+    broken.smallID = () => {
+      throw new Error("this view is half built");
+    };
+
+    expect([...readWeb(game, 1)!.coloured].sort()).toEqual([1, 3]);
+  });
+
+  it("colours the subject alone when the player list throws", () => {
+    const { game, add } = teams();
+    add(1, "Red");
+    add(2, "Red");
+    game.players = () => {
+      throw new Error("the roster is not ready");
+    };
+
+    expect([...readWeb(game, 1)!.coloured]).toEqual([1]);
+  });
+});
+
 describe("how long each alliance has left", () => {
   it("counts the ticks from now to the end of the alliance", () => {
     const { game, add } = match();

@@ -3,6 +3,7 @@ import { createFeatureContext } from "../../runtime/context";
 import type { OptionValue } from "../../runtime/feature";
 import { HIDDEN } from "../../runtime/styles";
 import {
+  DEFAULT_TERRAIN,
   FakeGameView,
   FakeMapRenderer,
   FakePlayerView,
@@ -13,7 +14,8 @@ import {
 } from "../../test/fakes";
 import { allianceView } from "./index";
 import { CLOCK, URGENT } from "./clocks";
-import { GREY, readSlot } from "./palette";
+import { readSlot } from "./palette";
+import { greyTerrain } from "./terrain";
 
 const HOLD = "Backquote";
 
@@ -30,6 +32,12 @@ interface Setup {
   ally: FakePlayerView;
   detach: () => void;
 }
+
+/**
+ * Every instance a test attached. Each one listens on `window`, so one left
+ * attached would answer the next test's key presses too.
+ */
+const attachedDetaches: (() => void)[] = [];
 
 function setup(
   options: { keybinds?: Record<string, string>; holdKey?: string } = {},
@@ -68,6 +76,7 @@ function setup(
       option === "hold-key" ? (options.holdKey ?? HOLD) : false,
   });
   allianceView.attach(attached.context);
+  attachedDetaches.push(attached.detach);
 
   return {
     game,
@@ -102,7 +111,11 @@ function fillOf(renderer: FakeMapRenderer, smallID: number): number[] {
   return readSlot(renderer.last!, smallID).fill;
 }
 
-const isGrey = (fill: number[]) => fill[0] === Math.fround(GREY);
+/**
+ * Every player in these tests has one channel at full strength, and every
+ * greyed player draws dark on all three.
+ */
+const isGrey = (fill: number[]) => Math.max(fill[0]!, fill[1]!, fill[2]!) < 0.4;
 
 const clocks = () =>
   [...document.querySelectorAll<HTMLElement>(`.${CLOCK}`)].filter(
@@ -112,6 +125,7 @@ const clocks = () =>
 beforeEach(() => vi.useFakeTimers());
 
 afterEach(() => {
+  for (const detach of attachedDetaches.splice(0)) detach();
   vi.useRealTimers();
   delete window.__webglView;
 });
@@ -470,6 +484,106 @@ describe("the clocks on the map", () => {
     keyUp(HOLD);
 
     expect(clocks()).toHaveLength(0);
+  });
+});
+
+describe("the terrain under the mode", () => {
+  const grey = greyTerrain(DEFAULT_TERRAIN);
+
+  it("turns grey while the key is down", () => {
+    const { renderer } = setup();
+    pointAt(SUBJECT_AT.screen);
+
+    keyDown(HOLD);
+
+    expect(renderer.settings.terrain).toEqual(grey);
+    expect(renderer.bakes.at(-1)).toEqual(grey);
+  });
+
+  /**
+   * Late in a match the subject is allied to everyone, so no territory greys.
+   * The terrain is then the only thing that shows the mode is on.
+   */
+  it("turns grey even when the subject is allied to every player", () => {
+    const { game, renderer, subject } = setup();
+    subject.allyWith(game.playerBySmallID(3) as FakePlayerView, 2000);
+    pointAt(SUBJECT_AT.screen);
+
+    keyDown(HOLD);
+
+    expect(isGrey(fillOf(renderer, 3))).toBe(false);
+    expect(renderer.settings.terrain).toEqual(grey);
+  });
+
+  it("comes back in its own colours when the key comes up", () => {
+    const { renderer } = setup();
+    pointAt(SUBJECT_AT.screen);
+    keyDown(HOLD);
+
+    keyUp(HOLD);
+
+    expect(renderer.settings.terrain).toEqual(DEFAULT_TERRAIN);
+    expect(renderer.bakes.at(-1)).toEqual(DEFAULT_TERRAIN);
+  });
+
+  /** A bake walks every tile of the map. */
+  it("is baked once per press, however long the key is held", () => {
+    const { renderer } = setup();
+    pointAt(SUBJECT_AT.screen);
+    keyDown(HOLD);
+
+    frames(300);
+    pointAt(STRANGER_AT.screen);
+    frames(30);
+
+    expect(renderer.bakes).toHaveLength(1);
+  });
+
+  it("comes back in its own colours under the game's alternate view", () => {
+    const { renderer } = setup();
+    pointAt(SUBJECT_AT.screen);
+    keyDown(HOLD);
+
+    keyDown("Space");
+
+    expect(renderer.settings.terrain).toEqual(DEFAULT_TERRAIN);
+  });
+
+  it("comes back in its own colours when the match ends", () => {
+    const { renderer, detach } = setup();
+    pointAt(SUBJECT_AT.screen);
+    keyDown(HOLD);
+
+    detach();
+
+    expect(renderer.settings.terrain).toEqual(DEFAULT_TERRAIN);
+  });
+
+  /** The game may take its renderer off `window` before the match ends. */
+  it("comes back in its own colours when the renderer has left the page", () => {
+    const { renderer, detach } = setup();
+    pointAt(SUBJECT_AT.screen);
+    keyDown(HOLD);
+    delete window.__webglView;
+
+    detach();
+
+    expect(renderer.settings.terrain).toEqual(DEFAULT_TERRAIN);
+  });
+});
+
+describe("teammates under the mode", () => {
+  it("keeps a teammate of the subject in their own colours", () => {
+    const { game, renderer, subject } = setup();
+    const teammate = game.add(new FakePlayerView(4, "p4", fakeColour(255, 255, 0)));
+    subject.team = "Red";
+    teammate.team = "Red";
+    pointAt(SUBJECT_AT.screen);
+
+    keyDown(HOLD);
+
+    expect(fillOf(renderer, 4)).toEqual([1, 1, 0, expect.any(Number)]);
+    expect(isGrey(fillOf(renderer, 3))).toBe(true);
   });
 });
 
