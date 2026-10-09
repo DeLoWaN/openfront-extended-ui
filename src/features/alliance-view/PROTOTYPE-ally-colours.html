@@ -1,0 +1,518 @@
+<!doctype html>
+<!--
+  PROTOTYPE, throwaway. Not bundled, not shipped.
+  Question: today's scheme (web in real colours, enemies grey) is the right base.
+  1. Can enemies keep slightly different greys, so their borders stay readable?
+  2. Late in a match the subject is allied to everyone, so the mode looks like the
+     normal map. What tells the player the mode is on, and still shows the web?
+  Interactive: hold ` (Backquote, the real hold key) or click the toggle button.
+  Hover a territory to pick the subject. ←/→ cycles presets, tick effects freely.
+  Real Europe terrain (map16x.bin, OpenFrontIO 332e5410e), real terrain and player
+  colours, territoryAlpha 0.588, saturation 0.85, border = fill darkened by 0.125.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PROTOTYPE - alliance view, interactive</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #0e1116; color: #e6e8eb; font: 14px/1.4 system-ui, sans-serif; }
+  #wrap { padding: 12px 16px 110px; display: flex; gap: 18px; align-items: flex-start; }
+  #side { width: 300px; flex: none; }
+  h1 { font-size: 15px; margin: 0 0 8px; }
+  .note { color: #9aa3ad; font-size: 13px; margin: 6px 0; }
+  .cost { color: #c9a8ff; font-size: 12px; margin: 4px 0 0 24px; }
+  #stagebox { position: relative; border-radius: 6px; overflow: hidden; flex: none; }
+  canvas { display: block; }
+  #frame { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s;
+           box-shadow: inset 0 0 0 3px #a78bfa, inset 0 0 40px 8px rgba(139, 92, 246, .55); }
+  #pill { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); pointer-events: none; opacity: 0; transition: opacity .25s;
+          background: rgba(76, 29, 149, .9); border: 1px solid #c4b5fd; color: #fff; font-weight: 700; font-size: 13px;
+          padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
+  label.fx { display: block; margin: 8px 0 0; cursor: pointer; }
+  label.fx input { margin-right: 8px; }
+  .row { margin: 10px 0; }
+  button.big { width: 100%; padding: 10px; font-weight: 700; font-size: 14px; border-radius: 8px; border: 0; cursor: pointer; background: #2a2f37; color: #e6e8eb; }
+  button.big.on { background: #7c3aed; color: #fff; }
+  .seg { display: flex; gap: 6px; }
+  .seg button { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #3a404a; background: #1b1f25; color: #e6e8eb; cursor: pointer; }
+  .seg button.on { background: #e6e8eb; color: #111; }
+  input[type=range] { width: 100%; }
+  #state { font-family: ui-monospace, monospace; font-size: 12px; color: #9aa3ad; white-space: pre-wrap; margin-top: 12px; }
+  kbd { background: #2a2f37; border-radius: 4px; padding: 0 5px; font-family: ui-monospace, monospace; }
+  #bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 14px;
+         background: #fff; color: #111; border-radius: 999px; padding: 8px 14px; box-shadow: 0 4px 18px #000a; font-weight: 600; }
+  #bar button { border: 0; background: #e3e6ea; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer; }
+  #name { min-width: 340px; text-align: center; }
+</style>
+<script src="PROTOTYPE-europe16x.js"></script>
+</head>
+<body>
+<div id="wrap">
+  <div id="stagebox"><canvas id="c"></canvas><div id="frame"></div><div id="pill"></div></div>
+  <div id="side">
+    <h1>PROTOTYPE · alliance view mode</h1>
+    <div class="row"><button class="big" id="toggle">Alliance view: OFF</button>
+      <p class="note">Hold <kbd>`</kbd> like in the game, or click to latch. Hover a territory to pick the subject.</p></div>
+    <div class="row"><div class="seg"><button id="sc-mid" class="on">Mid game</button><button id="sc-late">Late game: allied to all</button></div></div>
+    <div class="row">
+      <div>Enemy grey strength: <b id="kval"></b></div>
+      <input id="k" type="range" min="0" max="1" step="0.05" value="0.85" />
+      <p class="note">1 = today's flat grey. Lower keeps a trace of each enemy's own colour, so enemy borders stay readable.</p>
+    </div>
+    <div class="row" id="fxs"></div>
+    <div id="state"></div>
+  </div>
+</div>
+<div id="bar"><button id="prev">←</button><span id="name"></span><button id="next">→</button></div>
+<script>
+// ================================================================ terrain
+const MW = 726, MH = 418;
+const bytes = Uint8Array.from(atob(window.EUROPE16X), c => c.charCodeAt(0));
+const X0 = 130, Y0 = 70, CW = 400, CH = 290, SCALE = 2.3;
+
+// Copied from encodeTerrainTile in ColorUtils.ts.
+function terrainRGB(tb) {
+  const isLand = (tb & 0x80) !== 0, shore = (tb & 0x40) !== 0, mag = tb & 0x1f;
+  const ocean = [0x47, 0x85, 0xb5];
+  if (isLand && mag === 31) return [60, 60, 60];
+  if (isLand && shore) return [204, 203, 158];
+  if (isLand) {
+    if (mag < 10) return [190, 220 - 2 * mag, 138];
+    if (mag < 20) { const m = mag - 10; return [200 + 2 * m, 183 + 2 * m, 138 + 2 * m].map(v => Math.min(255, v)); }
+    const m = Math.floor(mag / 2); return [230 + m, 230 + m, 230 + m].map(v => Math.min(255, v));
+  }
+  if (shore) return ocean.map(v => Math.round(0.7 * v + 76.5));
+  const m = Math.min(mag, 10); return ocean.map(v => Math.max(0, v - m));
+}
+
+// ================================================================ players
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const P = [
+  ["France", 272, 246, "#3b82f6", 1.7], ["Italy", 385, 295, "#22c55e", 1.3], ["Poland", 438, 193, "#f472b6", 1.3],
+  ["Norway", 340, 107, "#fbbf24", 1.2], ["Spain", 218, 321, "#f97316", 1.4], ["Belgium", 295, 209, "#a855f7", 0.9],
+  ["Germany", 361, 205, "#dc2626", 1.4], ["England", 240, 195, "#e9d5ff", 1.0], ["Wales", 216, 194, "#fda4af", 0.6],
+  ["Scotland", 210, 151, "#7dd3fc", 0.8], ["Ireland", 158, 195, "#84cc16", 0.9], ["N. Ireland", 180, 171, "#fcd34d", 0.5],
+  ["Portugal", 170, 313, "#10b981", 0.9], ["Netherlands", 317, 191, "#fb923c", 0.7], ["Switzerland", 335, 249, "#fca5a5", 0.7],
+  ["Austria", 377, 240, "#ca8a04", 0.9], ["Czechia", 404, 218, "#4f46e5", 0.9], ["Denmark", 344, 156, "#2dd4bf", 0.8],
+  ["Sweden", 402, 119, "#93c5fd", 1.2], ["Hungary", 438, 246, "#d946ef", 0.9], ["Croatia", 406, 259, "#a3e635", 0.7],
+  ["Slovakia", 456, 225, "#ffdfba", 0.6], ["Serbia", 476, 278, "#7c3aed", 0.9], ["Bosnia", 434, 277, "#52b788", 0.6],
+  ["Morocco", 192, 384, "#854d0e", 1.0], ["Algeria", 266, 376, "#fff0c8", 1.0], ["Tunisia", 340, 368, "#ec4899", 0.8],
+].map(([name, x, y, c, strength], i) => ({ id: i + 1, name, x, y, real: hex(c), strength }));
+const byName = Object.fromEntries(P.map(p => [p.name, p]));
+const byId = Object.fromEntries(P.map(p => [p.id, p]));
+
+// ================================================================ who is allied with whom
+const TEAM = new Set(["France", "Spain", "Belgium"].map(n => byName[n].id));
+const MID_PAIRS = [
+  ["France", "Italy"], ["France", "Poland"], ["France", "Norway"], ["Italy", "Austria"], ["Germany", "Czechia"],
+  ["Germany", "Netherlands"], ["England", "Scotland"], ["England", "Wales"], ["Sweden", "Denmark"], ["Poland", "Slovakia"],
+  ["Hungary", "Croatia"], ["Serbia", "Bosnia"], ["Morocco", "Algeria"], ["Spain", "Portugal"],
+];
+const key2 = (a, b) => a < b ? `${a}-${b}` : `${b}-${a}`;
+const scenarios = {
+  mid: new Set(MID_PAIRS.map(([a, b]) => key2(byName[a].id, byName[b].id))),
+  // Late game: every pair is allied, except that Germany is at war with all but France.
+  late: new Set(P.flatMap(a => P.filter(b => b.id > a.id).filter(b =>
+    !((a.name === "Germany" || b.name === "Germany") && a.name !== "France" && b.name !== "France")).map(b => key2(a.id, b.id)))),
+};
+function clockFor(a, b) {
+  const s = Math.floor((Math.sin(a * 7.13 + b * 3.71) * 0.5 + 0.5) * 290) + 10;
+  return { text: `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`, urgent: s <= 30 };
+}
+
+// ================================================================ territory growth (Dijkstra from each spawn)
+function h2(x, y) { const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453; return s - Math.floor(s); }
+function vnoise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const sx = xf * xf * (3 - 2 * xf), sy = yf * yf * (3 - 2 * yf);
+  const a = h2(xi, yi), b = h2(xi + 1, yi), c = h2(xi, yi + 1), d = h2(xi + 1, yi + 1);
+  return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+}
+const owner = new Uint16Array(MW * MH);
+{
+  const cost = new Float64Array(MW * MH).fill(Infinity);
+  const heap = [];
+  const push = e => { heap.push(e); let i = heap.length - 1; while (i) { const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let i = 0; for (;;) { const l = 2 * i + 1, r = l + 1; let m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+  const land = t => (bytes[t] & 0x80) && (bytes[t] & 0x1f) !== 31;
+  for (const p of P) {
+    let t = p.y * MW + p.x;
+    if (!land(t)) outer: for (let r = 1; r < 10; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const u = (p.y + dy) * MW + p.x + dx; if (land(u)) { t = u; break outer; } }
+    cost[t] = 0; push([0, t, p.id]);
+  }
+  while (heap.length) {
+    const [c, t, id] = pop();
+    if (c > cost[t] || owner[t]) continue;
+    owner[t] = id;
+    const x = t % MW, y = (t - x) / MW;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue;
+      const u = ny * MW + nx;
+      if (!land(u) || owner[u]) continue;
+      const mag = bytes[u] & 0x1f;
+      const nc = c + (0.6 + vnoise(nx / 6, ny / 6) * 0.9) * (mag >= 20 ? 1.8 : mag >= 10 ? 1.25 : 1) / byId[id].strength;
+      if (nc < cost[u] && nc < 60) { cost[u] = nc; push([nc, u, id]); }
+    }
+  }
+}
+for (const p of P) {
+  let sx = 0, sy = 0, n = 0;
+  for (let t = 0; t < MW * MH; t++) if (owner[t] === p.id) { sx += t % MW; sy += Math.floor(t / MW); n++; }
+  p.tiles = n;
+  const cx = sx / n, cy = sy / n; let best = 1e9;
+  for (let t = 0; t < MW * MH; t++) if (owner[t] === p.id) {
+    const x = t % MW, y = Math.floor(t / MW), d = (x - cx) ** 2 + (y - cy) ** 2;
+    if (d < best) { best = d; p.ax = x; p.ay = y; }
+  }
+}
+
+// ================================================================ colour helpers
+function rgb2hsl([r, g, b]) {
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  let h = 0, s = 0;
+  if (d) { s = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+  return [h, s, l];
+}
+function hsl2rgb([h, s, l]) {
+  const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
+}
+const darken = (c, amt) => { const [h, s, l] = rgb2hsl(c); return hsl2rgb([h, s, Math.max(0, l - amt)]); };
+const mix = (a, b, t) => a.map((v, i) => v * (1 - t) + b[i] * t);
+const saturate = (c, s) => { const l = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]; return c.map(v => l + (v - l) * s); };
+const luma = c => 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
+const own = p => ({ fill: p.real, border: darken(p.real, 0.125) });
+
+// Today's flat grey, from palette.ts.
+const G = 0.22 * 255, GB = (0.22 + 0.78 * 0.35) * 255;
+// An enemy's own grey: a trace of its hue, and its own lightness, so two enemies never match exactly.
+function enemyPair(p, k) {
+  const [h, s, l] = rgb2hsl(p.real);
+  const ownGrey = hsl2rgb([h, s * 0.25, 0.14 + l * 0.22]);
+  const ownGreyBorder = hsl2rgb([h, s * 0.25, 0.34 + l * 0.22]);
+  // k = 1 is today's flat grey. k slides from the enemy's own grey towards it.
+  const flatT = Math.max(0, (k - 0.7) / 0.3);
+  const colourT = Math.min(1, k / 0.7);
+  const fill = mix(mix(p.real, ownGrey, colourT), [G, G, G], flatT);
+  const border = mix(mix(darken(p.real, 0.125), ownGreyBorder, colourT), [GB, GB, GB], flatT);
+  return { fill, border };
+}
+
+// ================================================================ effects
+const TILE_LAYER = "Own layer drawn at tile resolution from the game's tile owners, rebuilt on press and on a new subject. Cost on a big map (2904×1672 tiles): to measure.";
+const EFFECTS = {
+  outline: { label: "F · Coalition outline, marching (animated)", cost: TILE_LAYER },
+  front:   { label: "G · Front line where the web touches an enemy", cost: TILE_LAYER },
+  fog:     { label: "H · Drifting fog over enemies (animated)", cost: TILE_LAYER },
+  raised:  { label: "I · Web raised above the map (shadow)", cost: TILE_LAYER },
+  glow:    { label: "J · Glow around each ally, in its own colour", cost: TILE_LAYER + " Needs a 5-tile distance field." },
+  terrain:{ label: "Grey terrain", cost: "Terrain is baked into a texture. Renderer.rebuildTerrain() rebuilds it from settings.terrain. Reachable through the private renderer field: to verify." },
+  pulse:   { label: "Pulse the allies (animated)", cost: "Rewrite the palette every frame. updatePalette is one texSubImage2D, cheap. Names re-bake their outline from the palette: to measure." },
+  wave:    { label: "Wave from the subject on press (animated, one shot)", cost: "Palette per frame for 1 s, plus a ring on our own map layer." },
+  frame:   { label: "Violet frame + status pill", cost: "Our own layer only. Violet is the package's signature colour." },
+};
+const PRESETS = [
+  { name: "Base · enemy grey 0.85 + grey terrain", fx: ["terrain"] },
+  { name: "F · Base + coalition outline", fx: ["terrain", "outline"], coast: true, anim: "march" },
+  { name: "F2 · Outline, no coasts, marches 2 s on press", fx: ["terrain", "outline"], coast: false, anim: "press" },
+  { name: "F3 · Outline, no coasts, still", fx: ["terrain", "outline"], coast: false, anim: "static" },
+  { name: "G · Base + front line", fx: ["terrain", "front"] },
+  { name: "H · Base + fog over enemies", fx: ["terrain", "fog"] },
+  { name: "I · Base + raised web", fx: ["terrain", "raised"] },
+  { name: "J · Base + glow around allies", fx: ["terrain", "glow"] },
+  { name: "Earlier · Base + wave + frame", fx: ["terrain", "wave", "frame"] },
+];
+
+// ================================================================ state
+const state = { outlineCoast: true, outlineAnim: "march", held: false, latched: false, scenario: "mid", subject: byName.France.id, k: 0.85, fx: new Set(), preset: 0, waveStart: -1e9 };
+const active = () => state.held || state.latched;
+
+function web() {
+  const pairs = scenarios[state.scenario], s = state.subject;
+  const allies = new Map(), team = new Set();
+  for (const p of P) {
+    if (p.id === s) continue;
+    if (TEAM.has(s) && TEAM.has(p.id)) team.add(p.id);
+    else if (pairs.has(key2(s, p.id))) allies.set(p.id, clockFor(s, p.id));
+  }
+  return { allies, team };
+}
+
+// ================================================================ precompute per crop tile
+const N = CW * CH;
+const tLand = new Uint8Array(N);
+for (let y = 0; y < CH; y++) for (let x = 0; x < CW; x++) tLand[y * CW + x] = (bytes[(Y0 + y) * MW + X0 + x] & 0x80) ? 1 : 0;
+const tOwner = new Uint16Array(N), tEdge = new Uint8Array(N), tTerrain = new Float32Array(N * 3), tTerrainGrey = new Float32Array(N * 3);
+for (let y = 0; y < CH; y++) for (let x = 0; x < CW; x++) {
+  const i = y * CW + x, mx = X0 + x, my = Y0 + y, t = my * MW + mx, o = owner[t];
+  tOwner[i] = o;
+  tEdge[i] = o && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => owner[(my + dy) * MW + mx + dx] !== o) ? 1 : 0;
+  const rgb = terrainRGB(bytes[t]);
+  tTerrain.set(rgb, i * 3);
+  const l = luma(rgb) * 0.42; // dark, desaturated terrain
+  tTerrainGrey.set(mix(rgb, [l, l, l * 1.08], 0.85), i * 3);
+}
+
+// ================================================================ tile masks for the web, cached per subject and scenario
+let masks = null, masksKey = "";
+function getMasks(inWeb) {
+  const key = `${state.scenario}|${state.subject}|${state.outlineCoast}`;
+  if (key === masksKey) return masks;
+  masksKey = key;
+  const web = new Uint8Array(N), enemy = new Uint8Array(N);
+  for (let i = 0; i < N; i++) { const o = tOwner[i]; if (o) (inWeb.has(o) ? web : enemy)[i] = 1; }
+  const at = (x, y) => x >= 0 && y >= 0 && x < CW && y < CH ? y * CW + x : -1;
+  const coal = new Uint8Array(N), front = new Uint8Array(N), shadow = new Uint8Array(N), light = new Uint8Array(N);
+  const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]], N8 = [...N4, [1, 1], [1, -1], [-1, 1], [-1, -1]];
+  for (let y = 0; y < CH; y++) for (let x = 0; x < CW; x++) {
+    const i = y * CW + x;
+    // Coalition outline: one tile on each side of the web's outer edge.
+    // Without coasts, only an edge between web land and other land counts.
+    const landOk = j => state.outlineCoast || (tLand[i] && tLand[j]);
+    if (N8.some(([dx, dy]) => { const j = at(x + dx, y + dy); return j >= 0 && web[j] !== web[i] && landOk(j); })) coal[i] = 1;
+    // Front line: a web tile touching an enemy tile, or the reverse.
+    if ((web[i] || enemy[i]) && N8.some(([dx, dy]) => { const j = at(x + dx, y + dy); return j >= 0 && (web[i] ? enemy[j] : web[j]); })) front[i] = 1;
+    // Raised web: light from the top left, so the shadow falls down and right.
+    if (!web[i]) for (let d = 1; d <= 3; d++) { const j = at(x - d, y - d); if (j >= 0 && web[j]) { shadow[i] = 4 - d; break; } }
+    if (web[i]) { const j = at(x - 1, y - 1); if (j < 0 || !web[j]) light[i] = 1; }
+  }
+  // Glow: distance from the nearest web tile, up to 5 tiles out, with that tile's owner.
+  const glowD = new Uint8Array(N), glowO = new Uint16Array(N);
+  let queue = [];
+  for (let i = 0; i < N; i++) if (web[i] && tOwner[i] !== state.subject) { glowO[i] = tOwner[i]; queue.push(i); }
+  for (let d = 1; d <= 5; d++) {
+    const next = [];
+    for (const i of queue) {
+      const x = i % CW, y = (i - x) / CW;
+      for (const [dx, dy] of N4) {
+        const j = at(x + dx, y + dy);
+        if (j < 0 || web[j] || glowD[j]) continue;
+        glowD[j] = d; glowO[j] = glowO[i]; next.push(j);
+      }
+    }
+    queue = next;
+  }
+  return masks = { web, enemy, coal, front, shadow, light, glowD, glowO };
+}
+
+function fbm(x, y) { return vnoise(x, y) * 0.6 + vnoise(x * 2.1, y * 2.1) * 0.3 + vnoise(x * 4.3, y * 4.3) * 0.1; }
+const smooth = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+// Effects drawn on our own layer, over what the game drew.
+function layer(i, rgb, m, fx, now) {
+  const x = i % CW, y = (i - x) / CW;
+  if (fx.has("raised")) {
+    if (m.shadow[i]) rgb = mix(rgb, [0, 0, 0], 0.18 * m.shadow[i]);
+    if (m.light[i]) rgb = mix(rgb, [255, 255, 255], 0.45);
+  }
+  if (fx.has("glow") && m.glowD[i]) rgb = mix(rgb, byId[m.glowO[i]].real, 0.85 * (1 - (m.glowD[i] - 1) / 5));
+  if (fx.has("fog") && m.enemy[i]) {
+    const n = fbm(x / 22 + now / 9000, y / 22 + now / 23000);
+    rgb = mix(rgb, [222, 226, 232], 0.7 * smooth(0.42, 0.72, n));
+  }
+  if (fx.has("front") && m.front[i]) rgb = m.web[i] ? [255, 196, 64] : [235, 60, 40];
+  if (fx.has("outline") && m.coal[i]) {
+    const MARCH_MS = 2000;
+    const t = state.outlineAnim === "static" ? 0
+      : state.outlineAnim === "press" ? Math.min(now, state.waveStart + MARCH_MS) : now;
+    rgb = ((x + y + Math.floor(t / 90)) % 8) < 4 ? [255, 255, 255] : [139, 92, 246];
+  }
+  return rgb;
+}
+
+// ================================================================ render
+const canvas = document.getElementById("c");
+canvas.width = CW * SCALE; canvas.height = CH * SCALE;
+const ctx = canvas.getContext("2d");
+const tmp = document.createElement("canvas"); tmp.width = CW; tmp.height = CH;
+const tctx = tmp.getContext("2d");
+const img = tctx.createImageData(CW, CH);
+const TERRITORY_ALPHA = 0.588, SATURATION = 0.85, WAVE_MS = 1100;
+
+function draw(now) {
+  const on = active(), fx = state.fx, { allies, team } = web();
+  const subject = byId[state.subject];
+
+  // Palette for this frame.
+  const pulse = 0.5 + 0.5 * Math.sin(now / 1600 * Math.PI * 2);
+  const waveT = (now - state.waveStart) / WAVE_MS;
+  const waveR = waveT * 420; // tiles
+  const pairs = {};
+  for (const p of P) {
+    const inWeb = p.id === state.subject || allies.has(p.id) || team.has(p.id);
+    if (!on) { pairs[p.id] = own(p); continue; }
+    if (!inWeb) { pairs[p.id] = enemyPair(p, state.k); continue; }
+    let { fill, border } = own(p);
+    if (p.id !== state.subject && fx.has("pulse")) {
+      // The game's own hover boost: push channels away from mid grey.
+      const c = 1 + 0.45 * pulse;
+      fill = fill.map(v => Math.min(255, Math.max(0, (v - 127.5) * c + 127.5 + 25 * pulse)));
+      border = mix(border, [255, 255, 255], 0.55 * pulse);
+    }
+    if (fx.has("wave") && waveT >= 0 && waveT < 1.6) {
+      const d = Math.hypot(p.ax - subject.ax, p.ay - subject.ay);
+      const hit = Math.exp(-(((waveR - d) / 45) ** 2));
+      fill = mix(fill, [255, 255, 255], 0.65 * hit);
+      border = mix(border, [255, 255, 255], 0.8 * hit);
+    }
+    pairs[p.id] = { fill: saturate(fill, SATURATION), border };
+  }
+
+  const terrain = on && fx.has("terrain") ? tTerrainGrey : tTerrain;
+  const inWeb = new Set([state.subject, ...allies.keys(), ...team]);
+  const m = getMasks(inWeb);
+  const useLayer = on && ["outline", "front", "fog", "raised", "glow"].some(k => fx.has(k));
+  const d = img.data;
+  for (let i = 0; i < N; i++) {
+    let r = terrain[i * 3], g = terrain[i * 3 + 1], b = terrain[i * 3 + 2];
+    const o = tOwner[i];
+    if (o) {
+      const pr = pairs[o];
+      if (tEdge[i]) { [r, g, b] = pr.border; }
+      else {
+        const f = pr.fill.length === 3 && pr.fill;
+        const ff = on ? f : saturate(f, SATURATION);
+        r = r * (1 - TERRITORY_ALPHA) + ff[0] * TERRITORY_ALPHA;
+        g = g * (1 - TERRITORY_ALPHA) + ff[1] * TERRITORY_ALPHA;
+        b = b * (1 - TERRITORY_ALPHA) + ff[2] * TERRITORY_ALPHA;
+      }
+    }
+    if (useLayer) [r, g, b] = layer(i, [r, g, b], m, fx, now);
+    d[i * 4] = r; d[i * 4 + 1] = g; d[i * 4 + 2] = b; d[i * 4 + 3] = 255;
+  }
+  tctx.putImageData(img, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(tmp, 0, 0, CW * SCALE, CH * SCALE);
+
+  const at = p => [(p.ax - X0 + 0.5) * SCALE, (p.ay - Y0 + 0.5) * SCALE];
+
+  // Wave ring, on our own layer.
+  if (on && fx.has("wave") && waveT >= 0 && waveT < 1) {
+    const [sx, sy] = at(subject);
+    ctx.save();
+    ctx.globalAlpha = 1 - waveT;
+    ctx.lineWidth = 3; ctx.strokeStyle = "#ddd6fe";
+    ctx.beginPath(); ctx.arc(sx, sy, waveR * SCALE, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Names and clocks.
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (const p of P) {
+    const [x, y] = at(p);
+    if (x < 0 || y < 0 || x > CW * SCALE || y > CH * SCALE) continue;
+    const fs = Math.max(8, Math.min(20, Math.sqrt(p.tiles) * 0.28 * SCALE / 2));
+    ctx.font = `700 ${fs}px system-ui, sans-serif`;
+    ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.75)"; ctx.fillStyle = "#fff";
+    ctx.strokeText(p.name, x, y); ctx.fillText(p.name, x, y);
+    const clock = on && allies.get(p.id);
+    if (clock) {
+      ctx.font = `700 ${Math.max(9, fs * 0.8)}px system-ui, sans-serif`;
+      ctx.fillStyle = clock.urgent ? "#ff6b6b" : "#c9a8ff";
+      ctx.strokeText(clock.text, x, y + fs * 0.95); ctx.fillText(clock.text, x, y + fs * 0.95);
+    }
+  }
+
+  const showFrame = on && fx.has("frame");
+  document.getElementById("frame").style.opacity = showFrame ? 1 : 0;
+  const pill = document.getElementById("pill");
+  pill.style.opacity = showFrame ? 1 : 0;
+  const enemies = P.length - 1 - allies.size - team.size;
+  pill.textContent = `ALLIANCE VIEW · ${subject.name} · ${allies.size} allies · ${team.size} teammates · ${enemies} enemies`;
+
+  document.getElementById("state").textContent =
+    `mode:      ${on ? "ON" : "off"}${state.latched ? " (latched)" : state.held ? " (held)" : ""}\n` +
+    `scenario:  ${state.scenario}\nsubject:   ${subject.name}\n` +
+    `allies:    ${[...allies.keys()].map(id => byId[id].name).join(", ") || "-"}\n` +
+    `teammates: ${[...team].map(id => byId[id].name).join(", ") || "-"}\n` +
+    `enemies:   ${enemies}\neffects:   ${[...fx].join(", ") || "-"}\ngrey k:    ${state.k}`;
+
+  requestAnimationFrame(draw);
+}
+
+// ================================================================ UI
+const fxBox = document.getElementById("fxs");
+for (const [key, e] of Object.entries(EFFECTS)) {
+  const lab = document.createElement("label"); lab.className = "fx";
+  lab.innerHTML = `<input type="checkbox" data-fx="${key}">${e.label}<div class="cost">${e.cost}</div>`;
+  fxBox.appendChild(lab);
+}
+fxBox.addEventListener("change", e => {
+  const k = e.target.dataset.fx; if (!k) return;
+  e.target.checked ? state.fx.add(k) : state.fx.delete(k);
+  document.getElementById("name").textContent = "Custom mix";
+  if (k === "wave" && e.target.checked) state.waveStart = performance.now();
+});
+// F options, placed under the F checkbox.
+const fOpts = document.createElement("div");
+fOpts.style.margin = "4px 0 0 24px";
+fOpts.innerHTML = `<label class="fx" style="margin:2px 0"><input type="checkbox" id="f-coast">Include coasts</label>
+  <div class="seg" style="margin-top:4px"><button data-anim="march">March</button><button data-anim="press">2 s on press</button><button data-anim="static">Still</button></div>`;
+fxBox.querySelector('[data-fx="outline"]').parentElement.after(fOpts);
+document.getElementById("f-coast").onchange = e => { state.outlineCoast = e.target.checked; document.getElementById("name").textContent = "Custom mix"; };
+fOpts.querySelectorAll("[data-anim]").forEach(b => b.onclick = () => {
+  state.outlineAnim = b.dataset.anim; state.waveStart = performance.now(); syncOutline();
+  document.getElementById("name").textContent = "Custom mix";
+});
+function syncOutline() {
+  document.getElementById("f-coast").checked = state.outlineCoast;
+  fOpts.querySelectorAll("[data-anim]").forEach(b => b.classList.toggle("on", b.dataset.anim === state.outlineAnim));
+}
+function syncFx() { fxBox.querySelectorAll("input").forEach(i => i.checked = state.fx.has(i.dataset.fx)); }
+function preset(n) {
+  state.preset = (n + PRESETS.length) % PRESETS.length;
+  state.fx = new Set(PRESETS[state.preset].fx);
+  state.outlineCoast = PRESETS[state.preset].coast ?? true;
+  state.outlineAnim = PRESETS[state.preset].anim ?? "march";
+  syncFx(); syncOutline();
+  document.getElementById("name").textContent = PRESETS[state.preset].name;
+  history.replaceState(null, "", "?preset=" + state.preset);
+  if (active()) state.waveStart = performance.now();
+}
+const toggleBtn = document.getElementById("toggle");
+function setMode(fn) {
+  const was = active(); fn(); const now = active();
+  if (!was && now) state.waveStart = performance.now();
+  toggleBtn.textContent = `Alliance view: ${now ? "ON" : "OFF"}${state.latched ? " (latched)" : ""}`;
+  toggleBtn.classList.toggle("on", now);
+}
+toggleBtn.onclick = () => setMode(() => state.latched = !state.latched);
+addEventListener("keydown", e => {
+  if (e.code === "Backquote" && !e.repeat) setMode(() => state.held = true);
+  if (e.key === "ArrowLeft") preset(state.preset - 1);
+  if (e.key === "ArrowRight") preset(state.preset + 1);
+});
+addEventListener("keyup", e => { if (e.code === "Backquote") setMode(() => state.held = false); });
+addEventListener("blur", () => setMode(() => state.held = false));
+document.getElementById("prev").onclick = () => preset(state.preset - 1);
+document.getElementById("next").onclick = () => preset(state.preset + 1);
+for (const sc of ["mid", "late"]) document.getElementById("sc-" + sc).onclick = () => {
+  state.scenario = sc;
+  document.getElementById("sc-mid").classList.toggle("on", sc === "mid");
+  document.getElementById("sc-late").classList.toggle("on", sc === "late");
+  if (active()) state.waveStart = performance.now();
+};
+const kInput = document.getElementById("k");
+const syncK = () => { state.k = +kInput.value; document.getElementById("kval").textContent = state.k.toFixed(2); };
+kInput.oninput = syncK; syncK();
+
+// The subject sticks: it changes only when the cursor reaches another player.
+canvas.addEventListener("mousemove", e => {
+  const r = canvas.getBoundingClientRect();
+  const x = Math.floor((e.clientX - r.left) / r.width * CW), y = Math.floor((e.clientY - r.top) / r.height * CH);
+  const o = tOwner[y * CW + x];
+  if (o && o !== state.subject) { state.subject = o; if (active()) state.waveStart = performance.now(); }
+});
+
+const q = new URLSearchParams(location.search);
+preset(+(q.get("preset") ?? 0) || 0);
+if (q.get("on") === "1") setMode(() => state.latched = true);
+if (q.get("scenario") === "late") document.getElementById("sc-late").click();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
