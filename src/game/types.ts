@@ -63,12 +63,7 @@ export interface PlayerView {
   gold(): bigint;
 }
 
-/**
- * One item of the hotbar, with the price the game worked out. `Game.ts:893`.
- *
- * The game computes the price in its own simulation worker and hands it over
- * ready-made, so the package rewrites no price formula and none can drift.
- */
+/** One item of the hotbar, with the price the game worked out. `Game.ts:893`. */
 export interface BuildableUnit {
   /** A `UnitType` value, such as "City". `Game.ts:179`. */
   type: string;

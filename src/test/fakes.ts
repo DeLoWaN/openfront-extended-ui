@@ -14,6 +14,7 @@
 import type {
   Alliance,
   BuildMenu,
+  BuildableUnit,
   Colour,
   ControlPanel,
   EventBus,
@@ -25,6 +26,7 @@ import type {
   NameLocation,
   PlayerView,
   TransformHandler,
+  UnitDisplay,
 } from "../game/types";
 
 export class FakeEventBus implements EventBus {
@@ -63,6 +65,7 @@ export function fakeColour(r: number, g: number, b: number): Colour {
 
 export class FakePlayerView implements PlayerView {
   alive = true;
+  goldHeld = 0n;
   allyList: FakePlayerView[] = [];
   allianceList: Alliance[] = [];
   /** Undefined stands for a player the renderer has not placed yet. */
@@ -102,6 +105,9 @@ export class FakePlayerView implements PlayerView {
   }
   nameLocation(): NameLocation | undefined {
     return this.nameData;
+  }
+  gold(): bigint {
+    return this.goldHeld;
   }
 
   /** Allies both players and writes the alliance row on each of them. */
@@ -338,4 +344,102 @@ export function setTroopBarFill(
   const orange = Math.max(0, Math.min(100 - green, committed * 100));
   troops.style.transform = `scaleX(${green / 100})`;
   committedTroops.style.transform = `translateX(${green}%) scaleX(${orange / 100})`;
+}
+
+/**
+ * The game's own markup for the hotbar, copied class for class.
+ *
+ * Read from `render` and `renderUnitItem` in
+ * `src/client/hud/layers/UnitDisplay.ts` at OpenFrontIO commit 332e5410e.
+ * Three things about it matter to the package, so the copy keeps all three:
+ *
+ * - Each icon sits in an item of its own, and that item is already positioned.
+ * - The item holds one box, and the box holds the icon two levels down.
+ * - The icon names its own structure in its `alt`.
+ */
+const HOTBAR_ICONS = [
+  "city",
+  "factory",
+  "port",
+  "defense_post",
+  "missile_silo",
+  "sam_launcher",
+  "warship",
+  "atom_bomb",
+  "hydrogen_bomb",
+  "mirv",
+] as const;
+
+/** The `<unit-display>` element, with the prices the game hands it. */
+export class FakeUnitDisplay extends HTMLElement {
+  playerBuildables: BuildableUnit[] | null = null;
+
+  asUnitDisplay(): UnitDisplay {
+    return this as unknown as UnitDisplay;
+  }
+
+  /** Draws the row of ten icons, the way the game draws it. */
+  fill(): void {
+    const border = document.createElement("div");
+    border.className = "border-t border-white/10 p-0.5 w-full";
+    const row = document.createElement("div");
+    row.className = "grid grid-rows-1 grid-flow-col gap-0.5 w-fit mx-auto";
+
+    for (const icon of HOTBAR_ICONS) row.append(buildHotbarItem(icon));
+    border.append(row);
+    this.replaceChildren(border);
+  }
+}
+
+function buildHotbarItem(structureKey: string): HTMLElement {
+  const item = document.createElement("div");
+  item.className = "flex flex-col items-center relative";
+
+  const box = document.createElement("div");
+  box.className =
+    "opacity-40 border border-slate-500 rounded-sm px-0.5 pb-0.5 flex items-center gap-0.5 cursor-pointer hover:bg-gray-800 rounded-sm text-white";
+
+  const hotkey = document.createElement("div");
+  hotkey.className = "ml-0.5 text-[10px] relative -top-1 text-gray-400";
+
+  const icons = document.createElement("div");
+  icons.className = "flex items-center gap-0.5 pt-0.5";
+  const icon = document.createElement("img");
+  icon.alt = structureKey;
+  icon.className = "align-middle size-5";
+  icons.append(icon);
+
+  box.append(hotkey, icons);
+  item.append(box);
+  return item;
+}
+
+const HOTBAR_TAG = "unit-display";
+
+/** Adds a drawn `<unit-display>` to the page. Registers it on first use. */
+export function createFakeHotbar(): FakeUnitDisplay {
+  if (!customElements.get(HOTBAR_TAG)) {
+    customElements.define(HOTBAR_TAG, FakeUnitDisplay);
+  }
+  const hotbar = document.createElement(HOTBAR_TAG) as FakeUnitDisplay;
+  document.body.append(hotbar);
+  hotbar.fill();
+  return hotbar;
+}
+
+/**
+ * Writes the prices the game hands the hotbar.
+ *
+ * Keyed by the game's own `UnitType` values, such as "City". Every item the
+ * game prices is listed, so a test that sets one price leaves the rest priced
+ * past the cap rather than unpriced.
+ */
+export function setHotbarPrices(
+  hotbar: FakeUnitDisplay,
+  prices: Record<string, bigint>,
+): void {
+  hotbar.playerBuildables = Object.entries(prices).map(([type, cost]) => ({
+    type,
+    cost,
+  }));
 }
