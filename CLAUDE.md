@@ -1,5 +1,16 @@
 # openfront-extended-ui
 
+## Releases
+
+Every pull request that changes the userscript is a new version:
+
+1. In the pull request, raise `version` in `package.json`, following semantic versioning: a fix raises the patch number, a new feature raises the minor number. Then run `npm run build` and commit `dist/`. The build copies the version into the userscript's `@version`, and Tampermonkey installs an update only when that number goes up.
+2. After the pull request is merged, create a GitHub release on `main`, tagged `v<version>`, with the built userscript attached:
+
+   ```bash
+   gh release create v<version> dist/openfront-extended-ui.user.js --target main --title v<version> --generate-notes
+   ```
+
 ## Agent skills
 
 ### Issue tracker
