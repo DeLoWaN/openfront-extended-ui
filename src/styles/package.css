@@ -31,6 +31,26 @@
   --ofx-shadow-mark: 0 0 2px rgba(0, 0, 0, 0.9);
 
   --ofx-figure-size: 13px;
+
+  /*
+   * The hotbar cue, which is amber rather than the signature violet.
+   *
+   * The signature colour marks a figure the package worked out. The step marks
+   * carry no figure, so they pick their colour from what they have to cut
+   * through, and the hotbar boxes are small enough that amber reads brighter
+   * there than violet. CONTEXT.md carries the rule.
+   */
+  --ofx-cue: #fbbf24;
+  /* The same amber, as the light's own wash and glow. */
+  --ofx-cue-wash: rgba(251, 191, 36, 0.18);
+  --ofx-cue-glow: rgba(251, 191, 36, 0.55);
+  /* A step the player has reached but cannot pay for. */
+  --ofx-cue-waiting: #9ca3af;
+  /* A step the price has not reached. */
+  --ofx-cue-rail: #374151;
+
+  /* The room the step marks take under a hotbar icon. */
+  --ofx-hotbar-marks-height: 7px;
 }
 
 /*
@@ -154,4 +174,153 @@
  */
 .ofx-alliance-clock-urgent {
   color: #ff4d4d;
+}
+
+/*
+ * The step marks under one hotbar icon.
+ *
+ * The row keeps its height whether or not it draws anything, so the hotbar
+ * never changes height mid-match. The light measures itself against that same
+ * height, which is what makes it cover the icon's box and nothing else.
+ */
+.ofx-hotbar-marks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: var(--ofx-hotbar-marks-height);
+  pointer-events: none;
+}
+
+/*
+ * The row with no price step to draw.
+ *
+ * It is hidden rather than removed, because removing it would take the hotbar
+ * down by its height the moment a price reached the cap.
+ */
+.ofx-hotbar-marks-off {
+  visibility: hidden;
+}
+
+.ofx-hotbar-mark {
+  width: 7px;
+  height: 3px;
+  border-radius: 1px;
+  background: var(--ofx-cue-rail);
+}
+
+/*
+ * A mark counted by the price step.
+ *
+ * Light grey on the dark rail is a second grey rather than a dimmed amber,
+ * which is what keeps the step countable while you cannot pay for the thing.
+ * That is most of the time.
+ */
+.ofx-hotbar-mark-lit {
+  background: var(--ofx-cue-waiting);
+}
+
+.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit {
+  background: var(--ofx-cue);
+}
+
+/*
+ * The light over one hotbar icon's box.
+ *
+ * It is a ring and a wash rather than a fill, so the game's own icon stays
+ * readable under it. Its bottom edge sits on the step marks, which is where
+ * the icon's box ends.
+ */
+.ofx-hotbar-light {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: var(--ofx-hotbar-marks-height);
+  left: 0;
+  border-radius: 2px;
+  background: var(--ofx-cue-wash);
+  box-shadow:
+    inset 0 0 0 1px var(--ofx-cue),
+    0 0 6px var(--ofx-cue-glow);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * The light from the moment the icon becomes buildable.
+ *
+ * Three quick pulses of 0.4 seconds, then one of 0.8 and one of 1.3. Both the
+ * rate and the brightness fall across the five, and the last keyframe is the
+ * breathing pulse's own peak, so there is no join to see.
+ */
+@keyframes ofx-hotbar-onset {
+  0% {
+    opacity: 1;
+  }
+  6% {
+    opacity: 0.3;
+  }
+  12% {
+    opacity: 1;
+  }
+  18% {
+    opacity: 0.3;
+  }
+  24% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0.3;
+  }
+  36% {
+    opacity: 0.92;
+  }
+  48% {
+    opacity: 0.28;
+  }
+  61% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.26;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+/* The steady pulse the light settles into, and keeps while you can build. */
+@keyframes ofx-hotbar-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/*
+ * The breathing pulse starts where the five beats end, so the two read as one
+ * slowdown. `both` holds the last beat until it does.
+ */
+.ofx-hotbar-light-breathing {
+  animation:
+    ofx-hotbar-onset 3.3s ease-in-out 1 both,
+    ofx-hotbar-breathe 2s ease-in-out 3.3s infinite;
+}
+
+/* The same five beats, held at the last one. The player asked for no more. */
+.ofx-hotbar-light-steady {
+  animation: ofx-hotbar-onset 3.3s ease-in-out 1 forwards;
+}
+
+/*
+ * A reader who asked their system for less motion gets the light without the
+ * breathing pulse, which is what the readout's own option does.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .ofx-hotbar-light-breathing {
+    animation: ofx-hotbar-onset 3.3s ease-in-out 1 forwards;
+  }
 }

@@ -8,7 +8,7 @@ The vocabulary this project uses is in [CONTEXT.md](CONTEXT.md). The decisions b
 
 ## What works today
 
-Two things: a readout on the game's own troop bar, and a view mode on the map.
+Three things: a readout on the game's own troop bar, a readout on the hotbar, and a view mode on the map.
 
 ### The troop bar readout
 
@@ -20,6 +20,27 @@ The readout adds two things inside the bar.
 - Your **share of best rate** at the bar's far right, as a percentage. It reads 100% at the peak and 0% at a full army. The game shows this figure nowhere else.
 
 Nothing marks the 42.2% level itself, and nothing changes colour when you cross it. The top of the curve is flat, so there is no cliff to draw. [ADR-0004](docs/adr/0004-the-optimal-troop-level-is-drawn-as-a-band.md) holds the reasoning and the numbers, and two drawings that were built and turned down first.
+
+### The hotbar readout
+
+The **hotbar** is the row of ten build icons at the bottom of the HUD. A city, a port and a factory each pass through three prices before the price stops rising: 125,000, then 250,000, then 500,000. The fourth price is one million, and it never changes again. The part of a match where the next one still costs less than a million is **the cheap window**. It is short, it falls at the start, and missing it is what this readout prevents.
+
+The readout adds two things to three of the ten icons. The other seven are left alone.
+
+- Three **step marks** under the icon. The number of lit marks is the price of the next one: one mark for 125,000, two for 250,000, three for 500,000. They are amber while you can afford it and light grey while you cannot, so you can read the price with or without the gold. They disappear once the price reaches one million, and that absence is what tells you the cheap window is over.
+- A **light**, meaning an amber ring around the icon's box. It appears the moment you can afford the thing. It pulses three times quickly, then twice more slowly, and settles into a slow steady pulse, which is called **the breathing pulse**. It goes out when you build the thing, or spend the gold elsewhere.
+
+The light appears again at each of the three prices. With 900,000 in hand you can build three cities in a row, and it lights for each one. A port and a factory are counted together, so building either one raises the price of both, and the marks move on their own. Losing a structure lowers the price, and both the marks and the light come back.
+
+The readout is amber rather than the violet the rest of the package uses. The hotbar boxes are small, and amber reads brighter at that size.
+
+The breathing pulse can be switched off on its own. The three quick pulses and the marks stay.
+
+```js
+openfrontExtendedUi.setOption('hotbar', 'breathing', false)
+```
+
+The game removes the hotbar below 64rem, and the readout goes with it.
 
 ### The alliance view mode
 
@@ -45,7 +66,7 @@ If the game already uses the key you pick, the mode refuses to run on it and say
 
 The player names on the map lose their coloured outline while the key is down, because the game draws that outline from the same colours the mode rewrites. The letters keep their own colour, and the outline comes back when you let go.
 
-The other four features are still to come. They are listed on [issue #1](https://github.com/DeLoWaN/openfront-extended-ui/issues/1).
+The other three features are still to come. They are listed on [issue #1](https://github.com/DeLoWaN/openfront-extended-ui/issues/1).
 
 ## Install
 

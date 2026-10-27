@@ -1,5 +1,6 @@
 import type { Feature } from "../runtime/feature";
 import { allianceView } from "./alliance-view";
+import { hotbarReadout } from "./hotbar";
 import { troopBar } from "./troop-bar";
 
 /**
@@ -9,4 +10,4 @@ import { troopBar } from "./troop-bar";
  * where the visual language the other five inherit was written. The alliance
  * view mode is the only one that draws on the map rather than in the HUD.
  */
-export const FEATURES: readonly Feature[] = [troopBar, allianceView];
+export const FEATURES: readonly Feature[] = [troopBar, hotbarReadout, allianceView];

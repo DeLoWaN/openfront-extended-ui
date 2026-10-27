@@ -19,7 +19,7 @@
 
 (function() {
 	"use strict";
-	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}";
+	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}";
 	var PREFIX = "[openfront-extended-ui]";
 	function logInfo(message, ...details) {
 		console.info(PREFIX, message, ...details);
@@ -829,6 +829,136 @@
 			}
 		};
 	}
+	var HOTBAR = "unit-display";
+	var ITEM_IS_POSITIONED = "relative";
+	var CUED_ICONS = [
+		{
+			type: "City",
+			icon: "city"
+		},
+		{
+			type: "Factory",
+			icon: "factory"
+		},
+		{
+			type: "Port",
+			icon: "port"
+		}
+	];
+	function findHotbars() {
+		return [...document.querySelectorAll(HOTBAR)];
+	}
+	function findIconItem(hotbar, icon) {
+		const item = hotbar.querySelector(`img[alt="${icon}"]`)?.parentElement?.parentElement?.parentElement;
+		if (!item?.classList.contains(ITEM_IS_POSITIONED)) return null;
+		return item;
+	}
+	function readCost(hotbar, type) {
+		const priced = hotbar.playerBuildables?.find((item) => item.type === type);
+		if (typeof priced?.cost !== "bigint") return null;
+		return priced.cost;
+	}
+	var FIRST_PRICE = 125e3;
+	function priceStep(cost) {
+		const price = Number(cost);
+		if (price < FIRST_PRICE || price >= Number(1000000n)) return null;
+		const step = 1 + Math.log2(price / FIRST_PRICE);
+		return Number.isInteger(step) ? step : null;
+	}
+	var LIGHT = "ofx-hotbar-light";
+	var LIGHT_BREATHING = "ofx-hotbar-light-breathing";
+	var LIGHT_STEADY = "ofx-hotbar-light-steady";
+	var MARKS = "ofx-hotbar-marks";
+	var MARKS_OFF = "ofx-hotbar-marks-off";
+	var MARKS_READY = "ofx-hotbar-marks-ready";
+	var MARK = "ofx-hotbar-mark";
+	var MARK_LIT = "ofx-hotbar-mark-lit";
+	var BREATHING_OPTION = "breathing";
+	var hotbarReadout = {
+		id: "hotbar",
+		name: "Hotbar cheap window",
+		options: [{
+			key: BREATHING_OPTION,
+			name: "Breathing pulse",
+			whenUnset: true
+		}],
+		attach(context) {
+			const readouts = injectedNodes({
+				findHosts: findHotbars,
+				draw: draw$1,
+				nodesOf: (readout) => readout.nodes
+			});
+			context.onDetach(() => readouts.remove());
+			return { tick() {
+				const me = context.game.myPlayer();
+				if (!isMatchLive(context.game) || !me) {
+					readouts.remove();
+					return;
+				}
+				const gold = me.gold();
+				const breathing = context.isOptionEnabled(BREATHING_OPTION);
+				for (const readout of readouts.sync()) for (const cue of readout.cues) update$1(cue, readout.hotbar, gold, breathing);
+			} };
+		}
+	};
+	function draw$1(hotbar) {
+		const cues = [];
+		const nodes = [];
+		for (const cued of CUED_ICONS) {
+			const item = findIconItem(hotbar, cued.icon);
+			if (!item) continue;
+			const light = document.createElement("div");
+			light.className = LIGHT;
+			const marks = document.createElement("div");
+			marks.className = `${MARKS} ${MARKS_OFF}`;
+			const steps = [];
+			for (let step = 0; step < 3; step++) {
+				const mark = document.createElement("div");
+				mark.className = MARK;
+				marks.append(mark);
+				steps.push(mark);
+			}
+			item.append(light, marks);
+			cues.push({
+				type: cued.type,
+				light,
+				marks,
+				steps
+			});
+			nodes.push(light, marks);
+		}
+		if (cues.length === 0) return null;
+		return {
+			hotbar,
+			cues,
+			nodes
+		};
+	}
+	function update$1(cue, hotbar, gold, breathing) {
+		const cost = readCost(hotbar, cue.type);
+		const step = cost === null ? null : priceStep(cost);
+		const ready = step !== null && cost !== null && cost <= gold;
+		cue.marks.classList.toggle(MARKS_OFF, step === null);
+		cue.marks.classList.toggle(MARKS_READY, ready);
+		cue.steps.forEach((mark, index) => {
+			mark.classList.toggle(MARK_LIT, step !== null && index < step);
+		});
+		setLight(cue.light, ready ? step : null, breathing);
+	}
+	function setLight(light, step, breathing) {
+		const wanted = breathing ? LIGHT_BREATHING : LIGHT_STEADY;
+		if (step === null) {
+			delete light.dataset.ofxLit;
+			light.classList.remove(LIGHT_BREATHING, LIGHT_STEADY);
+			return;
+		}
+		const lit = String(step);
+		if (light.dataset.ofxLit === lit && light.classList.contains(wanted)) return;
+		light.dataset.ofxLit = lit;
+		light.classList.remove(LIGHT_BREATHING, LIGHT_STEADY);
+		light.offsetWidth;
+		light.classList.add(wanted);
+	}
 	function rate(internalTroops, internalMaxTroops) {
 		return (10 + Math.pow(internalTroops, .73) / 4) * (1 - internalTroops / internalMaxTroops);
 	}
@@ -945,7 +1075,11 @@
 		readout.share.textContent = level === null ? "" : `${Math.round(shareOfBestRate(level) * 100)}%`;
 		readout.share.classList.toggle(HIDDEN, !showShare);
 	}
-	var FEATURES = [troopBar, allianceView];
+	var FEATURES = [
+		troopBar,
+		hotbarReadout,
+		allianceView
+	];
 	var BOUNDARY_POLL_MS = 500;
 	function startLifecycle(deps) {
 		const { panel, handlers } = deps;
