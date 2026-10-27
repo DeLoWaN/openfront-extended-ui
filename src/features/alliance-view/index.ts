@@ -8,18 +8,21 @@ import { NOBODY, ownerUnderCursor } from "./cursor";
 import { mapHooksReader, type MapHooks } from "./hooks";
 import { GAME_KEYBINDS_KEY, readGameKeybinds } from "./keybinds";
 import { createPalette, paintAlliance, paintReal } from "./palette";
+import { createTerrainShade } from "./terrain";
 
 /**
- * The alliance view mode. It greys the map and keeps one player and their
- * alliance partners in their own colours.
+ * The alliance view mode. It greys the map and keeps one player, their
+ * alliance partners and their teammates in their own colours.
  *
  * The subject is the player the map is drawn around. The cursor picks it, and
  * it sticks: it changes only when the cursor reaches another player. So a
  * cursor that crosses open water leaves the subject as it was. Each press is a
  * fresh look, so the subject is forgotten when the key comes up.
  *
- * The subject and their direct alliance partners keep their real colours.
- * Everybody else greys, in one write to the renderer's colour table. Each ally
+ * The subject, their direct alliance partners and their teammates keep their
+ * real colours. Everybody else greys, in one write to the renderer's colour
+ * table, each in a dark grey of their own. The terrain greys too, so the mode
+ * shows even when nobody is left to grey. Each ally
  * carries a clock under their own name. It says how long that alliance has
  * left, and turns red once the game offers to renew it. Nothing marks the
  * subject: where the package keeps a real player colour it adds information by
@@ -28,8 +31,8 @@ import { createPalette, paintAlliance, paintReal } from "./palette";
  * This is the only feature that draws on the map rather than in the HUD, so it
  * is the only one that needs a loop on every drawn frame. See docs/adr/0005.
  *
- * The mode writes the colour table and nothing else. The renderer's own
- * settings are left alone, so there is nothing extra to put back.
+ * The mode writes the colour table and the renderer's five terrain colours.
+ * Both are put back when the key comes up.
  *
  * Two things leak while the mode is up, and both are accepted:
  *
@@ -80,6 +83,7 @@ export const allianceView: Feature = {
     const gameKeybinds = localStorageStore(GAME_KEYBINDS_KEY);
     const palette = createPalette();
     const clocks = createClockLayer();
+    const terrain = createTerrainShade();
 
     /** True while the player holds the mode's own key. */
     let holding = false;
@@ -170,12 +174,14 @@ export const allianceView: Feature = {
         writtenSignature = signature;
         framesSinceWrite = 0;
       }
+      terrain.dim(hooks.view);
       clocks.place(clocksOf(web), hooks.camera);
     }
 
     /** Puts the game's own colours back and takes the clocks off the screen. */
     function standDown(hooks: MapHooks): void {
       clocks.hide();
+      terrain.restore();
       if (!painted) return;
       // Read from the game's own accessors on every call, so a player who
       // spawned while the mode was up gets their own colour rather than grey.
@@ -300,6 +306,8 @@ export const allianceView: Feature = {
       // leave a player's map grey.
       const hooks = readHooks();
       if (hooks) standDown(hooks);
+      // The renderer the terrain was greyed on may no longer be on `window`.
+      terrain.restore();
       clocks.remove();
     });
   },

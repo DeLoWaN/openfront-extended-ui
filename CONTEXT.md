@@ -26,7 +26,7 @@ Where a feature draws. There are two, the HUD and the map. A decision about one 
 
 **Signature colour**:
 Violet. It marks a figure the package worked out itself. The game's own colours keep the game's meanings, so gold stays yellow and troops stay blue.
-The game does use a little purple, so violet is not unused: `PlayerPanel.ts` marks a Nation with indigo and a Bot with purple, and two modals use `bg-indigo-600` for their primary button. None of it appears on the HUD's bottom row, which is the only place these readouts draw, so violet still reads as foreign there.
+The game does use a little purple, so violet is not unused: `PlayerPanel.ts` marks a Nation with indigo and a Bot with purple, and two modals use `bg-indigo-600` for their primary button. None of it appears on the HUD's bottom row or in its top right corner, which are the places these readouts draw, so violet still reads as foreign there.
 The rule covers figures. A mark that carries no figure picks its own colour, from what it has to cut through rather than from this entry. The step marks are amber for that reason.
 _Avoid_: accent, brand colour, highlight
 
@@ -37,8 +37,12 @@ _Avoid_: chip, pips, dots, progress bar
 ### The game's own furniture
 
 **HUD**:
-The always-visible panel at the bottom of the game showing troops, gold and the attack slider.
+The game's own panels that stay on screen for a whole match, around the edges of the map. The bottom row holds troops, gold and the attack slider. The top right corner holds the game's own buttons, such as settings and leaderboard.
 _Avoid_: toolbar, interface, control panel (`control-panel` names one element inside the HUD, not the HUD)
+
+**Bottom row**:
+The part of the HUD along the bottom of the screen. Four of the five readouts draw there.
+_Avoid_: bottom bar, main HUD
 
 **Troop bar**:
 The bar in the HUD that fills as your army grows, drawing your troops against your maximum.
@@ -111,3 +115,24 @@ The count a price is worked out from. A port and a factory share one pool, so bu
 **The cheap window**:
 The part of a match where the next city, port or factory still costs less than one million. It is short, it falls at the start, and missing it is what the hotbar readout exists to prevent.
 _Avoid_: early game, opening
+### Alliances
+
+**Alliance**:
+An agreement between two players that ends by itself. It runs five minutes by default, and a lobby setting takes that from one minute to fifteen. Being on the same team is a different relation, and a teammate is not an alliance partner.
+_Avoid_: pact, treaty, truce
+
+**Renewal window**:
+The last 30 seconds of an alliance. It is the only time the game lets a partner agree to renew, and both partners have to agree before the alliance runs on. The game marks the window: the alliance icon beside the player's name on the map flashes, and a prompt appears in the events display.
+_Avoid_: extension window, expiry window, grace period
+
+**Expired alliance**:
+An alliance that reached its end because the two partners did not both renew it. The game reports it separately from one a player ended early, so the two never have to be told apart by guesswork.
+_Avoid_: lapsed alliance, lost alliance, dead alliance
+
+**Broken alliance**:
+An alliance a player ended early. The game calls that player a traitor and makes them pay for it.
+_Avoid_: cancelled alliance, betrayed alliance
+
+**Alliance request**:
+One player's offer of an alliance to another. It refuses itself after 20 seconds if the other player does not answer. It is not a renewal, which only exists between two players who are already partners.
+_Avoid_: alliance invite, alliance proposal

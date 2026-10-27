@@ -2,9 +2,9 @@
  * Who is in the subject's alliance web, and how long each alliance has left.
  *
  * The subject is the player the map is drawn around, named by their `smallID`.
- * Only their direct alliance partners are in the web: one ring, because an
- * alliance is a contract between two players and the question at the cursor is
- * who comes to this player's aid. See issue #13.
+ * The web holds their direct alliance partners and their teammates: one ring,
+ * because the question at the cursor is who comes to this player's aid, and a
+ * partner's partner does not answer it. See issue #13.
  *
  * Every read here is guarded. The game builds a player view over several ticks,
  * so a half-built one can throw, and one bad ally must not cost the whole web.
@@ -38,8 +38,9 @@ export interface Ally {
 /** The subject, their alliance partners, and who the map keeps in colour. */
 export interface AllianceWeb {
   readonly subject: PlayerView;
+  /** Teammates are not here: they have no alliance, so no clock. */
   readonly allies: readonly Ally[];
-  /** The subject and every ally. Everybody else greys. */
+  /** The subject, every ally and every teammate. Everybody else greys. */
   readonly coloured: ReadonlySet<number>;
 }
 
@@ -61,7 +62,7 @@ export function readWeb(
   const expiry = readExpiry(game, subject);
   const window = renewalWindow(game);
 
-  const coloured = new Set<number>([subjectID]);
+  const coloured = new Set<number>([subjectID, ...readTeammates(game, subject)]);
   const web: Ally[] = [];
   for (const [smallID, player] of allies) {
     coloured.add(smallID);
@@ -114,6 +115,32 @@ function readAllies(
     allies.set(smallID, ally);
   }
   return allies;
+}
+
+/**
+ * The `smallID` of every player on the subject's team, the subject included.
+ *
+ * The game's `allies` leaves teammates out, so they are read here. In a match
+ * without teams this is empty.
+ */
+function readTeammates(game: GameView, subject: PlayerView): number[] {
+  let players: readonly PlayerView[];
+  try {
+    players = game.players();
+  } catch {
+    return [];
+  }
+
+  const teammates: number[] = [];
+  for (const player of players) {
+    try {
+      if (subject.isOnSameTeam(player)) teammates.push(player.smallID());
+    } catch {
+      // A half-built player view can throw. It joins the web on a later frame.
+      continue;
+    }
+  }
+  return teammates;
 }
 
 /**
