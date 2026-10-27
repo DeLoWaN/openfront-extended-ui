@@ -84,7 +84,6 @@ export class FakePlayerView implements PlayerView {
   /** Null in a match without teams, as the game has it. */
   teamName: string | null = null;
   kind: PlayerType = "HUMAN";
-  name: string;
   /** Undefined stands for a player who has not picked a spawn. */
   readonly state: PlayerState = {};
 
@@ -133,9 +132,6 @@ export class FakePlayerView implements PlayerView {
   }
   hasSpawned(): boolean {
     return this.state.spawnTile !== undefined;
-  }
-  displayName(): string {
-    return this.name;
   }
   alliances(): Alliance[] {
     return this.allianceList;
