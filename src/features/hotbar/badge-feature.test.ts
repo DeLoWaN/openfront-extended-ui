@@ -194,8 +194,9 @@ describe("where the badge sits", () => {
     tick();
 
     const arrow = document.querySelector<HTMLElement>(ARROW)!;
-    // The city is far to the left of the cursor and only 180 px below it.
-    expect(arrow.style.transform).toBe("rotate(-55deg)");
+    // The city is far to the left of the cursor and only 180 px below it. A
+    // clockwise turn swings a downward arrow to the left.
+    expect(arrow.style.transform).toBe("rotate(55deg)");
   });
 });
 

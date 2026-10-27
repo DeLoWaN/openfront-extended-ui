@@ -1370,7 +1370,7 @@
 				}
 				root.style.left = `${placed.left}px`;
 				root.style.top = `${placed.top}px`;
-				arrow.style.transform = `rotate(${arrowDegrees(placed.tail, target)}deg)`;
+				arrow.style.transform = `rotate(${-arrowDegrees(placed.tail, target)}deg)`;
 				root.classList.remove(BADGE_SHOWN);
 				root.offsetWidth;
 				root.classList.add(BADGE_SHOWN);

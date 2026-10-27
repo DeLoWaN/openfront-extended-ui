@@ -95,7 +95,9 @@ export function createBadgeNode(host: ParentNode = document.body): BadgeNode {
 
       root.style.left = `${placed.left}px`;
       root.style.top = `${placed.top}px`;
-      arrow.style.transform = `rotate(${arrowDegrees(placed.tail, target)}deg)`;
+      // `rotate` turns clockwise, which swings a downward arrow to the left.
+      // `arrowDegrees` counts a lean to the right as positive.
+      arrow.style.transform = `rotate(${-arrowDegrees(placed.tail, target)}deg)`;
       // Reading a layout figure makes the browser finish the removal, so the
       // class starts the pulse again instead of letting an old one run on.
       root.classList.remove(BADGE_SHOWN);
