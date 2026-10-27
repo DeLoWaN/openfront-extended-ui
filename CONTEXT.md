@@ -132,3 +132,21 @@ _Avoid_: cancelled alliance, betrayed alliance
 **Alliance request**:
 One player's offer of an alliance to another. It refuses itself after 20 seconds if the other player does not answer. It is not a renewal, which only exists between two players who are already partners.
 _Avoid_: alliance invite, alliance proposal
+
+### The start of a match
+
+**Spawn phase**:
+The opening of a match, while every player picks where to start. A player may change their pick until it ends, except in a random-spawn game.
+_Avoid_: lobby, pre-game, setup
+
+**Spawn**:
+The place a player has picked to start from. It is a small patch of land, and the player's territory grows from it.
+_Avoid_: start point, start position
+
+**Teammate**:
+A player on your own team in a team game. A teammate is not an alliance partner.
+_Avoid_: ally (the alliance view mode uses it for an alliance partner), friend
+
+**Spawn pulse**:
+The breathing glow the game draws on a teammate's spawn during the spawn phase, in that teammate's own colour. The game draws it for human teammates only.
+_Avoid_: ally pulse, highlight, beacon
