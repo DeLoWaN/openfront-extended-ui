@@ -86,3 +86,40 @@ export function readCost(hotbar: UnitDisplay, type: string): bigint | null {
   if (typeof priced?.cost !== "bigint") return null;
   return priced.cost;
 }
+
+/** The game's own element over the map. `ClientGameRunner.ts:568`. */
+const INPUT_OVERLAY = "game-input-overlay";
+
+/**
+ * Whether the game is drawing its own cursor.
+ *
+ * The game writes `crosshair` on the overlay while a warship is selected and
+ * while Shift is held (`InputHandler.ts:437`, `:668`). A player aiming then is
+ * not shopping for a city, so the badge stays away.
+ */
+export function gameOwnsCursor(): boolean {
+  return document.getElementById(INPUT_OVERLAY)?.style.cursor === "crosshair";
+}
+
+/**
+ * The picture the game draws in one icon, as an image address.
+ *
+ * Returns null when the icon has no picture, which is how it looks before the
+ * game has drawn it.
+ */
+export function iconSource(item: HTMLElement, icon: string): string | null {
+  const image = item.querySelector<HTMLImageElement>(`img[alt="${icon}"]`);
+  return image?.src || null;
+}
+
+/**
+ * The middle of one icon's item on the screen.
+ *
+ * Returns null for an item with no size, which is what the game's hidden
+ * hotbar below 64rem looks like.
+ */
+export function iconCentre(item: HTMLElement): { x: number; y: number } | null {
+  const box = item.getBoundingClientRect();
+  if (box.width === 0 || box.height === 0) return null;
+  return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+}

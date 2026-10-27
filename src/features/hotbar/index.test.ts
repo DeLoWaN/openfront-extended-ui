@@ -469,8 +469,18 @@ describe("what the hotbar readout offers a player", () => {
   });
 
   it("declares the breathing pulse as an option that is on by default", () => {
-    expect(hotbarReadout.options).toEqual([
-      { key: "breathing", name: "Breathing pulse", whenUnset: true },
-    ]);
+    expect(hotbarReadout.options).toContainEqual({
+      key: "breathing",
+      name: "Breathing pulse",
+      whenUnset: true,
+    });
+  });
+
+  it("declares how long the badge stays, 3.5 seconds when nothing is set", () => {
+    expect(hotbarReadout.options).toContainEqual({
+      key: "badge-seconds",
+      name: "Seconds the badge stays",
+      whenUnset: "3.5",
+    });
   });
 });

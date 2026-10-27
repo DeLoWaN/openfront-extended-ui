@@ -46,6 +46,10 @@ _Avoid_: accent, brand colour, highlight
 The three short marks the package draws under a hotbar icon. The number of lit marks is the price step of the next city, port or factory. They are amber while you can build it and light grey while you cannot.
 _Avoid_: chip, pips, dots, progress bar
 
+**Badge**:
+The small amber panel the hotbar readout draws under the cursor when a city, a factory or a port becomes affordable. It carries that building's icon, and an arrow under it points to the icon in the hotbar. It stays where it appeared and fades after 3.5 seconds.
+_Avoid_: toast, popup, tooltip, notification
+
 ### The game's own furniture
 
 **HUD**:

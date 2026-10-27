@@ -344,6 +344,90 @@
 }
 
 /*
+ * The badge under the cursor, and its arrow to the hotbar.
+ *
+ * It is fixed to the window and takes no clicks. The script places it once with
+ * `left` and `top`, and it never follows the cursor. The panel is 50 px below
+ * the cursor, which is where it stops covering the aim.
+ */
+.ofx-hotbar-badge {
+  position: fixed;
+  z-index: 9000;
+  pointer-events: none;
+}
+
+.ofx-hotbar-badge[hidden] {
+  display: none;
+}
+
+.ofx-hotbar-badge-panel {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgba(17, 24, 39, 0.92);
+  box-shadow:
+    inset 0 0 0 2px var(--ofx-cue),
+    0 0 10px var(--ofx-cue-glow);
+}
+
+.ofx-hotbar-badge-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+/* The arrow hangs from the middle of the panel's bottom edge and turns about it. */
+.ofx-hotbar-badge-arrow {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 0;
+  height: 30px;
+  margin-left: -1px;
+  border-left: 2px solid var(--ofx-cue);
+  transform-origin: top center;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+}
+
+.ofx-hotbar-badge-arrow::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: -7px;
+  border-top: 10px solid var(--ofx-cue);
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+}
+
+@keyframes ofx-hotbar-badge-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.ofx-hotbar-badge-shown {
+  animation: ofx-hotbar-badge-pulse 1s ease-in-out infinite;
+}
+
+/* The fade lasts `FADE_MS` in `badge-node.ts`. */
+.ofx-hotbar-badge-fading {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ofx-hotbar-badge-shown {
+    animation: none;
+  }
+}
+
+/*
  * The alliance panel, in the top right corner of the HUD.
  *
  * It is the third child of the static `<div>` that holds the game's own
