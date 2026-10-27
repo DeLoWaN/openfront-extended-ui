@@ -7,7 +7,7 @@ A userscript that adds readouts to the OpenFront.io game view from outside the g
 ### What the package adds
 
 **Feature**:
-Any one of the four things the package adds, whether it is a readout or the view mode. It is the word the code uses, because both kinds register the same way and both can be switched off on their own.
+Any one of the five things the package adds, whether it is a readout, the view mode or a locator. It is the word the code uses, because all three kinds register the same way and each can be switched off on its own.
 _Avoid_: addition, module, plugin
 
 **Readout**:
@@ -16,6 +16,10 @@ _Avoid_: widget, panel, overlay, module
 
 **View mode**:
 A feature that changes how the map is coloured instead of reporting a number. There is one, the alliance view mode. It is not a readout.
+
+**Locator**:
+A feature that draws a mark on the map, at a place the game already knows, so a player can find that place. It reports no number and recolours nothing, so it is neither a readout nor a view mode. There is one, the spawn marks.
+_Avoid_: marker, pin, annotation, overlay
 
 **Subject**:
 The player the alliance view mode draws its map around. The cursor picks it, and it stays until the cursor reaches another player, so the subject is not always the player under the cursor.
@@ -149,3 +153,11 @@ _Avoid_: ally (the alliance view mode uses it for an alliance partner), friend
 **Spawn pulse**:
 The breathing glow the game draws on a teammate's spawn during the spawn phase, in that teammate's own colour. The game draws it for human teammates only.
 _Avoid_: ally pulse, highlight, beacon
+
+**Spawn mark**:
+What the spawn marks feature draws on each teammate's spawn during the spawn phase: a ring in that teammate's own territory colour, with the teammate's name above it. It sits over the spawn pulse and does not replace it. It ends with the spawn phase.
+_Avoid_: beacon, ping, ally marker
+
+**Edge pointer**:
+A chevron on the edge of the screen that points at a teammate whose spawn is off screen. It takes the teammate's colour. Several pointers that land close together become one pointer with a count.
+_Avoid_: arrow, off-screen indicator, compass

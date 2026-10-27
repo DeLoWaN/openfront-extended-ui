@@ -2,13 +2,13 @@
 
 A **userscript**, meaning a browser script run by an extension such as Tampermonkey, that adds to the [OpenFront.io](https://openfront.io) game view. It changes nothing in the game. It runs beside the game, and everything it draws comes from something the game already shows somewhere.
 
-Most of it lands on the **HUD**, the always-visible panel at the bottom of the game showing troops, gold and the attack slider. One part lands on the map.
+Most of it lands on the **HUD**, the always-visible panel at the bottom of the game showing troops, gold and the attack slider. Two parts land on the map.
 
 The vocabulary this project uses is in [CONTEXT.md](CONTEXT.md). The decisions behind the code are in [docs/adr/](docs/adr/).
 
 ## What works today
 
-Four things: a readout on the game's own troop bar, a readout on the hotbar, a view mode on the map, and a panel of your alliances in the top right corner.
+Five things: a readout on the game's own troop bar, a readout on the hotbar, a view mode on the map, a panel of your alliances in the top right corner, and marks on the map during the spawn phase.
 
 ### The troop bar readout
 
@@ -89,6 +89,26 @@ Rest the cursor on a row and the map shows that player on their own. It is the a
 A click on a row moves the camera to that player. That is all a click does. There is no renew button, because the package never sends a message to the game on your behalf. [ADR-0009](docs/adr/0009-the-package-changes-your-view-never-the-game.md) holds the reasoning. Renew from the game's own menu.
 
 The panel is not on the screen when it has no row. It never scrolls, because a scrolling list would hide the row closest to its end. It draws nothing before you spawn, after you die, or in a replay. It reads what the game sends each tick, so a request that arrived before you switched the panel on is not shown.
+
+### The spawn marks
+
+The **spawn phase** is the opening of a match, while every player picks where to start. In a team game, the marks help you find each of your teammates on the map.
+
+Each human teammate's **spawn** carries a ring with the teammate's name above it, in that teammate's own territory colour. A dark outline keeps the ring readable on land of the same colour. The ring grows and shrinks with the zoom, and it breathes a little. The name stays still above it. The marks sit over the game's own pulse, and they never change a colour of the game's.
+
+A teammate who is off screen gets a chevron on the edge of the screen, pointing at them. Chevrons that land close together become one chevron with a count, such as `×3`. The chevrons stay clear of the bottom row of the HUD.
+
+When a teammate picks another spawn, the mark glides to it. When the spawn phase ends, the marks fade over about a second and go. A game without teams draws nothing, and neither does a replay. The marks only read the game. They send nothing.
+
+The game draws its own pulse for human teammates only, and so do the marks. A solo game has one human, so it has no human teammate to mark. To see the marks in a solo team game, switch on the option that adds the Nation teammates. The Nations stand in for teammates.
+
+```js
+openfrontExtendedUi.setOption('spawn-marks', 'nation-teammates', true)
+```
+
+To try it, start a solo game on the map World, with the mode Teams, the team size Quads and no Tribes, and do not click the map. A solo game has no spawn timer, so the spawn phase lasts until your first click.
+
+The marks were checked in a solo game with Nation teammates. They have not yet been checked in a game with several real humans.
 
 ## Install
 

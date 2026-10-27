@@ -19,7 +19,7 @@
 
 (function() {
 	"use strict";
-	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}.ofx-alliance-panel{--ofx-bar-track:#0f172af0;--ofx-bar-fill:#3b5b86;--ofx-bar-fill-urgent:#b42323;min-width:14em;max-width:22em;font-size:calc(var(--ofx-figure-size) * 1.6);color:#fff;text-shadow:var(--ofx-shadow-figure);pointer-events:auto;flex-direction:column;gap:.2em;line-height:1.2;display:flex}.ofx-alliance-row{background:linear-gradient(90deg, var(--ofx-bar-fill) var(--ofx-frac,100%), var(--ofx-bar-track) var(--ofx-frac,100%));cursor:pointer;border-radius:.3em;align-items:baseline;gap:.5em;padding:.3em .6em;display:flex;box-shadow:0 0 0 1px #0009}.ofx-alliance-row-urgent{--ofx-bar-fill:var(--ofx-bar-fill-urgent)}.ofx-alliance-row:hover{filter:brightness(1.3)}.ofx-alliance-name{text-overflow:ellipsis;white-space:nowrap;flex:auto;min-width:0;overflow:hidden}.ofx-alliance-tag{color:#cbd5e1;white-space:nowrap;flex:none;font-size:.8em}.ofx-alliance-time{font-variant-numeric:tabular-nums;flex:none;font-weight:700}.ofx-alliance-row-expired{color:#cbd5e1}.ofx-spotlight-pointer{z-index:50;pointer-events:none;flex-direction:column;align-items:center;gap:6px;display:flex;position:fixed;transform:translate(-50%,-50%)}.ofx-spotlight-arrow{border-top:16px solid #0000;border-bottom:16px solid #0000;border-left:28px solid var(--ofx-pointer-colour,#fff);filter:drop-shadow(0 0 1px #fff)drop-shadow(0 0 1px #fff)drop-shadow(0 0 3px #000000e6);width:0;height:0}.ofx-spotlight-name{text-overflow:ellipsis;white-space:nowrap;color:#fff;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;max-width:14em;font-size:18px;font-weight:700;overflow:hidden}";
+	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-spawn-marks{z-index:50;pointer-events:none;width:100vw;height:100vh;position:fixed;inset:0}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}.ofx-alliance-panel{--ofx-bar-track:#0f172af0;--ofx-bar-fill:#3b5b86;--ofx-bar-fill-urgent:#b42323;min-width:14em;max-width:22em;font-size:calc(var(--ofx-figure-size) * 1.6);color:#fff;text-shadow:var(--ofx-shadow-figure);pointer-events:auto;flex-direction:column;gap:.2em;line-height:1.2;display:flex}.ofx-alliance-row{background:linear-gradient(90deg, var(--ofx-bar-fill) var(--ofx-frac,100%), var(--ofx-bar-track) var(--ofx-frac,100%));cursor:pointer;border-radius:.3em;align-items:baseline;gap:.5em;padding:.3em .6em;display:flex;box-shadow:0 0 0 1px #0009}.ofx-alliance-row-urgent{--ofx-bar-fill:var(--ofx-bar-fill-urgent)}.ofx-alliance-row:hover{filter:brightness(1.3)}.ofx-alliance-name{text-overflow:ellipsis;white-space:nowrap;flex:auto;min-width:0;overflow:hidden}.ofx-alliance-tag{color:#cbd5e1;white-space:nowrap;flex:none;font-size:.8em}.ofx-alliance-time{font-variant-numeric:tabular-nums;flex:none;font-weight:700}.ofx-alliance-row-expired{color:#cbd5e1}.ofx-spotlight-pointer{z-index:50;pointer-events:none;flex-direction:column;align-items:center;gap:6px;display:flex;position:fixed;transform:translate(-50%,-50%)}.ofx-spotlight-arrow{border-top:16px solid #0000;border-bottom:16px solid #0000;border-left:28px solid var(--ofx-pointer-colour,#fff);filter:drop-shadow(0 0 1px #fff)drop-shadow(0 0 1px #fff)drop-shadow(0 0 3px #000000e6);width:0;height:0}.ofx-spotlight-name{text-overflow:ellipsis;white-space:nowrap;color:#fff;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;max-width:14em;font-size:18px;font-weight:700;overflow:hidden}";
 	function isMatchLive(game) {
 		if (game.inSpawnPhase()) return false;
 		const me = game.myPlayer();
@@ -103,7 +103,7 @@
 		const allies = readAllies(subject, subjectID);
 		const expiry = readExpiry(game, subject);
 		const window = renewalWindow(game);
-		const coloured = new Set([subjectID, ...readTeammates(game, subject)]);
+		const coloured = new Set([subjectID, ...readTeammates$1(game, subject)]);
 		const web = [];
 		for (const [smallID, player] of allies) {
 			coloured.add(smallID);
@@ -145,7 +145,7 @@
 		}
 		return allies;
 	}
-	function readTeammates(game, subject) {
+	function readTeammates$1(game, subject) {
 		let players;
 		try {
 			players = game.players();
@@ -606,7 +606,7 @@
 		for (const [id, value] of Object.entries(stored)) if (typeof value === "boolean" || typeof value === "string") values[id] = value;
 		return values;
 	}
-	var LAYER = "ofx-alliance-clocks";
+	var LAYER$1 = "ofx-alliance-clocks";
 	var CLOCK = "ofx-alliance-clock";
 	var URGENT = "ofx-alliance-clock-urgent";
 	var NAME_SCALE_FACTOR = .4;
@@ -619,7 +619,7 @@
 	var OFF_SCREEN_MARGIN_PX = 100;
 	function createClockLayer(host = document.body) {
 		const root = document.createElement("div");
-		root.className = LAYER;
+		root.className = LAYER$1;
 		host.append(root);
 		const pool = [];
 		function nodeAt(index) {
@@ -1407,6 +1407,330 @@
 		light.offsetWidth;
 		light.classList.add(wanted);
 	}
+	var REFERENCE_SCALE = .864;
+	var MIN_UNIT = .35;
+	var RING_RADIUS_PX = 16;
+	var BREATH_PX = 2;
+	var BREATH_SPEED = .006;
+	var NAME_FONT_PX = 12;
+	var NAME_FONT_FLOOR_PX = 11;
+	var NAME_GAP_PX = 8;
+	var RING_STROKE_PX = 3;
+	var EDGE_MARGIN_PX = {
+		left: 60,
+		right: 60,
+		top: 60,
+		bottom: 150
+	};
+	function markUnit(cameraScale) {
+		return Math.max(MIN_UNIT, Math.min(4, cameraScale / REFERENCE_SCALE));
+	}
+	function ringRadius(unit) {
+		return RING_RADIUS_PX * unit;
+	}
+	function breathOffset(nowMs) {
+		return BREATH_PX * Math.sin(nowMs * BREATH_SPEED);
+	}
+	function ringStrokePx(unit) {
+		return RING_STROKE_PX * Math.max(1, unit * .8);
+	}
+	function nameFontPx(unit) {
+		return Math.max(NAME_FONT_FLOOR_PX, NAME_FONT_PX * unit);
+	}
+	function nameBaseline(unit) {
+		return ringRadius(unit) + NAME_GAP_PX;
+	}
+	function placePointers(offScreen, view) {
+		const left = EDGE_MARGIN_PX.left;
+		const top = EDGE_MARGIN_PX.top;
+		const right = Math.max(left, view.width - EDGE_MARGIN_PX.right);
+		const bottom = Math.max(top, view.height - EDGE_MARGIN_PX.bottom);
+		const centreX = view.width / 2;
+		const centreY = view.height / 2;
+		const pointers = [];
+		for (const mark of offScreen) {
+			const dx = mark.x - centreX;
+			const dy = mark.y - centreY;
+			const reach = Math.min(dx > 0 ? (right - centreX) / dx : dx < 0 ? (left - centreX) / dx : Infinity, dy > 0 ? (bottom - centreY) / dy : dy < 0 ? (top - centreY) / dy : Infinity);
+			const k = Number.isFinite(reach) ? Math.max(0, reach) : 0;
+			const x = centreX + dx * k;
+			const y = centreY + dy * k;
+			const near = pointers.find((pointer) => Math.hypot(pointer.x - x, pointer.y - y) < 70);
+			if (near) near.count++;
+			else pointers.push({
+				x,
+				y,
+				angle: Math.atan2(dy, dx),
+				count: 1,
+				colour: mark.colour
+			});
+		}
+		return pointers;
+	}
+	var LAYER = "ofx-spawn-marks";
+	var OUTLINE = "rgba(0,0,0,0.85)";
+	var TEXT_OUTLINE = "rgba(0,0,0,0.9)";
+	var OUTLINE_EXTRA_PX = 4;
+	var CHEVRON_SCALE = 2.4;
+	var CHEVRON = [
+		[14, 0],
+		[-8, -11],
+		[-3, 0],
+		[-8, 11]
+	];
+	var COUNT_BACK = 22;
+	var COUNT_FONT = 13;
+	var FONT_FAMILY = "system-ui, sans-serif";
+	function createMarkLayer(host = document.body) {
+		const canvas = document.createElement("canvas");
+		canvas.className = LAYER;
+		host.append(canvas);
+		const ctx = canvas.getContext("2d");
+		if (!ctx) throw new Error("the page gave no 2D canvas for the spawn marks");
+		function fit() {
+			const width = window.innerWidth;
+			const height = window.innerHeight;
+			const ratio = window.devicePixelRatio || 1;
+			const pixelWidth = Math.round(width * ratio);
+			const pixelHeight = Math.round(height * ratio);
+			if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+				canvas.width = pixelWidth;
+				canvas.height = pixelHeight;
+			}
+			ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+			return {
+				width,
+				height
+			};
+		}
+		function wipe() {
+			const { width, height } = fit();
+			ctx.clearRect(0, 0, width, height);
+		}
+		function drawRing(ring, unit, nowMs) {
+			const radius = ringRadius(unit) + breathOffset(nowMs);
+			const width = ringStrokePx(unit);
+			ctx.beginPath();
+			ctx.arc(ring.x, ring.y, radius, 0, Math.PI * 2);
+			ctx.lineWidth = width + OUTLINE_EXTRA_PX;
+			ctx.strokeStyle = OUTLINE;
+			ctx.stroke();
+			ctx.lineWidth = width;
+			ctx.strokeStyle = ring.colour;
+			ctx.stroke();
+			drawText(ring.name, ring.x, ring.y - nameBaseline(unit), nameFontPx(unit), ring.colour);
+		}
+		function drawText(text, x, y, fontPx, colour) {
+			ctx.font = `700 ${fontPx}px ${FONT_FAMILY}`;
+			ctx.textAlign = "center";
+			ctx.textBaseline = "bottom";
+			ctx.lineWidth = OUTLINE_EXTRA_PX;
+			ctx.strokeStyle = TEXT_OUTLINE;
+			ctx.strokeText(text, x, y);
+			ctx.fillStyle = colour;
+			ctx.fillText(text, x, y);
+		}
+		function drawPointer(pointer) {
+			ctx.save();
+			ctx.translate(pointer.x, pointer.y);
+			ctx.rotate(pointer.angle);
+			ctx.beginPath();
+			CHEVRON.forEach(([along, across], index) => {
+				const x = along * CHEVRON_SCALE;
+				const y = across * CHEVRON_SCALE;
+				if (index === 0) ctx.moveTo(x, y);
+				else ctx.lineTo(x, y);
+			});
+			ctx.closePath();
+			ctx.lineWidth = OUTLINE_EXTRA_PX;
+			ctx.strokeStyle = OUTLINE;
+			ctx.stroke();
+			ctx.fillStyle = pointer.colour;
+			ctx.fill();
+			ctx.restore();
+			if (pointer.count < 2) return;
+			const back = COUNT_BACK * CHEVRON_SCALE;
+			drawText(`×${pointer.count}`, pointer.x - Math.cos(pointer.angle) * back, pointer.y - Math.sin(pointer.angle) * back, COUNT_FONT * CHEVRON_SCALE, pointer.colour);
+		}
+		return {
+			draw(scene) {
+				wipe();
+				ctx.globalAlpha = scene.alpha;
+				ctx.lineJoin = "round";
+				ctx.lineCap = "round";
+				for (const ring of scene.rings) drawRing(ring, scene.unit, scene.nowMs);
+				for (const pointer of scene.pointers) drawPointer(pointer);
+				ctx.globalAlpha = 1;
+			},
+			clear: wipe,
+			remove() {
+				canvas.remove();
+			}
+		};
+	}
+	var FADE_MS = 1200;
+	function createMarkTracker() {
+		const tracked = new Map();
+		function place(mark, nowMs) {
+			const progress = Math.min(1, Math.max(0, (nowMs - mark.startedAt) / 350));
+			const eased = 1 - (1 - progress) * (1 - progress);
+			return {
+				x: mark.fromX + (mark.toX - mark.fromX) * eased,
+				y: mark.fromY + (mark.toY - mark.fromY) * eased
+			};
+		}
+		return {
+			update(teammates, nowMs) {
+				const live = new Set();
+				for (const mate of teammates) {
+					live.add(mate.id);
+					const known = tracked.get(mate.id);
+					if (!known) {
+						tracked.set(mate.id, {
+							name: mate.name,
+							colour: mate.colour,
+							fromX: mate.x,
+							fromY: mate.y,
+							toX: mate.x,
+							toY: mate.y,
+							startedAt: nowMs
+						});
+						continue;
+					}
+					known.name = mate.name;
+					known.colour = mate.colour;
+					if (known.toX !== mate.x || known.toY !== mate.y) {
+						const here = place(known, nowMs);
+						known.fromX = here.x;
+						known.fromY = here.y;
+						known.toX = mate.x;
+						known.toY = mate.y;
+						known.startedAt = nowMs;
+					}
+				}
+				for (const id of [...tracked.keys()]) if (!live.has(id)) tracked.delete(id);
+			},
+			marks(nowMs) {
+				return [...tracked.entries()].map(([id, mark]) => ({
+					id,
+					name: mark.name,
+					colour: mark.colour,
+					...place(mark, nowMs)
+				}));
+			},
+			clear: () => tracked.clear()
+		};
+	}
+	function fadeAlpha(endedAtMs, nowMs) {
+		return Math.min(1, Math.max(0, 1 - (nowMs - endedAtMs) / FADE_MS));
+	}
+	function readTeammates(game, includeNations) {
+		const me = game.myPlayer();
+		if (!me) return [];
+		const teammates = [];
+		for (const player of game.players()) {
+			if (player.id() === me.id() || !player.isOnSameTeam(me)) continue;
+			if (!isMarked(player, includeNations)) continue;
+			const tile = player.state.spawnTile;
+			if (tile === void 0) continue;
+			const { r, g, b } = player.territoryColor().toRgb();
+			teammates.push({
+				id: player.id(),
+				name: player.displayName(),
+				x: game.x(tile),
+				y: game.y(tile),
+				colour: `rgb(${r},${g},${b})`
+			});
+		}
+		return teammates;
+	}
+	function isMarked(player, includeNations) {
+		const type = player.type();
+		return type === "HUMAN" || includeNations && type === "NATION";
+	}
+	var NATION_TEAMMATES_OPTION = "nation-teammates";
+	var spawnMarks = {
+		id: "spawn-marks",
+		name: "Spawn marks",
+		options: [{
+			key: NATION_TEAMMATES_OPTION,
+			name: "Mark Nation teammates too",
+			whenUnset: false
+		}],
+		attach(context) {
+			const readHooks = mapHooksReader();
+			const layer = createMarkLayer();
+			const tracker = createMarkTracker();
+			let frame = 0;
+			let phaseEndedAt = null;
+			function draw(now) {
+				const game = context.game;
+				let alpha = 1;
+				if (game.inSpawnPhase()) {
+					phaseEndedAt = null;
+					tracker.update(readTeammates(game, context.isOptionEnabled(NATION_TEAMMATES_OPTION)), now);
+				} else {
+					if (tracker.marks(now).length === 0) return false;
+					phaseEndedAt ??= now;
+					alpha = fadeAlpha(phaseEndedAt, now);
+					if (alpha === 0) return false;
+				}
+				const hooks = readHooks();
+				if (!hooks) return true;
+				const width = window.innerWidth;
+				const height = window.innerHeight;
+				const rings = [];
+				const offScreen = [];
+				for (const mark of tracker.marks(now)) {
+					const at = hooks.camera.worldToScreenCoordinates(mark);
+					if (at.x > 0 && at.y > 0 && at.x < width && at.y < height) rings.push({
+						...at,
+						name: mark.name,
+						colour: mark.colour
+					});
+					else offScreen.push({
+						...at,
+						colour: mark.colour
+					});
+				}
+				layer.draw({
+					rings,
+					pointers: placePointers(offScreen, {
+						width,
+						height
+					}),
+					unit: markUnit(hooks.camera.scale),
+					nowMs: now,
+					alpha
+				});
+				return true;
+			}
+			function finish() {
+				stopLoop();
+				tracker.clear();
+				layer.clear();
+			}
+			function step(now) {
+				frame = requestAnimationFrame(step);
+				try {
+					if (!draw(now)) finish();
+				} catch (error) {
+					logError("the spawn marks failed on a frame", error);
+					finish();
+				}
+			}
+			function stopLoop() {
+				if (frame === 0) return;
+				cancelAnimationFrame(frame);
+				frame = 0;
+			}
+			frame = requestAnimationFrame(step);
+			context.onDetach(() => {
+				stopLoop();
+				layer.remove();
+			});
+		}
+	};
 	function rate(internalTroops, internalMaxTroops) {
 		return (10 + Math.pow(internalTroops, .73) / 4) * (1 - internalTroops / internalMaxTroops);
 	}
@@ -1527,6 +1851,7 @@
 		troopBar,
 		hotbarReadout,
 		allianceView,
+		spawnMarks,
 		alliancePanel
 	];
 	var BOUNDARY_POLL_MS = 500;

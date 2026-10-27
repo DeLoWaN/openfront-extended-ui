@@ -87,7 +87,7 @@ describe("teammates in the web", () => {
       game,
       add: (smallID, team) => {
         const player = add(smallID);
-        player.team = team;
+        player.teamName = team;
         return player;
       },
     };

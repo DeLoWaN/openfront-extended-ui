@@ -45,8 +45,40 @@ export interface Alliance {
   expiresAt: number;
 }
 
+/**
+ * What kind of player this is. `Game.ts:357`.
+ *
+ * Only a human is a person at a keyboard. The game draws its own spawn pulse
+ * for humans alone.
+ */
+export type PlayerType = "HUMAN" | "NATION" | "BOT";
+
+/**
+ * The part of a player's live state the package reads. `PlayerView.ts:112`.
+ *
+ * `state` is public on the game's class, and the game edits it in place.
+ */
+export interface PlayerState {
+  /**
+   * The tile this player has picked to start from. `PlayerView.ts:92`.
+   *
+   * Undefined until the player picks. It follows a re-pick on the same tick.
+   */
+  spawnTile?: number;
+}
+
 /** A player, as the client sees it. `src/client/view/PlayerView.ts`. */
 export interface PlayerView {
+  /** The live state the game edits in place. `:112`. */
+  readonly state: PlayerState;
+  /** The team's name, such as "Team 1". Null in a match without teams. `:465`. */
+  team(): string | null;
+  /** Human, Nation or Bot. `:468`. */
+  type(): PlayerType;
+  /** True once the player has picked a spawn. `:648`. */
+  hasSpawned(): boolean;
+  /** The name the game draws on the map. `:449`. */
+  displayName(): string;
   /** False after the player dies. The object itself is never removed. */
   isAlive(): boolean;
   /** The index this player's colours sit at in the palette. `:440`. */
@@ -125,12 +157,18 @@ export type GameUpdates = Readonly<Record<number, readonly unknown[] | undefined
  */
 export interface GameView {
   /**
-   * Null before the local player spawns, null until the first game update
-   * arrives, and null for the whole match in a replay. Not null after death.
+   * Null until the first game update arrives, and null for the whole match in
+   * a replay. Not null after death, and not null in the spawn phase: the game
+   * creates every player before the first tick, so the local player exists
+   * before it picks a spawn.
    */
   myPlayer(): PlayerView | null;
-  /** True until the spawn phase ends. */
+  /** True until the spawn phase ends. `:1070`. */
   inSpawnPhase(): boolean;
+  /** The column of a tile, in world tiles. `:1163`. */
+  x(ref: number): number;
+  /** The row of a tile, in world tiles. `:1166`. */
+  y(ref: number): number;
   /** 0 before the first game update. */
   ticks(): number;
   /** Everything that happened in the last tick. Null before the first one. `:225`. */

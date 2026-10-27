@@ -89,8 +89,8 @@ describe("the alliances the panel lists", () => {
   });
 
   it("never lists a teammate, who has no alliance with you", () => {
-    match.me.team = "red";
-    match.ana.team = "red";
+    match.me.teamName = "red";
+    match.ana.teamName = "red";
 
     expect(match.step(1000)).toEqual([]);
   });
