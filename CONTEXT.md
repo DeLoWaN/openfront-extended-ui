@@ -7,11 +7,11 @@ A userscript that adds readouts to the OpenFront.io game view from outside the g
 ### What the package adds
 
 **Feature**:
-Any one of the five things the package adds, whether it is a readout or the view mode. It is the word the code uses, because both kinds register the same way and both can be switched off on their own.
+Any one of the four things the package adds, whether it is a readout or the view mode. It is the word the code uses, because both kinds register the same way and both can be switched off on their own.
 _Avoid_: addition, module, plugin
 
 **Readout**:
-One of the package's features that reformats numbers the game already shows, drawn in the HUD. There are four.
+One of the package's features that reformats numbers the game already shows, drawn in the HUD. There are three.
 _Avoid_: widget, panel, overlay, module
 
 **View mode**:
@@ -41,7 +41,7 @@ The game's own panels that stay on screen for a whole match, around the edges of
 _Avoid_: toolbar, interface, control panel (`control-panel` names one element inside the HUD, not the HUD)
 
 **Bottom row**:
-The part of the HUD along the bottom of the screen. Four of the five readouts draw there.
+The part of the HUD along the bottom of the screen. Two of the three readouts draw there.
 _Avoid_: bottom bar, main HUD
 
 **Troop bar**:
@@ -89,15 +89,6 @@ _Avoid_: the optimal zone, the sweet spot, the band (say "the plateau", and "the
 
 **Crossing**:
 Passing the 42.2% level from below. It is the signal to spend troops, because troops above the level are unspent, not because regeneration collapsed.
-
-### Gold
-
-**Trade income**:
-Gold from a trade ship arriving at your port.
-_Avoid_: trade gold, port income
-
-**Captured ship**:
-A trade ship taken by another player before it reached its destination, so its gold goes to the captor instead.
 
 ### Building prices
 

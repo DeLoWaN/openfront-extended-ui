@@ -66,7 +66,7 @@ If the game already uses the key you pick, the mode refuses to run on it and say
 
 The player names on the map lose their coloured outline while the key is down, because the game draws that outline from the same colours the mode rewrites. The letters keep their own colour, and the outline comes back when you let go.
 
-The other three features are still to come. They are listed on [issue #1](https://github.com/DeLoWaN/openfront-extended-ui/issues/1).
+The one remaining feature, the alliance panel, is still to come. It is listed on [issue #1](https://github.com/DeLoWaN/openfront-extended-ui/issues/1).
 
 ## Install
 
@@ -144,7 +144,7 @@ src/
   styles/package.css   the package's own stylesheet
 ```
 
-A **feature** is any one of the six things the package adds. `src/runtime/feature.ts` holds the whole contract:
+A **feature** is any one of the four things the package adds. `src/runtime/feature.ts` holds the whole contract:
 
 ```ts
 export interface Feature {
