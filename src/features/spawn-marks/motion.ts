@@ -1,4 +1,4 @@
-import type { Teammate } from "./teammates";
+import type { MarkedPlayer } from "./players";
 
 /** How long a mark takes to move to a new spawn, in milliseconds. */
 export const GLIDE_MS = 350;
@@ -10,6 +10,7 @@ export interface TrackedMark {
   readonly id: string;
   readonly name: string;
   readonly colour: string;
+  readonly isYou: boolean;
   /** In world tiles. Between two spawns while the mark glides. */
   readonly x: number;
   readonly y: number;
@@ -17,12 +18,12 @@ export interface TrackedMark {
 
 export interface MarkTracker {
   /**
-   * Takes the teammates the game reports now.
+   * Takes the players the game reports now.
    *
-   * A teammate whose spawn moved starts a glide from where their mark is
-   * drawn at `nowMs`. A teammate the game no longer reports loses the mark.
+   * A player whose spawn moved starts a glide from where their mark is drawn
+   * at `nowMs`. A player the game no longer reports loses the mark.
    */
-  update(teammates: readonly Teammate[], nowMs: number): void;
+  update(players: readonly MarkedPlayer[], nowMs: number): void;
   /** Where every mark is drawn at `nowMs`. */
   marks(nowMs: number): TrackedMark[];
   /** Forgets every mark. */
@@ -32,6 +33,7 @@ export interface MarkTracker {
 interface Tracked {
   name: string;
   colour: string;
+  isYou: boolean;
   fromX: number;
   fromY: number;
   toX: number;
@@ -54,32 +56,34 @@ export function createMarkTracker(): MarkTracker {
   }
 
   return {
-    update(teammates, nowMs) {
+    update(players, nowMs) {
       const live = new Set<string>();
-      for (const mate of teammates) {
-        live.add(mate.id);
-        const known = tracked.get(mate.id);
+      for (const player of players) {
+        live.add(player.id);
+        const known = tracked.get(player.id);
         if (!known) {
-          tracked.set(mate.id, {
-            name: mate.name,
-            colour: mate.colour,
-            fromX: mate.x,
-            fromY: mate.y,
-            toX: mate.x,
-            toY: mate.y,
+          tracked.set(player.id, {
+            name: player.name,
+            colour: player.colour,
+            isYou: player.isYou,
+            fromX: player.x,
+            fromY: player.y,
+            toX: player.x,
+            toY: player.y,
             startedAt: nowMs,
           });
           continue;
         }
 
-        known.name = mate.name;
-        known.colour = mate.colour;
-        if (known.toX !== mate.x || known.toY !== mate.y) {
+        known.name = player.name;
+        known.colour = player.colour;
+        known.isYou = player.isYou;
+        if (known.toX !== player.x || known.toY !== player.y) {
           const here = place(known, nowMs);
           known.fromX = here.x;
           known.fromY = here.y;
-          known.toX = mate.x;
-          known.toY = mate.y;
+          known.toX = player.x;
+          known.toY = player.y;
           known.startedAt = nowMs;
         }
       }
@@ -93,6 +97,7 @@ export function createMarkTracker(): MarkTracker {
         id,
         name: mark.name,
         colour: mark.colour,
+        isYou: mark.isYou,
         ...place(mark, nowMs),
       }));
     },

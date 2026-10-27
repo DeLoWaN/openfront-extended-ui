@@ -8,13 +8,14 @@ import {
 } from "./geometry";
 import { createMarkLayer, type RingToDraw } from "./layer";
 import { createMarkTracker, fadeAlpha } from "./motion";
-import { readTeammates } from "./teammates";
+import { readMarkedPlayers } from "./players";
 
 /**
- * The spawn marks. During the spawn phase of a team game, each teammate's
- * spawn carries a ring with the teammate's name above it, in the teammate's own
- * territory colour. A teammate who is off screen gets a chevron at the edge of
- * the screen, pointing at them.
+ * The spawn marks. During the spawn phase, your own spawn and each teammate's
+ * spawn carry a ring with the player's name above it, in the player's own
+ * territory colour. Your own name is white, and your mark is drawn over the
+ * others. A mark that is off screen gets a chevron at the edge of the screen,
+ * pointing at it.
  *
  * The marks sit over the game's own spawn pulse and never change a colour of
  * the game's, so they stay inside docs/adr/0008. They only read the game and
@@ -24,17 +25,17 @@ import { readTeammates } from "./teammates";
  * frame because the camera moves without telling anyone. See docs/adr/0005.
  *
  * The feature ends with the spawn phase: the marks fade and the loop stops. A
- * game without teams has no teammate, and a replay has no local player, so
- * both draw nothing.
+ * game without teams has no teammate, so it draws your mark alone. A replay
+ * has no local player, so it draws nothing.
  */
 
 const NATION_TEAMMATES_OPTION = "nation-teammates";
 
 export const spawnMarks: Feature = {
   id: "spawn-marks",
-  name: "Teammate spawn markers",
+  name: "Spawn markers",
   description:
-    "At the start of a team game, a circle with a name shows where each teammate starts. An arrow at the screen edge points to a teammate off screen.",
+    "At the start of a game, a circle with a name shows where you start, with your name in white. In a team game, each teammate gets one too. An arrow at the screen edge points to a marker off screen.",
   options: [
     {
       key: NATION_TEAMMATES_OPTION,
@@ -71,7 +72,7 @@ export const spawnMarks: Feature = {
       if (game.inSpawnPhase()) {
         phaseEndedAt = null;
         tracker.update(
-          readTeammates(game, context.isOptionEnabled(NATION_TEAMMATES_OPTION)),
+          readMarkedPlayers(game, context.isOptionEnabled(NATION_TEAMMATES_OPTION)),
           now,
         );
       } else {
@@ -88,12 +89,17 @@ export const spawnMarks: Feature = {
       const height = window.innerHeight;
       const rings: RingToDraw[] = [];
       const offScreen: OffScreenMark[] = [];
-      for (const mark of tracker.marks(now)) {
+      // Your mark goes last, so it is drawn over the others.
+      const marks = tracker
+        .marks(now)
+        .sort((a, b) => Number(a.isYou) - Number(b.isYou));
+      for (const mark of marks) {
         const at = hooks.camera.worldToScreenCoordinates(mark);
+        const { name, colour, isYou } = mark;
         if (at.x > 0 && at.y > 0 && at.x < width && at.y < height) {
-          rings.push({ ...at, name: mark.name, colour: mark.colour });
+          rings.push({ ...at, name, colour, isYou });
         } else {
-          offScreen.push({ ...at, colour: mark.colour });
+          offScreen.push({ ...at, colour, isYou });
         }
       }
 

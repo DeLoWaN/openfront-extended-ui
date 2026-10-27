@@ -76,11 +76,12 @@ export function nameBaseline(unit: number): number {
   return ringRadius(unit) + NAME_GAP_PX;
 }
 
-/** A teammate who is off screen, placed where the camera puts them. */
+/** A spawn mark that is off screen, placed where the camera puts it. */
 export interface OffScreenMark {
   readonly x: number;
   readonly y: number;
   readonly colour: string;
+  readonly isYou: boolean;
 }
 
 /** One chevron on the edge of the screen. */
@@ -90,18 +91,21 @@ export interface Pointer {
   readonly y: number;
   /** The direction the chevron points in, in radians. 0 is to the right. */
   readonly angle: number;
-  /** How many teammates this chevron stands for. */
+  /** How many spawn marks this chevron stands for. */
   readonly count: number;
-  /** The colour of the first teammate that landed here. */
+  /** The colour of the first spawn mark that landed here. */
   readonly colour: string;
+  /** True for the chevron that points at the local player's own spawn. */
+  readonly isYou: boolean;
 }
 
 /**
- * Where the chevrons go for the teammates that are off screen.
+ * Where the chevrons go for the spawn marks that are off screen.
  *
- * Each chevron sits where the line from the centre of the screen to its
- * teammate crosses the margin rectangle, and points along that line. Chevrons
- * that land within `MERGE_DISTANCE_PX` of each other become one with a count.
+ * Each chevron sits where the line from the centre of the screen to its mark
+ * crosses the margin rectangle, and points along that line. Chevrons that
+ * land within `MERGE_DISTANCE_PX` of each other become one with a count.
+ * The local player's chevron never joins another.
  */
 export function placePointers(
   offScreen: readonly OffScreenMark[],
@@ -122,6 +126,7 @@ export function placePointers(
     angle: number;
     count: number;
     colour: string;
+    isYou: boolean;
   }> = [];
 
   for (const mark of offScreen) {
@@ -137,13 +142,23 @@ export function placePointers(
     const x = centreX + dx * k;
     const y = centreY + dy * k;
 
-    const near = pointers.find(
-      (pointer) =>
-        Math.hypot(pointer.x - x, pointer.y - y) < MERGE_DISTANCE_PX,
-    );
+    const near = mark.isYou
+      ? undefined
+      : pointers.find(
+          (pointer) =>
+            !pointer.isYou &&
+            Math.hypot(pointer.x - x, pointer.y - y) < MERGE_DISTANCE_PX,
+        );
     if (near) near.count++;
     else {
-      pointers.push({ x, y, angle: Math.atan2(dy, dx), count: 1, colour: mark.colour });
+      pointers.push({
+        x,
+        y,
+        angle: Math.atan2(dy, dx),
+        count: 1,
+        colour: mark.colour,
+        isYou: mark.isYou,
+      });
     }
   }
   return pointers;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         OpenFront Extended UI
 // @namespace    https://github.com/DeLoWaN/openfront-extended-ui
-// @version      0.1.1
+// @version      0.2.0
 // @author       DeLoWaN
 // @description  Adds readouts and an alliance view mode to the OpenFront.io game view. Changes nothing in the game.
 // @license      MIT
@@ -103,7 +103,7 @@
 		const allies = readAllies(subject, subjectID);
 		const expiry = readExpiry(game, subject);
 		const window = renewalWindow(game);
-		const coloured = new Set([subjectID, ...readTeammates$1(game, subject)]);
+		const coloured = new Set([subjectID, ...readTeammates(game, subject)]);
 		const web = [];
 		for (const [smallID, player] of allies) {
 			coloured.add(smallID);
@@ -145,7 +145,7 @@
 		}
 		return allies;
 	}
-	function readTeammates$1(game, subject) {
+	function readTeammates(game, subject) {
 		let players;
 		try {
 			players = game.players();
@@ -1654,14 +1654,15 @@
 			const k = Number.isFinite(reach) ? Math.max(0, reach) : 0;
 			const x = centreX + dx * k;
 			const y = centreY + dy * k;
-			const near = pointers.find((pointer) => Math.hypot(pointer.x - x, pointer.y - y) < 70);
+			const near = mark.isYou ? void 0 : pointers.find((pointer) => !pointer.isYou && Math.hypot(pointer.x - x, pointer.y - y) < 70);
 			if (near) near.count++;
 			else pointers.push({
 				x,
 				y,
 				angle: Math.atan2(dy, dx),
 				count: 1,
-				colour: mark.colour
+				colour: mark.colour,
+				isYou: mark.isYou
 			});
 		}
 		return pointers;
@@ -1669,6 +1670,7 @@
 	var LAYER = "ofx-spawn-marks";
 	var OUTLINE = "rgba(0,0,0,0.85)";
 	var TEXT_OUTLINE = "rgba(0,0,0,0.9)";
+	var YOUR_COLOUR = "#ffffff";
 	var OUTLINE_EXTRA_PX = 4;
 	var CHEVRON_SCALE = 2.4;
 	var CHEVRON = [
@@ -1717,7 +1719,7 @@
 			ctx.lineWidth = width;
 			ctx.strokeStyle = ring.colour;
 			ctx.stroke();
-			drawText(ring.name, ring.x, ring.y - nameBaseline(unit), nameFontPx(unit), ring.colour);
+			drawText(ring.name, ring.x, ring.y - nameBaseline(unit), nameFontPx(unit), ring.isYou ? YOUR_COLOUR : ring.colour);
 		}
 		function drawText(text, x, y, fontPx, colour) {
 			ctx.font = `700 ${fontPx}px ${FONT_FAMILY}`;
@@ -1730,6 +1732,7 @@
 			ctx.fillText(text, x, y);
 		}
 		function drawPointer(pointer) {
+			const colour = pointer.isYou ? YOUR_COLOUR : pointer.colour;
 			ctx.save();
 			ctx.translate(pointer.x, pointer.y);
 			ctx.rotate(pointer.angle);
@@ -1744,12 +1747,12 @@
 			ctx.lineWidth = OUTLINE_EXTRA_PX;
 			ctx.strokeStyle = OUTLINE;
 			ctx.stroke();
-			ctx.fillStyle = pointer.colour;
+			ctx.fillStyle = colour;
 			ctx.fill();
 			ctx.restore();
 			if (pointer.count < 2) return;
 			const back = COUNT_BACK * CHEVRON_SCALE;
-			drawText(`×${pointer.count}`, pointer.x - Math.cos(pointer.angle) * back, pointer.y - Math.sin(pointer.angle) * back, COUNT_FONT * CHEVRON_SCALE, pointer.colour);
+			drawText(`×${pointer.count}`, pointer.x - Math.cos(pointer.angle) * back, pointer.y - Math.sin(pointer.angle) * back, COUNT_FONT * CHEVRON_SCALE, colour);
 		}
 		return {
 			draw(scene) {
@@ -1779,31 +1782,33 @@
 			};
 		}
 		return {
-			update(teammates, nowMs) {
+			update(players, nowMs) {
 				const live = new Set();
-				for (const mate of teammates) {
-					live.add(mate.id);
-					const known = tracked.get(mate.id);
+				for (const player of players) {
+					live.add(player.id);
+					const known = tracked.get(player.id);
 					if (!known) {
-						tracked.set(mate.id, {
-							name: mate.name,
-							colour: mate.colour,
-							fromX: mate.x,
-							fromY: mate.y,
-							toX: mate.x,
-							toY: mate.y,
+						tracked.set(player.id, {
+							name: player.name,
+							colour: player.colour,
+							isYou: player.isYou,
+							fromX: player.x,
+							fromY: player.y,
+							toX: player.x,
+							toY: player.y,
 							startedAt: nowMs
 						});
 						continue;
 					}
-					known.name = mate.name;
-					known.colour = mate.colour;
-					if (known.toX !== mate.x || known.toY !== mate.y) {
+					known.name = player.name;
+					known.colour = player.colour;
+					known.isYou = player.isYou;
+					if (known.toX !== player.x || known.toY !== player.y) {
 						const here = place(known, nowMs);
 						known.fromX = here.x;
 						known.fromY = here.y;
-						known.toX = mate.x;
-						known.toY = mate.y;
+						known.toX = player.x;
+						known.toY = player.y;
 						known.startedAt = nowMs;
 					}
 				}
@@ -1814,6 +1819,7 @@
 					id,
 					name: mark.name,
 					colour: mark.colour,
+					isYou: mark.isYou,
 					...place(mark, nowMs)
 				}));
 			},
@@ -1823,35 +1829,42 @@
 	function fadeAlpha(endedAtMs, nowMs) {
 		return Math.min(1, Math.max(0, 1 - (nowMs - endedAtMs) / FADE_MS));
 	}
-	function readTeammates(game, includeNations) {
+	function readMarkedPlayers(game, includeNations) {
 		const me = game.myPlayer();
 		if (!me) return [];
-		const teammates = [];
+		const marked = [];
 		for (const player of game.players()) {
 			if (player.id() === me.id() || !player.isOnSameTeam(me)) continue;
-			if (!isMarked(player, includeNations)) continue;
-			const tile = player.state.spawnTile;
-			if (tile === void 0) continue;
-			const { r, g, b } = player.territoryColor().toRgb();
-			teammates.push({
-				id: player.id(),
-				name: player.displayName(),
-				x: game.x(tile),
-				y: game.y(tile),
-				colour: `rgb(${r},${g},${b})`
-			});
+			if (!isMarkedTeammate(player, includeNations)) continue;
+			const mark = readMark(game, player, false);
+			if (mark) marked.push(mark);
 		}
-		return teammates;
+		const mine = readMark(game, me, true);
+		if (mine) marked.push(mine);
+		return marked;
 	}
-	function isMarked(player, includeNations) {
+	function readMark(game, player, isYou) {
+		const tile = player.state.spawnTile;
+		if (tile === void 0) return null;
+		const { r, g, b } = player.territoryColor().toRgb();
+		return {
+			id: player.id(),
+			name: player.displayName(),
+			x: game.x(tile),
+			y: game.y(tile),
+			colour: `rgb(${r},${g},${b})`,
+			isYou
+		};
+	}
+	function isMarkedTeammate(player, includeNations) {
 		const type = player.type();
 		return type === "HUMAN" || includeNations && type === "NATION";
 	}
 	var NATION_TEAMMATES_OPTION = "nation-teammates";
 	var spawnMarks = {
 		id: "spawn-marks",
-		name: "Teammate spawn markers",
-		description: "At the start of a team game, a circle with a name shows where each teammate starts. An arrow at the screen edge points to a teammate off screen.",
+		name: "Spawn markers",
+		description: "At the start of a game, a circle with a name shows where you start, with your name in white. In a team game, each teammate gets one too. An arrow at the screen edge points to a marker off screen.",
 		options: [{
 			key: NATION_TEAMMATES_OPTION,
 			name: "Mark Nation teammates too",
@@ -1870,7 +1883,7 @@
 				let alpha = 1;
 				if (game.inSpawnPhase()) {
 					phaseEndedAt = null;
-					tracker.update(readTeammates(game, context.isOptionEnabled(NATION_TEAMMATES_OPTION)), now);
+					tracker.update(readMarkedPlayers(game, context.isOptionEnabled(NATION_TEAMMATES_OPTION)), now);
 				} else {
 					if (tracker.marks(now).length === 0) return false;
 					phaseEndedAt ??= now;
@@ -1883,16 +1896,20 @@
 				const height = window.innerHeight;
 				const rings = [];
 				const offScreen = [];
-				for (const mark of tracker.marks(now)) {
+				const marks = tracker.marks(now).sort((a, b) => Number(a.isYou) - Number(b.isYou));
+				for (const mark of marks) {
 					const at = hooks.camera.worldToScreenCoordinates(mark);
+					const { name, colour, isYou } = mark;
 					if (at.x > 0 && at.y > 0 && at.x < width && at.y < height) rings.push({
 						...at,
-						name: mark.name,
-						colour: mark.colour
+						name,
+						colour,
+						isYou
 					});
 					else offScreen.push({
 						...at,
-						colour: mark.colour
+						colour,
+						isYou
 					});
 				}
 				layer.draw({

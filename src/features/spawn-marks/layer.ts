@@ -22,6 +22,11 @@ export const LAYER = "ofx-spawn-marks";
 /** The dark line under every shape, which keeps a colour readable on land. */
 const OUTLINE = "rgba(0,0,0,0.85)";
 const TEXT_OUTLINE = "rgba(0,0,0,0.9)";
+/**
+ * The colour of your own name and chevron. Your ring keeps your territory
+ * colour, as docs/adr/0008 asks, so the name is what tells your mark apart.
+ */
+const YOUR_COLOUR = "#ffffff";
 /** How much wider the dark line is than the colour above it, in pixels. */
 const OUTLINE_EXTRA_PX = 4;
 
@@ -52,6 +57,8 @@ export interface RingToDraw {
   readonly y: number;
   readonly name: string;
   readonly colour: string;
+  /** True for the local player's own mark. */
+  readonly isYou: boolean;
 }
 
 /** Everything one frame draws. */
@@ -123,7 +130,13 @@ export function createMarkLayer(host: ParentNode = document.body): MarkLayer {
 
     // The name is placed from the ring at rest, so it stays still while the
     // ring breathes.
-    drawText(ring.name, ring.x, ring.y - nameBaseline(unit), nameFontPx(unit), ring.colour);
+    drawText(
+      ring.name,
+      ring.x,
+      ring.y - nameBaseline(unit),
+      nameFontPx(unit),
+      ring.isYou ? YOUR_COLOUR : ring.colour,
+    );
   }
 
   function drawText(
@@ -144,6 +157,7 @@ export function createMarkLayer(host: ParentNode = document.body): MarkLayer {
   }
 
   function drawPointer(pointer: Pointer): void {
+    const colour = pointer.isYou ? YOUR_COLOUR : pointer.colour;
     ctx!.save();
     ctx!.translate(pointer.x, pointer.y);
     ctx!.rotate(pointer.angle);
@@ -158,7 +172,7 @@ export function createMarkLayer(host: ParentNode = document.body): MarkLayer {
     ctx!.lineWidth = OUTLINE_EXTRA_PX;
     ctx!.strokeStyle = OUTLINE;
     ctx!.stroke();
-    ctx!.fillStyle = pointer.colour;
+    ctx!.fillStyle = colour;
     ctx!.fill();
     ctx!.restore();
 
@@ -171,7 +185,7 @@ export function createMarkLayer(host: ParentNode = document.body): MarkLayer {
       pointer.x - Math.cos(pointer.angle) * back,
       pointer.y - Math.sin(pointer.angle) * back,
       COUNT_FONT * CHEVRON_SCALE,
-      pointer.colour,
+      colour,
     );
   }
 

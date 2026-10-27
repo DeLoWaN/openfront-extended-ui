@@ -94,15 +94,15 @@ The panel is not on the screen when it has no row. It never scrolls, because a s
 
 ### The spawn marks
 
-The **spawn phase** is the opening of a match, while every player picks where to start. In a team game, the marks help you find each of your teammates on the map.
+The **spawn phase** is the opening of a match, while every player picks where to start. The marks help you find your own spawn and, in a team game, each of your teammates on the map.
 
-Each human teammate's **spawn** carries a ring with the teammate's name above it, in that teammate's own territory colour. A dark outline keeps the ring readable on land of the same colour. The ring grows and shrinks with the zoom, and it breathes a little. The name stays still above it. The marks sit over the game's own pulse, and they never change a colour of the game's.
+Your own **spawn** and each human teammate's spawn carry a ring with the player's name above it. The ring is in that player's own territory colour. The name is in the same colour, except your own name, which is white. Your mark is drawn over the others. A dark outline keeps the ring readable on land of the same colour. The ring grows and shrinks with the zoom, and it breathes a little. The name stays still above it. The marks sit over the game's own pulse, and they never change a colour of the game's.
 
-A teammate who is off screen gets a chevron on the edge of the screen, pointing at them. Chevrons that land close together become one chevron with a count, such as `×3`. The chevrons stay clear of the bottom row of the HUD.
+A mark that is off screen gets a chevron on the edge of the screen, pointing at it. A teammate's chevron is in the teammate's colour, and yours is white. Teammates' chevrons that land close together become one chevron with a count, such as `×3`. Your chevron never joins them. The chevrons stay clear of the bottom row of the HUD.
 
-When a teammate picks another spawn, the mark glides to it. When the spawn phase ends, the marks fade over about a second and go. A game without teams draws nothing, and neither does a replay. The marks only read the game. They send nothing.
+When a player picks another spawn, the mark glides to it. When the spawn phase ends, the marks fade over about a second and go. A game without teams draws your mark alone. A replay draws nothing. The marks only read the game. They send nothing.
 
-The game draws its own pulse for human teammates only, and so do the marks. A solo game has one human, so it has no human teammate to mark. To see the marks in a solo team game, switch on the option that adds the Nation teammates. The Nations stand in for teammates. This option is a test aid, so the settings panel does not show it. Set it from the browser console.
+The game draws its own pulse for you and for human teammates only, and so do the marks. A solo game has one human, so it has no human teammate to mark, and it shows your mark alone. To see teammates' marks in a solo team game, switch on the option that adds the Nation teammates. The Nations stand in for teammates. This option is a test aid, so the settings panel does not show it. Set it from the browser console.
 
 ```js
 openfrontExtendedUi.setOption('spawn-marks', 'nation-teammates', true)
