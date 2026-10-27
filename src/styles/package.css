@@ -614,6 +614,27 @@
   font-size: 0.875rem;
 }
 
+/* The row on the game's settings page, which draws its rows as cards. */
+.ofx-menu-row-card {
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ofx-menu-row-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ofx-menu-row-card .ofx-menu-row-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.ofx-menu-row-card .ofx-menu-row-hint {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 /*
  * The panel's backdrop fills the game's menu overlay, which is fixed over the
  * whole screen. It darkens the game's menu under the panel.
@@ -627,6 +648,12 @@
   justify-content: center;
   padding: 1rem;
   background: rgba(0, 0, 0, 0.5);
+}
+
+/* Outside a match, above the game's own modals, which sit at `z-index: 9999`. */
+.ofx-settings-backdrop-page {
+  position: fixed;
+  z-index: 10000;
 }
 
 .ofx-settings {

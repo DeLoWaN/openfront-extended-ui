@@ -51,7 +51,7 @@ The small amber panel the hotbar readout draws under the cursor when a city, a f
 _Avoid_: toast, popup, tooltip, notification
 
 **Settings panel**:
-The package's own panel, opened from the Extended UI row in the game's in-match settings menu. In it a player switches each feature on or off and sets its options. It is not a feature, because nothing switches it off.
+The package's own panel, opened from an Extended UI row: in the game's in-match settings menu, or at the top of the game's settings page outside a match. In it a player switches each feature on or off and sets its options. It is not a feature, because nothing switches it off.
 _Avoid_: settings modal (that is the game's own menu), options menu
 
 ### The game's own furniture

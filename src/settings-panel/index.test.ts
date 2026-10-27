@@ -156,6 +156,100 @@ describe("the Extended UI row in the game's menu", () => {
   });
 });
 
+/** The game's settings page, outside a match, as `<o-modal>` slots it. */
+function addSettingsPage(): HTMLElement {
+  const page = document.createElement("user-setting");
+  page.id = "page-settings";
+  document.body.append(page);
+  return page;
+}
+
+/** What Lit draws into the settings page once the game's bundle runs. */
+function drawSettingsPage(page: HTMLElement): void {
+  page.innerHTML = `
+    <o-modal>
+      <div slot="header">Settings</div>
+      <div class="body">
+        <div class="card">Graphics preset</div>
+        <div class="card">Emojis</div>
+      </div>
+    </o-modal>`;
+}
+
+describe("the Extended UI row on the game's settings page", () => {
+  it("appears at the top of the page once the game draws it", async () => {
+    const page = addSettingsPage();
+    setup();
+
+    drawSettingsPage(page);
+    await settle();
+
+    const body = page.querySelector(".body");
+    expect(body?.firstElementChild?.classList.contains("ofx-menu-row")).toBe(true);
+    expect(body?.firstElementChild?.classList.contains("ofx-menu-row-card")).toBe(
+      true,
+    );
+  });
+
+  it("is there when the page was drawn before the script started", () => {
+    const page = addSettingsPage();
+    drawSettingsPage(page);
+
+    setup();
+
+    expect(page.querySelectorAll(".ofx-menu-row")).toHaveLength(1);
+  });
+
+  it("opens the panel over the whole page, outside any game overlay", () => {
+    const page = addSettingsPage();
+    drawSettingsPage(page);
+    setup();
+
+    row(page)?.click();
+
+    const backdrop = document.querySelector(".ofx-settings-backdrop");
+    expect(backdrop?.parentElement).toBe(document.body);
+    expect(backdrop?.classList.contains("ofx-settings-backdrop-page")).toBe(true);
+  });
+
+  it("closes on Escape and leaves the settings page alone", () => {
+    const page = addSettingsPage();
+    drawSettingsPage(page);
+    setup();
+    const pageKeys = vi.fn();
+    window.addEventListener("keydown", pageKeys);
+    row(page)?.click();
+
+    press("Escape");
+
+    expect(panel()).toBeNull();
+    expect(pageKeys).not.toHaveBeenCalled();
+    expect(page.querySelector(".body")).not.toBeNull();
+    window.removeEventListener("keydown", pageKeys);
+  });
+
+  it("switches a feature off with no match running", () => {
+    const page = addSettingsPage();
+    drawSettingsPage(page);
+    const { registry } = setup();
+    row(page)?.click();
+
+    document.querySelector<HTMLInputElement>(".ofx-switch")?.click();
+
+    expect(registry.isEnabled("troop-bar")).toBe(false);
+  });
+
+  it("goes when the package stops", () => {
+    const page = addSettingsPage();
+    drawSettingsPage(page);
+    const { host } = setup();
+
+    host.stop();
+
+    expect(row(page)).toBeNull();
+  });
+});
+
 describe("opening and closing the panel", () => {
   async function openPanel() {
     const context = setup();

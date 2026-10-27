@@ -132,12 +132,15 @@ Firefox needs nothing of the sort.
 
 ## Switch a feature off
 
-In a match, open the game's settings menu with the gear in the top right corner, then click **Extended UI**. The **settings panel** opens over the game's menu.
+Click **Extended UI** to open the **settings panel**. The row is in two places:
+
+- Outside a match, at the top of the game's settings page, which **SETTINGS** in the top bar opens.
+- In a match, in the game's settings menu, which the gear in the top right corner opens.
 
 - Each feature has a row with a switch. Its options sit under it, and they grey out while the feature is off.
 - A change applies at once. There is no Save button.
 - **Reset to defaults** puts every feature and every option back, including the options the panel does not show. It asks for a second click within 3 seconds.
-- Escape, the × button, or a click outside the panel goes back to the game's menu.
+- Escape, the × button, or a click outside the panel closes it.
 
 The browser console does the same, and it also reaches the options the panel leaves out.
 
