@@ -19,8 +19,8 @@ export const MAX_ARROW_DEGREES = 55;
 /** How long the badge stays when the player has set nothing, in seconds. */
 export const DEFAULT_SECONDS = 3.5;
 
-const MIN_SECONDS = 0.5;
-const MAX_SECONDS = 30;
+export const MIN_SECONDS = 0.5;
+export const MAX_SECONDS = 30;
 
 /** A point on the screen, in pixels. */
 export interface Point {

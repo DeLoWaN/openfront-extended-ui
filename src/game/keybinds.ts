@@ -1,9 +1,8 @@
 /**
- * Which keys the game has already taken.
+ * Which keys the game has already taken, and for which of its actions.
  *
- * The alliance view mode is held on a key of its own, and the game's keybinds
- * are the player's to change. The mode must not steal a key the player set, so
- * it asks here before it engages.
+ * The game's keybinds are the player's to change. A key of the package's own
+ * must not steal a key the player set, so the package asks here first.
  *
  * The game keeps its own keybinds in `localStorage` and merges them over its
  * defaults on every read. This reads them the same way, on every press rather
@@ -15,7 +14,7 @@
  * 332e5410e.
  */
 
-import { readStoredObject, type SettingsStore } from "../../runtime/settings";
+import { readStoredObject, type SettingsStore } from "../runtime/settings";
 
 /** Where the game keeps the player's own keybinds. `UserSettings.ts:68`. */
 export const GAME_KEYBINDS_KEY = "settings.keybinds";
@@ -84,6 +83,14 @@ export interface GameKeybinds {
   isBound(code: string): boolean;
 
   /**
+   * The game's own name for the action this key fires, such as `buildCity`.
+   *
+   * Null when the game binds nothing to the key. A key bound twice gives the
+   * first action in the game's own order.
+   */
+  boundAction(code: string): string | null;
+
+  /**
    * The key the game holds its own alternate view on.
    *
    * Under that view the territory shader draws no owned tile at all, so nothing
@@ -105,11 +112,17 @@ export function readGameKeybinds(store: SettingsStore): GameKeybinds {
     if (binding === UNBOUND) delete merged[action];
   }
 
+  function boundAction(code: string): string | null {
+    if (code === "") return null;
+    for (const [action, binding] of Object.entries(merged)) {
+      if (keyOf(binding) === code) return action;
+    }
+    return null;
+  }
+
   return {
-    isBound(code) {
-      if (code === "") return false;
-      return Object.values(merged).some((binding) => keyOf(binding) === code);
-    },
+    isBound: (code) => boundAction(code) !== null,
+    boundAction,
     alternateViewKey: () => keyOf(merged[ALTERNATE_VIEW] ?? ""),
   };
 }

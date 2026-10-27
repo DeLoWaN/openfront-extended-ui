@@ -50,6 +50,10 @@ _Avoid_: chip, pips, dots, progress bar
 The small amber panel the hotbar readout draws under the cursor when a city, a factory or a port becomes affordable. It carries that building's icon, and an arrow under it points to the icon in the hotbar. It stays where it appeared and fades after 3.5 seconds.
 _Avoid_: toast, popup, tooltip, notification
 
+**Settings panel**:
+The package's own panel, opened from the Extended UI row in the game's in-match settings menu. In it a player switches each feature on or off and sets its options. It is not a feature, because nothing switches it off.
+_Avoid_: settings modal (that is the game's own menu), options menu
+
 ### The game's own furniture
 
 **HUD**:

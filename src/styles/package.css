@@ -560,3 +560,271 @@
     0 0 3px rgba(0, 0, 0, 0.95),
     0 0 3px rgba(0, 0, 0, 0.95);
 }
+
+/*
+ * The Settings panel, and the row that opens it from the game's menu.
+ *
+ * Both copy the look of the game's in-match menu: a slate dialog with a slate
+ * border, and rows that light up under the cursor. The colours are Tailwind's
+ * slate values, which the game's menu uses, written out here because the
+ * package never uses a game class. See docs/adr/0001.
+ */
+:root {
+  --ofx-menu-background: #1e293b;
+  --ofx-menu-border: #475569;
+  --ofx-menu-hover: #334155;
+  --ofx-menu-hint: #94a3b8;
+  --ofx-menu-warning: #f87171;
+  /* A switch that is on. Not the signature colour, because it is no figure. */
+  --ofx-switch-on: #10b981;
+}
+
+.ofx-menu-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+.ofx-menu-row:hover {
+  background: var(--ofx-menu-hover);
+}
+
+.ofx-menu-row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.ofx-menu-row-title {
+  font-weight: 500;
+}
+
+.ofx-menu-row-hint {
+  color: var(--ofx-menu-hint);
+  font-size: 0.875rem;
+}
+
+/*
+ * The panel's backdrop fills the game's menu overlay, which is fixed over the
+ * whole screen. It darkens the game's menu under the panel.
+ */
+.ofx-settings-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.ofx-settings {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 80vh;
+  border: 1px solid var(--ofx-menu-border);
+  border-radius: 0.5rem;
+  background: var(--ofx-menu-background);
+  color: #ffffff;
+  outline: none;
+}
+
+.ofx-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--ofx-menu-border);
+}
+
+.ofx-settings-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.ofx-settings-close {
+  border: 0;
+  background: transparent;
+  color: var(--ofx-menu-hint);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ofx-settings-close:hover {
+  color: #ffffff;
+}
+
+/* No section collapses, so a long list scrolls instead. */
+.ofx-settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  overflow-y: auto;
+}
+
+.ofx-settings-feature + .ofx-settings-feature {
+  border-top: 1px solid var(--ofx-menu-border);
+}
+
+.ofx-settings-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.ofx-settings-row:hover {
+  background: var(--ofx-menu-hover);
+}
+
+.ofx-settings-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ofx-settings-feature > .ofx-settings-row .ofx-settings-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.ofx-settings-description {
+  color: var(--ofx-menu-hint);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.ofx-settings-options {
+  padding-left: 1.5rem;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+}
+
+.ofx-settings-options-off {
+  opacity: 0.4;
+}
+
+.ofx-settings-options-off .ofx-settings-row {
+  cursor: default;
+}
+
+.ofx-settings-options-off .ofx-settings-row:hover {
+  background: transparent;
+}
+
+.ofx-switch {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 2.25rem;
+  height: 1.25rem;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--ofx-menu-border);
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+.ofx-switch::after {
+  content: "";
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 150ms;
+}
+
+.ofx-switch:checked {
+  background: var(--ofx-switch-on);
+}
+
+.ofx-switch:checked::after {
+  transform: translateX(1rem);
+}
+
+.ofx-switch:disabled {
+  cursor: default;
+}
+
+.ofx-settings-number,
+.ofx-settings-key {
+  flex: none;
+  min-width: 4.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--ofx-menu-border);
+  border-radius: 0.25rem;
+  background: #0f172a;
+  color: #ffffff;
+  font: inherit;
+  text-align: center;
+}
+
+.ofx-settings-key {
+  cursor: pointer;
+}
+
+.ofx-settings-key-listening {
+  border-color: var(--ofx-switch-on);
+  color: var(--ofx-menu-hint);
+}
+
+.ofx-settings-warning {
+  margin: 0;
+  padding: 0 0.75rem;
+  color: var(--ofx-menu-warning);
+  font-size: 0.8rem;
+}
+
+.ofx-settings-warning:empty {
+  display: none;
+}
+
+.ofx-settings-footer {
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid var(--ofx-menu-border);
+}
+
+.ofx-settings-reset {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--ofx-menu-border);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ofx-settings-reset:hover {
+  background: var(--ofx-menu-hover);
+}
+
+/* The second click resets everything, so the button warns while it waits. */
+.ofx-settings-reset-armed {
+  border-color: var(--ofx-menu-warning);
+  color: var(--ofx-menu-warning);
+}
