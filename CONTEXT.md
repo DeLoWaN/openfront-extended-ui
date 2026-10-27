@@ -21,6 +21,14 @@ A feature that changes how the map is coloured instead of reporting a number. Th
 The player the alliance view mode draws its map around. The cursor picks it, and it stays until the cursor reaches another player, so the subject is not always the player under the cursor.
 _Avoid_: hovered player, target, focus
 
+**Alliance panel**:
+The readout in the top right corner of the HUD that lists your alliances, with the time each one has left. It also lists the alliance requests aimed at you, and the alliances that just ran out. Each row is a bar that empties as the time runs out. It sends nothing, and a click on a row only moves the camera.
+_Avoid_: alliance list, alliance tracker
+
+**Spotlight**:
+One player the alliance view mode shows on its own, with no key held. The map greys and only that player keeps their colour. The alliance panel sets it while the cursor rests on a row. It is the alliance view mode with no allies and no clocks. When that player is off screen, an arrow at the screen's edge points to them.
+_Avoid_: highlight, hover mode, focus
+
 **Surface**:
 Where a feature draws. There are two, the HUD and the map. A decision about one carries nothing to the other.
 

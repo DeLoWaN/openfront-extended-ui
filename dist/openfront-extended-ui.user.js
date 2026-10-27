@@ -19,7 +19,12 @@
 
 (function() {
 	"use strict";
-	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}";
+	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}.ofx-alliance-panel{--ofx-bar-track:#0f172af0;--ofx-bar-fill:#3b5b86;--ofx-bar-fill-urgent:#b42323;min-width:14em;max-width:22em;font-size:calc(var(--ofx-figure-size) * 1.6);color:#fff;text-shadow:var(--ofx-shadow-figure);pointer-events:auto;flex-direction:column;gap:.2em;line-height:1.2;display:flex}.ofx-alliance-row{background:linear-gradient(90deg, var(--ofx-bar-fill) var(--ofx-frac,100%), var(--ofx-bar-track) var(--ofx-frac,100%));cursor:pointer;border-radius:.3em;align-items:baseline;gap:.5em;padding:.3em .6em;display:flex;box-shadow:0 0 0 1px #0009}.ofx-alliance-row-urgent{--ofx-bar-fill:var(--ofx-bar-fill-urgent)}.ofx-alliance-row:hover{filter:brightness(1.3)}.ofx-alliance-name{text-overflow:ellipsis;white-space:nowrap;flex:auto;min-width:0;overflow:hidden}.ofx-alliance-tag{color:#cbd5e1;white-space:nowrap;flex:none;font-size:.8em}.ofx-alliance-time{font-variant-numeric:tabular-nums;flex:none;font-weight:700}.ofx-alliance-row-expired{color:#cbd5e1}.ofx-spotlight-pointer{z-index:50;pointer-events:none;flex-direction:column;align-items:center;gap:6px;display:flex;position:fixed;transform:translate(-50%,-50%)}.ofx-spotlight-arrow{border-top:16px solid #0000;border-bottom:16px solid #0000;border-left:28px solid var(--ofx-pointer-colour,#fff);filter:drop-shadow(0 0 1px #fff)drop-shadow(0 0 1px #fff)drop-shadow(0 0 3px #000000e6);width:0;height:0}.ofx-spotlight-name{text-overflow:ellipsis;white-space:nowrap;color:#fff;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;max-width:14em;font-size:18px;font-weight:700;overflow:hidden}";
+	function isMatchLive(game) {
+		if (game.inSpawnPhase()) return false;
+		const me = game.myPlayer();
+		return me !== null && me.isAlive();
+	}
 	var PREFIX = "[openfront-extended-ui]";
 	function logInfo(message, ...details) {
 		console.info(PREFIX, message, ...details);
@@ -27,74 +32,68 @@
 	function logError(message, ...details) {
 		console.error(PREFIX, message, ...details);
 	}
-	function matchesOption(value, whenUnset) {
-		return typeof value === typeof whenUnset;
-	}
-	var STORAGE_KEY = "openfront-extended-ui:features";
-	function optionKey(id, option) {
-		return `${id}:${option}`;
-	}
-	function createSettings(store) {
-		const stored = readStored(store);
-		function save() {
-			try {
-				store.write(JSON.stringify(stored));
-			} catch (error) {
-				logError("could not save the settings", error);
-			}
+	function injectedNodes(deps) {
+		const drawings = new Map();
+		function isInPage(drawn) {
+			return deps.nodesOf(drawn).every((node) => node.isConnected);
+		}
+		function erase(drawn) {
+			for (const node of deps.nodesOf(drawn)) node.remove();
 		}
 		return {
-			isEnabled(id) {
-				const value = stored[id];
-				return typeof value === "boolean" ? value : true;
+			sync() {
+				let hosts;
+				try {
+					hosts = deps.findHosts();
+				} catch (error) {
+					logError("could not look for a place to draw", error);
+					return [...drawings.values()];
+				}
+				for (const [host, drawn] of drawings) {
+					if (hosts.includes(host)) continue;
+					erase(drawn);
+					drawings.delete(host);
+				}
+				for (const host of hosts) {
+					const existing = drawings.get(host);
+					if (existing && isInPage(existing)) continue;
+					if (existing) erase(existing);
+					const drawn = deps.draw(host);
+					if (drawn === null) {
+						drawings.delete(host);
+						continue;
+					}
+					drawings.set(host, drawn);
+				}
+				return [...drawings.values()];
 			},
-			setEnabled(id, value) {
-				stored[id] = value;
-				save();
-			},
-			optionValue(id, option, whenUnset) {
-				const value = stored[optionKey(id, option)];
-				return matchesOption(value, whenUnset) ? value : whenUnset;
-			},
-			setOptionValue(id, option, value) {
-				stored[optionKey(id, option)] = value;
-				save();
+			remove() {
+				for (const drawn of drawings.values()) erase(drawn);
+				drawings.clear();
 			}
 		};
 	}
-	function localStorageStore(key = STORAGE_KEY) {
+	var MARKER = "data-openfront-extended-ui";
+	var HIDDEN = "ofx-hidden";
+	function createStyleSheet(css) {
+		const injected = new Map();
 		return {
-			read: () => localStorage.getItem(key),
-			write: (value) => localStorage.setItem(key, value)
+			injectInto(root) {
+				if (injected.has(root)) return;
+				const style = document.createElement("style");
+				style.setAttribute(MARKER, "");
+				style.textContent = css;
+				styleHostOf(root).append(style);
+				injected.set(root, style);
+			},
+			remove() {
+				for (const style of injected.values()) style.remove();
+				injected.clear();
+			}
 		};
 	}
-	function readStoredObject(store, report = () => {}) {
-		let raw;
-		try {
-			raw = store.read();
-		} catch (error) {
-			report("could not be read", error);
-			return {};
-		}
-		if (raw === null) return {};
-		let parsed;
-		try {
-			parsed = JSON.parse(raw);
-		} catch {
-			report("are not valid JSON");
-			return {};
-		}
-		if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-			report("are not an object");
-			return {};
-		}
-		return parsed;
-	}
-	function readStored(store) {
-		const stored = readStoredObject(store, (problem, error) => logError(`the stored settings ${problem}, using the defaults`, error));
-		const values = {};
-		for (const [id, value] of Object.entries(stored)) if (typeof value === "boolean" || typeof value === "string") values[id] = value;
-		return values;
+	function styleHostOf(root) {
+		return root.nodeType === Node.DOCUMENT_NODE ? root.head : root;
 	}
 	var TICKS_PER_SECOND = 10;
 	var EXTENSION_WINDOW_TICKS = 300;
@@ -190,27 +189,422 @@
 			return null;
 		}
 	}
-	var MARKER = "data-openfront-extended-ui";
-	var HIDDEN = "ofx-hidden";
-	function createStyleSheet(css) {
-		const injected = new Map();
+	var spotlit = null;
+	var listeners = new Set();
+	function spotlightedPlayer() {
+		return spotlit;
+	}
+	function setSpotlight(smallID) {
+		if (spotlit === smallID) return;
+		spotlit = smallID;
+		for (const listener of [...listeners]) try {
+			listener();
+		} catch {
+			continue;
+		}
+	}
+	function onSpotlight(listener) {
+		listeners.add(listener);
+		return () => listeners.delete(listener);
+	}
+	var NONE = {
+		requests: [],
+		replies: [],
+		expired: [],
+		extensions: []
+	};
+	function readAllianceUpdates(game) {
+		const lists = game.updatesSinceLastTick();
+		if (!lists) return NONE;
+		const requests = [];
+		const replies = [];
+		const expired = [];
+		const extensions = [];
+		for (const list of Object.values(lists)) {
+			if (!list || list.length === 0) continue;
+			const first = list[0];
+			if (typeof first !== "object" || first === null) continue;
+			if (hasNumbers(first, "requestorID", "recipientID", "createdAt")) {
+				for (const update of list) if (hasNumbers(update, "requestorID", "recipientID", "createdAt")) requests.push(update);
+			} else if (isReply(first)) {
+				for (const update of list) if (isReply(update)) replies.push(update.request);
+			} else if (hasNumbers(first, "player1ID", "player2ID")) {
+				for (const update of list) if (hasNumbers(update, "player1ID", "player2ID")) expired.push(update);
+			} else if (hasNumbers(first, "playerID", "allianceID")) {
+				for (const update of list) if (hasNumbers(update, "playerID", "allianceID")) extensions.push(update);
+			}
+		}
 		return {
-			injectInto(root) {
-				if (injected.has(root)) return;
-				const style = document.createElement("style");
-				style.setAttribute(MARKER, "");
-				style.textContent = css;
-				styleHostOf(root).append(style);
-				injected.set(root, style);
+			requests,
+			replies,
+			expired,
+			extensions
+		};
+	}
+	function hasNumbers(value, ...keys) {
+		if (typeof value !== "object" || value === null) return false;
+		const fields = value;
+		return keys.every((key) => typeof fields[key] === "number");
+	}
+	function isReply(value) {
+		if (typeof value !== "object" || value === null) return false;
+		const fields = value;
+		return typeof fields.accepted === "boolean" && hasNumbers(fields.request, "requestorID", "recipientID");
+	}
+	function createAlliancePanelRows(game) {
+		const requests = new Map();
+		const expired = new Map();
+		const agreed = new Map();
+		return {
+			observe(me) {
+				const news = readAllianceUpdates(game);
+				const now = game.ticks();
+				const mine = me.smallID();
+				for (const request of news.requests) {
+					if (request.recipientID !== mine) continue;
+					requests.set(request.requestorID, request.createdAt + game.config().allianceRequestDuration());
+				}
+				for (const reply of news.replies) if (reply.recipientID === mine) requests.delete(reply.requestorID);
+				for (const end of news.expired) {
+					const other = end.player1ID === mine ? end.player2ID : end.player2ID === mine ? end.player1ID : null;
+					if (other === null) continue;
+					const partner = playerOrNull(game, other);
+					if (!partner || !partner.isAlive() || !me.isAlive()) continue;
+					expired.set(other, now);
+				}
+				const window = renewalWindow(game);
+				for (const extension of news.extensions) {
+					if (extension.playerID !== mine) continue;
+					const alliance = me.alliances().find((candidate) => candidate.id === extension.allianceID);
+					if (!alliance || alliance.expiresAt - now > window) continue;
+					agreed.set(alliance.id, alliance.expiresAt);
+				}
 			},
-			remove() {
-				for (const style of injected.values()) style.remove();
-				injected.clear();
+			rows(me) {
+				const now = game.ticks();
+				const window = renewalWindow(game);
+				const allianceWhole = safely(() => game.config().allianceDuration()) ?? 0;
+				const requestWhole = safely(() => game.config().allianceRequestDuration()) ?? 0;
+				const listed = [];
+				const partners = new Set();
+				const live = new Set();
+				const byId = new Map();
+				for (const player of safely(() => game.players()) ?? []) {
+					const id = safely(() => player.id());
+					if (id !== void 0) byId.set(id, player);
+				}
+				for (const alliance of safely(() => me.alliances()) ?? []) {
+					live.add(alliance.id);
+					const partner = byId.get(alliance.other);
+					if (!partner?.isAlive()) continue;
+					const row = describe(partner, (smallID, name) => {
+						const left = Math.max(0, alliance.expiresAt - now);
+						return {
+							key: `alliance:${alliance.id}`,
+							kind: "alliance",
+							smallID,
+							name,
+							clock: formatClock(left),
+							urgent: left <= window && agreed.get(alliance.id) !== alliance.expiresAt,
+							fraction: shareOf(left, allianceWhole),
+							order: left
+						};
+					});
+					if (!row) continue;
+					partners.add(row.smallID);
+					listed.push(row);
+				}
+				for (const smallID of partners) expired.delete(smallID);
+				for (const id of agreed.keys()) if (!live.has(id)) agreed.delete(id);
+				for (const [requestor, endsAt] of requests) {
+					const partner = playerOrNull(game, requestor);
+					const left = endsAt - now;
+					if (left <= 0 || !partner?.isAlive() || partners.has(requestor)) {
+						requests.delete(requestor);
+						continue;
+					}
+					const row = describe(partner, (smallID, name) => ({
+						key: `request:${smallID}`,
+						kind: "request",
+						smallID,
+						name,
+						clock: formatClock(left),
+						urgent: false,
+						fraction: shareOf(left, requestWhole),
+						order: left
+					}));
+					if (row) listed.push(row);
+				}
+				for (const [former, endedAt] of expired) {
+					const since = now - endedAt;
+					const partner = playerOrNull(game, former);
+					if (since >= 150 || !partner) {
+						expired.delete(former);
+						continue;
+					}
+					const row = describe(partner, (smallID, name) => ({
+						key: `expired:${smallID}`,
+						kind: "expired",
+						smallID,
+						name,
+						clock: formatClock(since),
+						urgent: false,
+						fraction: 0,
+						order: -since
+					}));
+					if (row) listed.push(row);
+				}
+				listed.sort((a, b) => b.order - a.order || a.smallID - b.smallID);
+				return listed.map(({ order: _order, ...row }) => row);
 			}
 		};
 	}
-	function styleHostOf(root) {
-		return root.nodeType === Node.DOCUMENT_NODE ? root.head : root;
+	function describe(player, build) {
+		try {
+			return build(player.smallID(), player.displayName());
+		} catch {
+			return null;
+		}
+	}
+	function shareOf(left, whole) {
+		if (!(whole > 0)) return 1;
+		return Math.max(0, Math.min(1, left / whole));
+	}
+	function safely(read) {
+		try {
+			return read();
+		} catch {
+			return;
+		}
+	}
+	var SIDEBAR = "game-right-sidebar";
+	var PANEL$1 = "ofx-alliance-panel";
+	var ROW = "ofx-alliance-row";
+	var NAME$1 = "ofx-alliance-name";
+	var TAG = "ofx-alliance-tag";
+	var TIME = "ofx-alliance-time";
+	var URGENT_ROW = "ofx-alliance-row-urgent";
+	var EXPIRED_ROW = "ofx-alliance-row-expired";
+	var FRACTION = "--ofx-frac";
+	var HOVER_DELAY_MS = 60;
+	var TAGS = {
+		alliance: "",
+		request: "asks you",
+		expired: "ended"
+	};
+	var BUILD_MENU$1 = "build-menu";
+	var alliancePanel = {
+		id: "alliance-panel",
+		name: "Alliance panel",
+		attach(context) {
+			const state = createAlliancePanelRows(context.game);
+			const panels = injectedNodes({
+				findHosts: findSidebars,
+				draw: (host) => drawPanel(host, context.game, hover),
+				nodesOf: (panel) => [panel.root]
+			});
+			context.onDetach(() => panels.remove());
+			const hover = createHover(context);
+			return { tick() {
+				const me = context.game.myPlayer();
+				if (!isMatchLive(context.game) || !me) {
+					hover.leave();
+					panels.remove();
+					return;
+				}
+				state.observe(me);
+				const rows = state.rows(me);
+				for (const panel of panels.sync()) render(panel, rows);
+				hover.keepOnlyRowsIn(rows);
+			} };
+		}
+	};
+	function findSidebars() {
+		const hosts = new Set();
+		for (const sidebar of document.querySelectorAll(SIDEBAR)) if (sidebar.parentElement) hosts.add(sidebar.parentElement);
+		return [...hosts];
+	}
+	function createHover(context) {
+		let timer = null;
+		function cancel() {
+			if (timer === null) return;
+			window.clearTimeout(timer);
+			timer = null;
+		}
+		context.onDetach(() => {
+			cancel();
+			setSpotlight(null);
+		});
+		return {
+			over(smallID) {
+				cancel();
+				if (spotlightedPlayer() === smallID) return;
+				timer = window.setTimeout(() => {
+					timer = null;
+					setSpotlight(smallID);
+				}, HOVER_DELAY_MS);
+			},
+			leave() {
+				cancel();
+				setSpotlight(null);
+			},
+			keepOnlyRowsIn(rows) {
+				const lit = spotlightedPlayer();
+				if (lit !== null && !rows.some((row) => row.smallID === lit)) setSpotlight(null);
+			}
+		};
+	}
+	function drawPanel(host, game, hover) {
+		const root = document.createElement("div");
+		root.className = `${PANEL$1} ${HIDDEN}`;
+		root.addEventListener("click", (event) => {
+			try {
+				const row = event.target?.closest(`.${ROW}`);
+				const smallID = Number(row?.dataset.ofxPlayer);
+				if (!row || Number.isNaN(smallID)) return;
+				moveCameraTo(game, smallID);
+			} catch (error) {
+				logError("a click on the alliance panel failed", error);
+			}
+		});
+		root.addEventListener("mouseover", (event) => {
+			const row = event.target?.closest(`.${ROW}`);
+			const smallID = Number(row?.dataset.ofxPlayer);
+			if (row && !Number.isNaN(smallID)) hover.over(smallID);
+		});
+		root.addEventListener("mouseleave", () => hover.leave());
+		host.append(root);
+		return {
+			root,
+			drawn: new Map()
+		};
+	}
+	function moveCameraTo(game, smallID) {
+		const player = playerOrNull(game, smallID);
+		const camera = document.querySelector(BUILD_MENU$1)?.transformHandler;
+		if (!player || !camera) {
+			logError("no camera or no player to move the camera to");
+			return;
+		}
+		camera.onGoToPlayer({ player });
+	}
+	function render(panel, rows) {
+		const wanted = new Set(rows.map((row) => row.key));
+		for (const [key, drawn] of panel.drawn) {
+			if (wanted.has(key)) continue;
+			drawn.node.remove();
+			panel.drawn.delete(key);
+		}
+		const ordered = [];
+		for (const row of rows) {
+			let drawn = panel.drawn.get(row.key);
+			if (!drawn) {
+				drawn = createRow();
+				panel.drawn.set(row.key, drawn);
+			}
+			drawn.node.dataset.ofxPlayer = String(row.smallID);
+			setText(drawn.name, row.name);
+			setText(drawn.tag, TAGS[row.kind]);
+			setText(drawn.time, row.clock);
+			drawn.tag.classList.toggle(HIDDEN, TAGS[row.kind] === "");
+			drawn.node.classList.toggle(URGENT_ROW, row.urgent);
+			drawn.node.classList.toggle(EXPIRED_ROW, row.kind === "expired");
+			const bar = `${Math.round(row.fraction * 1e3) / 10}%`;
+			if (drawn.node.style.getPropertyValue(FRACTION) !== bar) drawn.node.style.setProperty(FRACTION, bar);
+			ordered.push(drawn.node);
+		}
+		const current = [...panel.root.children];
+		if (!(current.length === ordered.length && ordered.every((node, index) => current[index] === node))) panel.root.append(...ordered);
+		panel.root.classList.toggle(HIDDEN, rows.length === 0);
+	}
+	function createRow() {
+		const node = document.createElement("div");
+		node.className = ROW;
+		const name = document.createElement("span");
+		name.className = NAME$1;
+		const tag = document.createElement("span");
+		tag.className = TAG;
+		const time = document.createElement("span");
+		time.className = TIME;
+		node.append(name, tag, time);
+		return {
+			node,
+			name,
+			tag,
+			time
+		};
+	}
+	function setText(node, text) {
+		if (node.textContent !== text) node.textContent = text;
+	}
+	function matchesOption(value, whenUnset) {
+		return typeof value === typeof whenUnset;
+	}
+	var STORAGE_KEY = "openfront-extended-ui:features";
+	function optionKey(id, option) {
+		return `${id}:${option}`;
+	}
+	function createSettings(store) {
+		const stored = readStored(store);
+		function save() {
+			try {
+				store.write(JSON.stringify(stored));
+			} catch (error) {
+				logError("could not save the settings", error);
+			}
+		}
+		return {
+			isEnabled(id) {
+				const value = stored[id];
+				return typeof value === "boolean" ? value : true;
+			},
+			setEnabled(id, value) {
+				stored[id] = value;
+				save();
+			},
+			optionValue(id, option, whenUnset) {
+				const value = stored[optionKey(id, option)];
+				return matchesOption(value, whenUnset) ? value : whenUnset;
+			},
+			setOptionValue(id, option, value) {
+				stored[optionKey(id, option)] = value;
+				save();
+			}
+		};
+	}
+	function localStorageStore(key = STORAGE_KEY) {
+		return {
+			read: () => localStorage.getItem(key),
+			write: (value) => localStorage.setItem(key, value)
+		};
+	}
+	function readStoredObject(store, report = () => {}) {
+		let raw;
+		try {
+			raw = store.read();
+		} catch (error) {
+			report("could not be read", error);
+			return {};
+		}
+		if (raw === null) return {};
+		let parsed;
+		try {
+			parsed = JSON.parse(raw);
+		} catch {
+			report("are not valid JSON");
+			return {};
+		}
+		if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+			report("are not an object");
+			return {};
+		}
+		return parsed;
+	}
+	function readStored(store) {
+		const stored = readStoredObject(store, (problem, error) => logError(`the stored settings ${problem}, using the defaults`, error));
+		const values = {};
+		for (const [id, value] of Object.entries(stored)) if (typeof value === "boolean" || typeof value === "string") values[id] = value;
+		return values;
 	}
 	var LAYER = "ofx-alliance-clocks";
 	var CLOCK = "ofx-alliance-clock";
@@ -513,6 +907,67 @@
 			b + m
 		];
 	}
+	var POINTER = "ofx-spotlight-pointer";
+	var ARROW = "ofx-spotlight-arrow";
+	var NAME = "ofx-spotlight-name";
+	var EDGE_INSETS = {
+		top: 72,
+		right: 72,
+		bottom: 150,
+		left: 72
+	};
+	function edgePoint(target, width, height, insets = EDGE_INSETS) {
+		if (target.x >= 0 && target.x <= width && target.y >= 0 && target.y <= height) return null;
+		const centreX = width / 2;
+		const centreY = height / 2;
+		const dx = target.x - centreX;
+		const dy = target.y - centreY;
+		const reach = (offset, near, far) => {
+			if (offset === 0) return Infinity;
+			return Math.max(0, (offset > 0 ? far : near) / Math.abs(offset));
+		};
+		const along = Math.min(reach(dx, centreX - insets.left, centreX - insets.right), reach(dy, centreY - insets.top, centreY - insets.bottom));
+		return {
+			x: centreX + dx * along,
+			y: centreY + dy * along,
+			angle: Math.atan2(dy, dx) * 180 / Math.PI
+		};
+	}
+	function createPointer(host = document.body) {
+		const root = document.createElement("div");
+		root.className = `${POINTER} ${HIDDEN}`;
+		const arrow = document.createElement("div");
+		arrow.className = ARROW;
+		const name = document.createElement("div");
+		name.className = NAME;
+		root.append(arrow, name);
+		host.append(root);
+		return {
+			place(target, camera) {
+				if (!target) {
+					root.classList.add(HIDDEN);
+					return;
+				}
+				const point = edgePoint(camera.worldToScreenCoordinates(target.anchor), window.innerWidth, window.innerHeight);
+				if (!point) {
+					root.classList.add(HIDDEN);
+					return;
+				}
+				root.classList.remove(HIDDEN);
+				root.style.left = `${point.x}px`;
+				root.style.top = `${point.y}px`;
+				root.style.setProperty("--ofx-pointer-colour", target.colour);
+				arrow.style.transform = `rotate(${point.angle}deg)`;
+				if (name.textContent !== target.name) name.textContent = target.name;
+			},
+			hide() {
+				root.classList.add(HIDDEN);
+			},
+			remove() {
+				root.remove();
+			}
+		};
+	}
 	var TERRAIN_KEYS = [
 		"oceanColor",
 		"sandColor",
@@ -608,6 +1063,7 @@
 			const gameKeybinds = localStorageStore(GAME_KEYBINDS_KEY);
 			const palette = createPalette();
 			const clocks = createClockLayer();
+			const pointer = createPointer();
 			const terrain = createTerrainShade();
 			let holding = false;
 			let alternateViewHeld = false;
@@ -620,7 +1076,7 @@
 			let frame = 0;
 			let reportedClash = "";
 			function engaged() {
-				return holding && !alternateViewHeld && !modalOpen();
+				return (holding || spotlightedPlayer() !== null) && !alternateViewHeld && !modalOpen();
 			}
 			function modalOpen() {
 				return document.body.style.overflow === MODAL_OPEN_OVERFLOW;
@@ -636,10 +1092,19 @@
 					standDown(hooks);
 					return;
 				}
-				const found = ownerUnderCursor(context.game, hooks.camera, cursorX, cursorY);
-				if (found !== 0) subjectID = found;
-				const web = subjectID === 0 ? null : readWeb(context.game, subjectID);
-				const coloured = web?.coloured ?? NOTHING_COLOURED;
+				const spotlit = holding ? null : spotlightedPlayer();
+				let web = null;
+				let coloured;
+				if (spotlit !== null) {
+					coloured = new Set([spotlit]);
+					pointer.place(pointerTargetOf(context.game, spotlit), hooks.camera);
+				} else {
+					const found = ownerUnderCursor(context.game, hooks.camera, cursorX, cursorY);
+					if (found !== 0) subjectID = found;
+					web = subjectID === 0 ? null : readWeb(context.game, subjectID);
+					coloured = web?.coloured ?? NOTHING_COLOURED;
+					pointer.hide();
+				}
 				const signature = signatureOf(coloured);
 				if (rewrite || !painted || signature !== writtenSignature) {
 					paintAlliance(palette, playersOf(context.game), coloured);
@@ -653,6 +1118,7 @@
 			}
 			function standDown(hooks) {
 				clocks.hide();
+				pointer.hide();
 				terrain.restore();
 				if (!painted) return;
 				paintReal(palette, playersOf(context.game));
@@ -736,12 +1202,24 @@
 			context.onWindowEvent("keyup", onKeyUp, capture);
 			context.onWindowEvent("mousemove", onMouseMove, capture);
 			context.onWindowEvent("blur", onBlur);
+			function onSpotlightChange() {
+				if (spotlightedPlayer() !== null) {
+					startLoop();
+					update();
+					return;
+				}
+				if (holding) return;
+				stopLoop();
+				update();
+			}
+			context.onDetach(onSpotlight(onSpotlightChange));
 			context.onDetach(() => {
 				stopLoop();
 				const hooks = readHooks();
 				if (hooks) standDown(hooks);
 				terrain.restore();
 				clocks.remove();
+				pointer.remove();
 			});
 		}
 	};
@@ -763,6 +1241,22 @@
 		}
 		return clocks;
 	}
+	function pointerTargetOf(game, smallID) {
+		const player = playerOrNull(game, smallID);
+		if (!player) return null;
+		const anchor = nameAnchor(player);
+		if (!anchor) return null;
+		try {
+			const { r, g, b } = player.territoryColor().toRgb();
+			return {
+				anchor,
+				name: player.displayName(),
+				colour: `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`
+			};
+		} catch {
+			return null;
+		}
+	}
 	function nameAnchor(player) {
 		try {
 			return player.nameLocation();
@@ -782,52 +1276,6 @@
 		const focused = document.activeElement;
 		if (!(focused instanceof HTMLElement)) return false;
 		return focused.tagName === "INPUT" || focused.tagName === "TEXTAREA" || focused.isContentEditable;
-	}
-	function isMatchLive(game) {
-		if (game.inSpawnPhase()) return false;
-		const me = game.myPlayer();
-		return me !== null && me.isAlive();
-	}
-	function injectedNodes(deps) {
-		const drawings = new Map();
-		function isInPage(drawn) {
-			return deps.nodesOf(drawn).every((node) => node.isConnected);
-		}
-		function erase(drawn) {
-			for (const node of deps.nodesOf(drawn)) node.remove();
-		}
-		return {
-			sync() {
-				let hosts;
-				try {
-					hosts = deps.findHosts();
-				} catch (error) {
-					logError("could not look for a place to draw", error);
-					return [...drawings.values()];
-				}
-				for (const [host, drawn] of drawings) {
-					if (hosts.includes(host)) continue;
-					erase(drawn);
-					drawings.delete(host);
-				}
-				for (const host of hosts) {
-					const existing = drawings.get(host);
-					if (existing && isInPage(existing)) continue;
-					if (existing) erase(existing);
-					const drawn = deps.draw(host);
-					if (drawn === null) {
-						drawings.delete(host);
-						continue;
-					}
-					drawings.set(host, drawn);
-				}
-				return [...drawings.values()];
-			},
-			remove() {
-				for (const drawn of drawings.values()) erase(drawn);
-				drawings.clear();
-			}
-		};
 	}
 	var HOTBAR = "unit-display";
 	var ITEM_IS_POSITIONED = "relative";
@@ -1078,7 +1526,8 @@
 	var FEATURES = [
 		troopBar,
 		hotbarReadout,
-		allianceView
+		allianceView,
+		alliancePanel
 	];
 	var BOUNDARY_POLL_MS = 500;
 	function startLifecycle(deps) {
