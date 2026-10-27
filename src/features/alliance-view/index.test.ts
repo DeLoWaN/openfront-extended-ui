@@ -576,8 +576,8 @@ describe("teammates under the mode", () => {
   it("keeps a teammate of the subject in their own colours", () => {
     const { game, renderer, subject } = setup();
     const teammate = game.add(new FakePlayerView(4, "p4", fakeColour(255, 255, 0)));
-    subject.team = "Red";
-    teammate.team = "Red";
+    subject.teamName = "Red";
+    teammate.teamName = "Red";
     pointAt(SUBJECT_AT.screen);
 
     keyDown(HOLD);

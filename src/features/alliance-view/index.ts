@@ -28,8 +28,8 @@ import { createTerrainShade } from "./terrain";
  * subject: where the package keeps a real player colour it adds information by
  * position and by text, and never changes that colour. See docs/adr/0008.
  *
- * This is the only feature that draws on the map rather than in the HUD, so it
- * is the only one that needs a loop on every drawn frame. See docs/adr/0005.
+ * This is one of the features that draw on the map rather than in the HUD, so
+ * it needs a loop on every drawn frame. See docs/adr/0005.
  *
  * The mode writes the colour table and the renderer's five terrain colours.
  * Both are put back when the key comes up.

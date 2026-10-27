@@ -141,6 +141,24 @@
 }
 
 /*
+ * The canvas the spawn marks are drawn on.
+ *
+ * The map is one WebGL canvas with no element per tile, so the marks need a
+ * layer of the package's own. See docs/adr/0005. It sits at the same height as
+ * the alliance clocks: above the map and below every panel the game draws, so
+ * a mark never covers the game's own HUD. The canvas takes no pointer events,
+ * so a click on a mark reaches the map beneath it.
+ */
+.ofx-spawn-marks {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50;
+  pointer-events: none;
+}
+
+/*
  * One clock, under its ally's own name.
  *
  * Its place and its size are written inline, because both come from where the

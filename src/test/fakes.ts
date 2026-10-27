@@ -24,6 +24,8 @@ import type {
   GameView,
   MapRenderer,
   NameLocation,
+  PlayerState,
+  PlayerType,
   PlayerView,
   RenderSettings,
   TerrainColours,
@@ -74,17 +76,27 @@ export class FakePlayerView implements PlayerView {
   nameData: NameLocation | undefined = { x: 0, y: 0, size: 40 };
   player = true;
   /** Null in a match without teams, as the game has it. */
-  team: string | null = null;
+  teamName: string | null = null;
+  kind: PlayerType = "HUMAN";
+  name: string;
+  /** Undefined stands for a player who has not picked a spawn. */
+  readonly state: PlayerState = {};
 
   constructor(
     readonly small = 1,
     readonly playerID = `player-${small}`,
     readonly territory: Colour = fakeColour(200, 100, 50),
     readonly border: Colour = fakeColour(220, 120, 70),
-  ) {}
+  ) {
+    this.name = `Player ${small}`;
+  }
 
   isAlive(): boolean {
     return this.alive;
+  }
+  /** Picks a spawn, the way a player does. */
+  spawnAt(x: number, y: number, game: FakeGameView): void {
+    this.state.spawnTile = game.ref(x, y);
   }
   smallID(): number {
     return this.small;
@@ -99,7 +111,22 @@ export class FakePlayerView implements PlayerView {
     return this.allyList;
   }
   isOnSameTeam(other: PlayerView): boolean {
-    return this.team !== null && this.team === (other as FakePlayerView).team;
+    return (
+      this.teamName !== null &&
+      this.teamName === (other as FakePlayerView).teamName
+    );
+  }
+  team(): string | null {
+    return this.teamName;
+  }
+  type(): PlayerType {
+    return this.kind;
+  }
+  hasSpawned(): boolean {
+    return this.state.spawnTile !== undefined;
+  }
+  displayName(): string {
+    return this.name;
   }
   alliances(): Alliance[] {
     return this.allianceList;
@@ -169,6 +196,12 @@ export class FakeGameView implements GameView {
   }
   ref(x: number, y: number): number {
     return y * this.width + x;
+  }
+  x(ref: number): number {
+    return ref % this.width;
+  }
+  y(ref: number): number {
+    return Math.floor(ref / this.width);
   }
   isValidCoord(x: number, y: number): boolean {
     return x >= 0 && y >= 0 && x < this.width && y < this.width;
@@ -470,4 +503,90 @@ export function setHotbarPrices(
     type,
     cost,
   }));
+}
+
+/** One call on a canvas, with the drawing state at the moment of the call. */
+export interface CanvasCall {
+  readonly op: string;
+  readonly args: readonly unknown[];
+  readonly globalAlpha: number;
+  readonly fillStyle: unknown;
+  readonly strokeStyle: unknown;
+  readonly lineWidth: number;
+  readonly font: string;
+}
+
+/**
+ * A 2D canvas context that writes down what it is asked to draw.
+ *
+ * jsdom has no canvas, so `getContext` returns null there. This stands in for
+ * it, and keeps the drawing state each call ran under, because a test needs to
+ * know the colour and the opacity a shape was drawn with.
+ */
+export class FakeCanvasContext {
+  readonly calls: CanvasCall[] = [];
+  globalAlpha = 1;
+  fillStyle: unknown = "#000";
+  strokeStyle: unknown = "#000";
+  lineWidth = 1;
+  lineJoin = "miter";
+  lineCap = "butt";
+  font = "10px sans-serif";
+  textAlign = "start";
+  textBaseline = "alphabetic";
+
+  private record(op: string, args: unknown[]): void {
+    this.calls.push({
+      op,
+      args,
+      globalAlpha: this.globalAlpha,
+      fillStyle: this.fillStyle,
+      strokeStyle: this.strokeStyle,
+      lineWidth: this.lineWidth,
+      font: this.font,
+    });
+  }
+
+  setTransform = (...args: unknown[]) => this.record("setTransform", args);
+  clearRect = (...args: unknown[]) => this.record("clearRect", args);
+  beginPath = (...args: unknown[]) => this.record("beginPath", args);
+  arc = (...args: unknown[]) => this.record("arc", args);
+  moveTo = (...args: unknown[]) => this.record("moveTo", args);
+  lineTo = (...args: unknown[]) => this.record("lineTo", args);
+  closePath = (...args: unknown[]) => this.record("closePath", args);
+  stroke = (...args: unknown[]) => this.record("stroke", args);
+  fill = (...args: unknown[]) => this.record("fill", args);
+  fillText = (...args: unknown[]) => this.record("fillText", args);
+  strokeText = (...args: unknown[]) => this.record("strokeText", args);
+  save = (...args: unknown[]) => this.record("save", args);
+  restore = (...args: unknown[]) => this.record("restore", args);
+  translate = (...args: unknown[]) => this.record("translate", args);
+  rotate = (...args: unknown[]) => this.record("rotate", args);
+
+  /** Every call of one kind, oldest first. */
+  of(op: string): CanvasCall[] {
+    return this.calls.filter((call) => call.op === op);
+  }
+}
+
+/**
+ * Makes every canvas in the page hand back one shared fake context.
+ *
+ * Returns the context and a function that puts the real `getContext` back.
+ */
+export function installFakeCanvas(): {
+  context: FakeCanvasContext;
+  restore: () => void;
+} {
+  const context = new FakeCanvasContext();
+  const original = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function () {
+    return context;
+  } as unknown as typeof original;
+  return {
+    context,
+    restore: () => {
+      HTMLCanvasElement.prototype.getContext = original;
+    },
+  };
 }
