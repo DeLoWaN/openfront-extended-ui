@@ -2,12 +2,19 @@ import type { GameView, PlayerView } from "../../game/types";
 import type { Feature } from "../../runtime/feature";
 import { logError, logInfo } from "../../runtime/log";
 import { localStorageStore } from "../../runtime/settings";
-import { formatClock, readWeb, type AllianceWeb } from "./alliance";
+import {
+  formatClock,
+  playerOrNull,
+  readWeb,
+  type AllianceWeb,
+} from "./alliance";
 import { createClockLayer, type Clock } from "./clocks";
 import { NOBODY, ownerUnderCursor } from "./cursor";
 import { mapHooksReader, type MapHooks } from "./hooks";
 import { GAME_KEYBINDS_KEY, readGameKeybinds } from "./keybinds";
 import { createPalette, paintAlliance, paintReal } from "./palette";
+import { createPointer, type PointerTarget } from "./pointer";
+import { onSpotlight, spotlightedPlayer } from "./spotlight";
 import { createTerrainShade } from "./terrain";
 
 /**
@@ -27,6 +34,11 @@ import { createTerrainShade } from "./terrain";
  * left, and turns red once the game offers to renew it. Nothing marks the
  * subject: where the package keeps a real player colour it adds information by
  * position and by text, and never changes that colour. See docs/adr/0008.
+ *
+ * Another feature can ask the mode to show one player on its own, with no key
+ * held. The map greys and only that player keeps their colour, with no ally and
+ * no clock. When that player is off screen, an arrow at the screen's edge points
+ * to them. The key wins while it is held. See `spotlight.ts` and `pointer.ts`.
  *
  * This is the only feature that draws on the map rather than in the HUD, so it
  * is the only one that needs a loop on every drawn frame. See docs/adr/0005.
@@ -83,6 +95,7 @@ export const allianceView: Feature = {
     const gameKeybinds = localStorageStore(GAME_KEYBINDS_KEY);
     const palette = createPalette();
     const clocks = createClockLayer();
+    const pointer = createPointer();
     const terrain = createTerrainShade();
 
     /** True while the player holds the mode's own key. */
@@ -118,7 +131,11 @@ export const allianceView: Feature = {
      * layer of ours over the top reads as a bug.
      */
     function engaged(): boolean {
-      return holding && !alternateViewHeld && !modalOpen();
+      return (
+        (holding || spotlightedPlayer() !== null) &&
+        !alternateViewHeld &&
+        !modalOpen()
+      );
     }
 
     /**
@@ -155,17 +172,27 @@ export const allianceView: Feature = {
         return;
       }
 
-      const found = ownerUnderCursor(
-        context.game,
-        hooks.camera,
-        cursorX,
-        cursorY,
-      );
-      // The subject sticks. Water and unclaimed ground leave it as it was.
-      if (found !== NOBODY) subjectID = found;
+      const spotlit = holding ? null : spotlightedPlayer();
+      let web: AllianceWeb | null = null;
+      let coloured: ReadonlySet<number>;
+      if (spotlit !== null) {
+        // One player alone. No ally, no teammate and no clock.
+        coloured = new Set([spotlit]);
+        pointer.place(pointerTargetOf(context.game, spotlit), hooks.camera);
+      } else {
+        const found = ownerUnderCursor(
+          context.game,
+          hooks.camera,
+          cursorX,
+          cursorY,
+        );
+        // The subject sticks. Water and unclaimed ground leave it as it was.
+        if (found !== NOBODY) subjectID = found;
 
-      const web = subjectID === NOBODY ? null : readWeb(context.game, subjectID);
-      const coloured = web?.coloured ?? NOTHING_COLOURED;
+        web = subjectID === NOBODY ? null : readWeb(context.game, subjectID);
+        coloured = web?.coloured ?? NOTHING_COLOURED;
+        pointer.hide();
+      }
       const signature = signatureOf(coloured);
       if (rewrite || !painted || signature !== writtenSignature) {
         paintAlliance(palette, playersOf(context.game), coloured);
@@ -181,6 +208,7 @@ export const allianceView: Feature = {
     /** Puts the game's own colours back and takes the clocks off the screen. */
     function standDown(hooks: MapHooks): void {
       clocks.hide();
+      pointer.hide();
       terrain.restore();
       if (!painted) return;
       // Read from the game's own accessors on every call, so a player who
@@ -300,6 +328,25 @@ export const allianceView: Feature = {
     context.onWindowEvent("mousemove", onMouseMove, capture);
     context.onWindowEvent("blur", onBlur);
 
+    /**
+     * Follows another feature asking for one player on their own.
+     *
+     * The frame loop runs while a player is spotlit, because the camera moves
+     * under a still cursor and the colours must follow. When the spotlight
+     * goes and no key is held, the loop stops and the game's colours return.
+     */
+    function onSpotlightChange(): void {
+      if (spotlightedPlayer() !== null) {
+        startLoop();
+        update();
+        return;
+      }
+      if (holding) return;
+      stopLoop();
+      update();
+    }
+    context.onDetach(onSpotlight(onSpotlightChange));
+
     context.onDetach(() => {
       stopLoop();
       // The match may have ended, but the map is still on the screen. Never
@@ -309,6 +356,7 @@ export const allianceView: Feature = {
       // The renderer the terrain was greyed on may no longer be on `window`.
       terrain.restore();
       clocks.remove();
+      pointer.remove();
     });
   },
 };
@@ -338,6 +386,29 @@ function clocksOf(web: AllianceWeb | null): Clock[] {
     });
   }
   return clocks;
+}
+
+/**
+ * What the pointer needs to show where one player is.
+ *
+ * Null when the player cannot be resolved, has no placed name yet, or the game
+ * will not hand over their colour. The pointer then draws nothing.
+ */
+function pointerTargetOf(game: GameView, smallID: number): PointerTarget | null {
+  const player = playerOrNull(game, smallID);
+  if (!player) return null;
+  const anchor = nameAnchor(player);
+  if (!anchor) return null;
+  try {
+    const { r, g, b } = player.territoryColor().toRgb();
+    return {
+      anchor,
+      name: player.displayName(),
+      colour: `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /** Where the game draws one player's name, or nothing if it has not yet. */

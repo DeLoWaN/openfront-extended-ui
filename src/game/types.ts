@@ -34,8 +34,14 @@ export interface NameLocation {
  * which is a different identifier from the `smallID` the palette is keyed by.
  */
 export interface Alliance {
+  /** The game's own number for this alliance. It stays the same across renewals. */
+  id: number;
   other: string;
-  /** The tick the alliance ends at. Compare it against `GameView.ticks()`. */
+  /**
+   * The tick the alliance ends at. Compare it against `GameView.ticks()`.
+   *
+   * A renewal moves this on and keeps the alliance's `id`.
+   */
   expiresAt: number;
 }
 
@@ -47,6 +53,8 @@ export interface PlayerView {
   smallID(): number;
   /** The identifier an `Alliance` names its partner by. `:462`. */
   id(): string;
+  /** The name the game prints for this player. `:449`. */
+  displayName(): string;
   /** False for TerraNullius, which owns every unclaimed tile. `:490`. */
   isPlayer(): boolean;
   /** The players this one is allied with. Teammates are not included. `:496`. */
@@ -93,7 +101,20 @@ export interface UnitDisplay extends HTMLElement {
 export interface GameConfig {
   /** How long before the end the game offers to renew, in ticks. */
   allianceExtensionPromptOffset(): number;
+  /** How long an alliance request waits for an answer, in ticks. `Config.ts:602`. */
+  allianceRequestDuration(): number;
+  /** How long a new or renewed alliance runs, in ticks. `Config.ts:608`. */
+  allianceDuration(): number;
 }
+
+/**
+ * What the game reports for one tick, as lists of updates.
+ *
+ * The game keys each list by `GameUpdateType`, a numeric enum the page does not
+ * expose. A member added to that enum moves every number after it, so a script
+ * must never read a list by its number. See `readAllianceUpdates`.
+ */
+export type GameUpdates = Readonly<Record<number, readonly unknown[] | undefined>>;
 
 /**
  * One match, as the client sees it. `src/client/view/GameView.ts`.
@@ -112,6 +133,8 @@ export interface GameView {
   inSpawnPhase(): boolean;
   /** 0 before the first game update. */
   ticks(): number;
+  /** Everything that happened in the last tick. Null before the first one. `:225`. */
+  updatesSinceLastTick(): GameUpdates | null;
   /** Every player of this match, dead ones included. `:1019`. */
   players(): PlayerView[];
   /** Throws for an id it does not know, and 0 is TerraNullius. `:1034`. */
@@ -194,6 +217,14 @@ export interface TransformHandler {
     x: number;
     y: number;
   };
+  /**
+   * Moves the camera to a player's name. `:206`.
+   *
+   * It reads only `event.player`, and `event.zoom` when there is one, so a
+   * plain object serves where the game would pass a `GoToPlayerEvent`. It does
+   * nothing for a player the renderer has not placed yet.
+   */
+  onGoToPlayer(event: { player: PlayerView; zoom?: number }): void;
 }
 
 /** The `<build-menu>` element, which carries the camera. `GameRenderer.ts:87`. */

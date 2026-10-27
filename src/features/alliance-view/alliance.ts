@@ -178,7 +178,7 @@ function readExpiry(game: GameView, subject: PlayerView): Map<string, number> {
  * to renew that alliance now. The window is read from the match rather than
  * written here, so the two stay in step if the game ever moves it.
  */
-function renewalWindow(game: GameView): number {
+export function renewalWindow(game: GameView): number {
   try {
     const window = game.config().allianceExtensionPromptOffset();
     return window > 0 ? window : EXTENSION_WINDOW_TICKS;
@@ -188,7 +188,10 @@ function renewalWindow(game: GameView): number {
 }
 
 /** The player owning one `smallID`, or null. 0 is TerraNullius, not a player. */
-function playerOrNull(game: GameView, smallID: number): PlayerView | null {
+export function playerOrNull(
+  game: GameView,
+  smallID: number,
+): PlayerView | null {
   if (smallID === 0) return null;
   try {
     const player = game.playerBySmallID(smallID);
