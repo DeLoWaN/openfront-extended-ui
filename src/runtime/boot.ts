@@ -1,8 +1,10 @@
+import { GAME_KEYBINDS_KEY } from "../game/keybinds";
 import type { ControlPanel } from "../game/types";
+import { startSettingsPanel } from "../settings-panel";
 import type { Feature } from "./feature";
 import { startLifecycle, type Lifecycle } from "./lifecycle";
 import { createRegistry, type Registry } from "./registry";
-import type { Settings } from "./settings";
+import { localStorageStore, type Settings } from "./settings";
 import { createStyleSheet, type StyleSheet } from "./styles";
 
 export interface Package {
@@ -31,6 +33,12 @@ export function start(deps: {
   const styles: StyleSheet = createStyleSheet(deps.css);
   styles.injectInto(document);
 
+  // Before the lifecycle, so its key listener comes before any feature's.
+  const settingsPanel = startSettingsPanel({
+    registry,
+    gameKeybinds: localStorageStore(GAME_KEYBINDS_KEY),
+  });
+
   const lifecycle: Lifecycle = startLifecycle({
     panel: deps.panel,
     handlers: {
@@ -44,6 +52,7 @@ export function start(deps: {
     registry,
     stop() {
       lifecycle.stop();
+      settingsPanel.stop();
       styles.remove();
     },
   };

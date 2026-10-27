@@ -19,7 +19,7 @@
 
 (function() {
 	"use strict";
-	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-spawn-marks{z-index:50;pointer-events:none;width:100vw;height:100vh;position:fixed;inset:0}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}.ofx-hotbar-badge{z-index:9000;pointer-events:none;position:fixed}.ofx-hotbar-badge[hidden]{display:none}.ofx-hotbar-badge-panel{box-shadow:inset 0 0 0 2px var(--ofx-cue), 0 0 10px var(--ofx-cue-glow);background:#111827eb;border-radius:6px;gap:4px;padding:4px 6px;display:flex}.ofx-hotbar-badge-icon{object-fit:contain;width:28px;height:28px}.ofx-hotbar-badge-arrow{border-left:2px solid var(--ofx-cue);transform-origin:top;filter:drop-shadow(0 0 2px #000000e6);width:0;height:30px;margin-left:-1px;position:absolute;top:100%;left:50%}.ofx-hotbar-badge-arrow:after{content:\"\";border-top:10px solid var(--ofx-cue);border-left:6px solid #0000;border-right:6px solid #0000;position:absolute;bottom:-2px;left:-7px}@keyframes ofx-hotbar-badge-pulse{0%,to{opacity:1}50%{opacity:.55}}.ofx-hotbar-badge-shown{animation:1s ease-in-out infinite ofx-hotbar-badge-pulse}.ofx-hotbar-badge-fading{opacity:0;transition:opacity .4s ease-out;animation:none}@media (prefers-reduced-motion:reduce){.ofx-hotbar-badge-shown{animation:none}}.ofx-alliance-panel{--ofx-bar-track:#0f172af0;--ofx-bar-fill:#3b5b86;--ofx-bar-fill-urgent:#b42323;min-width:14em;max-width:22em;font-size:calc(var(--ofx-figure-size) * 1.6);color:#fff;text-shadow:var(--ofx-shadow-figure);pointer-events:auto;flex-direction:column;gap:.2em;line-height:1.2;display:flex}.ofx-alliance-row{background:linear-gradient(90deg, var(--ofx-bar-fill) var(--ofx-frac,100%), var(--ofx-bar-track) var(--ofx-frac,100%));cursor:pointer;border-radius:.3em;align-items:baseline;gap:.5em;padding:.3em .6em;display:flex;box-shadow:0 0 0 1px #0009}.ofx-alliance-row-urgent{--ofx-bar-fill:var(--ofx-bar-fill-urgent)}.ofx-alliance-row:hover{filter:brightness(1.3)}.ofx-alliance-name{text-overflow:ellipsis;white-space:nowrap;flex:auto;min-width:0;overflow:hidden}.ofx-alliance-tag{color:#cbd5e1;white-space:nowrap;flex:none;font-size:.8em}.ofx-alliance-time{font-variant-numeric:tabular-nums;flex:none;font-weight:700}.ofx-alliance-row-expired{color:#cbd5e1}.ofx-spotlight-pointer{z-index:50;pointer-events:none;flex-direction:column;align-items:center;gap:6px;display:flex;position:fixed;transform:translate(-50%,-50%)}.ofx-spotlight-arrow{border-top:16px solid #0000;border-bottom:16px solid #0000;border-left:28px solid var(--ofx-pointer-colour,#fff);filter:drop-shadow(0 0 1px #fff)drop-shadow(0 0 1px #fff)drop-shadow(0 0 3px #000000e6);width:0;height:0}.ofx-spotlight-name{text-overflow:ellipsis;white-space:nowrap;color:#fff;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;max-width:14em;font-size:18px;font-weight:700;overflow:hidden}";
+	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-spawn-marks{z-index:50;pointer-events:none;width:100vw;height:100vh;position:fixed;inset:0}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}.ofx-hotbar-badge{z-index:9000;pointer-events:none;position:fixed}.ofx-hotbar-badge[hidden]{display:none}.ofx-hotbar-badge-panel{box-shadow:inset 0 0 0 2px var(--ofx-cue), 0 0 10px var(--ofx-cue-glow);background:#111827eb;border-radius:6px;gap:4px;padding:4px 6px;display:flex}.ofx-hotbar-badge-icon{object-fit:contain;width:28px;height:28px}.ofx-hotbar-badge-arrow{border-left:2px solid var(--ofx-cue);transform-origin:top;filter:drop-shadow(0 0 2px #000000e6);width:0;height:30px;margin-left:-1px;position:absolute;top:100%;left:50%}.ofx-hotbar-badge-arrow:after{content:\"\";border-top:10px solid var(--ofx-cue);border-left:6px solid #0000;border-right:6px solid #0000;position:absolute;bottom:-2px;left:-7px}@keyframes ofx-hotbar-badge-pulse{0%,to{opacity:1}50%{opacity:.55}}.ofx-hotbar-badge-shown{animation:1s ease-in-out infinite ofx-hotbar-badge-pulse}.ofx-hotbar-badge-fading{opacity:0;transition:opacity .4s ease-out;animation:none}@media (prefers-reduced-motion:reduce){.ofx-hotbar-badge-shown{animation:none}}.ofx-alliance-panel{--ofx-bar-track:#0f172af0;--ofx-bar-fill:#3b5b86;--ofx-bar-fill-urgent:#b42323;min-width:14em;max-width:22em;font-size:calc(var(--ofx-figure-size) * 1.6);color:#fff;text-shadow:var(--ofx-shadow-figure);pointer-events:auto;flex-direction:column;gap:.2em;line-height:1.2;display:flex}.ofx-alliance-row{background:linear-gradient(90deg, var(--ofx-bar-fill) var(--ofx-frac,100%), var(--ofx-bar-track) var(--ofx-frac,100%));cursor:pointer;border-radius:.3em;align-items:baseline;gap:.5em;padding:.3em .6em;display:flex;box-shadow:0 0 0 1px #0009}.ofx-alliance-row-urgent{--ofx-bar-fill:var(--ofx-bar-fill-urgent)}.ofx-alliance-row:hover{filter:brightness(1.3)}.ofx-alliance-name{text-overflow:ellipsis;white-space:nowrap;flex:auto;min-width:0;overflow:hidden}.ofx-alliance-tag{color:#cbd5e1;white-space:nowrap;flex:none;font-size:.8em}.ofx-alliance-time{font-variant-numeric:tabular-nums;flex:none;font-weight:700}.ofx-alliance-row-expired{color:#cbd5e1}.ofx-spotlight-pointer{z-index:50;pointer-events:none;flex-direction:column;align-items:center;gap:6px;display:flex;position:fixed;transform:translate(-50%,-50%)}.ofx-spotlight-arrow{border-top:16px solid #0000;border-bottom:16px solid #0000;border-left:28px solid var(--ofx-pointer-colour,#fff);filter:drop-shadow(0 0 1px #fff)drop-shadow(0 0 1px #fff)drop-shadow(0 0 3px #000000e6);width:0;height:0}.ofx-spotlight-name{text-overflow:ellipsis;white-space:nowrap;color:#fff;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;max-width:14em;font-size:18px;font-weight:700;overflow:hidden}:root{--ofx-menu-background:#1e293b;--ofx-menu-border:#475569;--ofx-menu-hover:#334155;--ofx-menu-hint:#94a3b8;--ofx-menu-warning:#f87171;--ofx-switch-on:#10b981}.ofx-menu-row{color:#fff;width:100%;font:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:.25rem;align-items:center;gap:.75rem;padding:.75rem;transition:background-color .15s;display:flex}.ofx-menu-row:hover{background:var(--ofx-menu-hover)}.ofx-menu-row-text{flex-direction:column;flex:1;display:flex}.ofx-menu-row-title{font-weight:500}.ofx-menu-row-hint{color:var(--ofx-menu-hint);font-size:.875rem}.ofx-menu-row-card{background:#ffffff0d;border:1px solid #ffffff1a;border-radius:.75rem;padding:1rem}.ofx-menu-row-card:hover{background:#ffffff1a}.ofx-menu-row-card .ofx-menu-row-title{font-size:1rem;font-weight:700}.ofx-menu-row-card .ofx-menu-row-hint{color:#ffffff80}.ofx-settings-backdrop{z-index:1;background:#00000080;justify-content:center;align-items:center;padding:1rem;display:flex;position:absolute;inset:0}.ofx-settings-backdrop-page{z-index:10000;position:fixed}.ofx-settings{border:1px solid var(--ofx-menu-border);background:var(--ofx-menu-background);color:#fff;border-radius:.5rem;outline:none;flex-direction:column;width:100%;max-width:32rem;max-height:80vh;display:flex}.ofx-settings-header{border-bottom:1px solid var(--ofx-menu-border);justify-content:space-between;align-items:center;padding:1rem;display:flex}.ofx-settings-title{margin:0;font-size:1.25rem;font-weight:600}.ofx-settings-close{color:var(--ofx-menu-hint);cursor:pointer;background:0 0;border:0;font-size:1.5rem;font-weight:700;line-height:1}.ofx-settings-close:hover{color:#fff}.ofx-settings-body{flex-direction:column;gap:.25rem;padding:.5rem 1rem;display:flex;overflow-y:auto}.ofx-settings-feature+.ofx-settings-feature{border-top:1px solid var(--ofx-menu-border)}.ofx-settings-row{cursor:pointer;border-radius:.25rem;justify-content:space-between;align-items:center;gap:.75rem;padding:.6rem .75rem;display:flex}.ofx-settings-row:hover{background:var(--ofx-menu-hover)}.ofx-settings-text{flex-direction:column;flex:1;gap:.15rem;display:flex}.ofx-settings-feature>.ofx-settings-row .ofx-settings-name{font-size:1rem;font-weight:600}.ofx-settings-description{color:var(--ofx-menu-hint);font-size:.8rem;line-height:1.35}.ofx-settings-options{color:#e2e8f0;padding-left:1.5rem;font-size:.875rem}.ofx-settings-options-off{opacity:.4}.ofx-settings-options-off .ofx-settings-row{cursor:default}.ofx-settings-options-off .ofx-settings-row:hover{background:0 0}.ofx-switch{appearance:none;background:var(--ofx-menu-border);cursor:pointer;border-radius:999px;flex:none;width:2.25rem;height:1.25rem;margin:0;transition:background-color .15s;position:relative}.ofx-switch:after{content:\"\";background:#fff;border-radius:50%;width:1rem;height:1rem;transition:transform .15s;position:absolute;top:.125rem;left:.125rem}.ofx-switch:checked{background:var(--ofx-switch-on)}.ofx-switch:checked:after{transform:translate(1rem)}.ofx-switch:disabled{cursor:default}.ofx-settings-number,.ofx-settings-key{border:1px solid var(--ofx-menu-border);color:#fff;min-width:4.5rem;font:inherit;text-align:center;background:#0f172a;border-radius:.25rem;flex:none;padding:.25rem .5rem}.ofx-settings-key{cursor:pointer}.ofx-settings-key-listening{border-color:var(--ofx-switch-on);color:var(--ofx-menu-hint)}.ofx-settings-warning{color:var(--ofx-menu-warning);margin:0;padding:0 .75rem;font-size:.8rem}.ofx-settings-warning:empty{display:none}.ofx-settings-footer{border-top:1px solid var(--ofx-menu-border);padding:.75rem 1rem 1rem}.ofx-settings-reset{border:1px solid var(--ofx-menu-border);color:#fff;width:100%;font:inherit;cursor:pointer;background:0 0;border-radius:.25rem;padding:.6rem}.ofx-settings-reset:hover{background:var(--ofx-menu-hover)}.ofx-settings-reset-armed{border-color:var(--ofx-menu-warning);color:var(--ofx-menu-warning)}";
 	function isMatchLive(game) {
 		if (game.inSpawnPhase()) return false;
 		const me = game.myPlayer();
@@ -379,8 +379,8 @@
 	}
 	var SIDEBAR = "game-right-sidebar";
 	var PANEL$2 = "ofx-alliance-panel";
-	var ROW = "ofx-alliance-row";
-	var NAME$1 = "ofx-alliance-name";
+	var ROW$2 = "ofx-alliance-row";
+	var NAME$2 = "ofx-alliance-name";
 	var TAG = "ofx-alliance-tag";
 	var TIME = "ofx-alliance-time";
 	var URGENT_ROW = "ofx-alliance-row-urgent";
@@ -395,7 +395,8 @@
 	var BUILD_MENU$1 = "build-menu";
 	var alliancePanel = {
 		id: "alliance-panel",
-		name: "Alliance panel",
+		name: "Alliance timers",
+		description: "Lists your alliances in the top right corner, with the time left on each. Point at one to see that player on the map. Click it to move the camera there.",
 		attach(context) {
 			const state = createAlliancePanelRows(context.game);
 			const panels = injectedNodes({
@@ -459,7 +460,7 @@
 		root.className = `${PANEL$2} ${HIDDEN}`;
 		root.addEventListener("click", (event) => {
 			try {
-				const row = event.target?.closest(`.${ROW}`);
+				const row = event.target?.closest(`.${ROW$2}`);
 				const smallID = Number(row?.dataset.ofxPlayer);
 				if (!row || Number.isNaN(smallID)) return;
 				moveCameraTo(game, smallID);
@@ -468,7 +469,7 @@
 			}
 		});
 		root.addEventListener("mouseover", (event) => {
-			const row = event.target?.closest(`.${ROW}`);
+			const row = event.target?.closest(`.${ROW$2}`);
 			const smallID = Number(row?.dataset.ofxPlayer);
 			if (row && !Number.isNaN(smallID)) hover.over(smallID);
 		});
@@ -519,9 +520,9 @@
 	}
 	function createRow() {
 		const node = document.createElement("div");
-		node.className = ROW;
+		node.className = ROW$2;
 		const name = document.createElement("span");
-		name.className = NAME$1;
+		name.className = NAME$2;
 		const tag = document.createElement("span");
 		tag.className = TAG;
 		const time = document.createElement("span");
@@ -568,6 +569,10 @@
 			},
 			setOptionValue(id, option, value) {
 				stored[optionKey(id, option)] = value;
+				save();
+			},
+			reset() {
+				for (const key of Object.keys(stored)) delete stored[key];
 				save();
 			}
 		};
@@ -745,11 +750,14 @@
 			...stored(store)
 		};
 		for (const [action, binding] of Object.entries(merged)) if (binding === UNBOUND) delete merged[action];
+		function boundAction(code) {
+			if (code === "") return null;
+			for (const [action, binding] of Object.entries(merged)) if (keyOf(binding) === code) return action;
+			return null;
+		}
 		return {
-			isBound(code) {
-				if (code === "") return false;
-				return Object.values(merged).some((binding) => keyOf(binding) === code);
-			},
+			isBound: (code) => boundAction(code) !== null,
+			boundAction,
 			alternateViewKey: () => keyOf(merged[ALTERNATE_VIEW] ?? "")
 		};
 	}
@@ -909,7 +917,7 @@
 	}
 	var POINTER = "ofx-spotlight-pointer";
 	var ARROW$1 = "ofx-spotlight-arrow";
-	var NAME = "ofx-spotlight-name";
+	var NAME$1 = "ofx-spotlight-name";
 	var EDGE_INSETS = {
 		top: 72,
 		right: 72,
@@ -939,7 +947,7 @@
 		const arrow = document.createElement("div");
 		arrow.className = ARROW$1;
 		const name = document.createElement("div");
-		name.className = NAME;
+		name.className = NAME$1;
 		root.append(arrow, name);
 		host.append(root);
 		return {
@@ -1052,11 +1060,14 @@
 	var NOTHING_COLOURED = new Set();
 	var allianceView = {
 		id: "alliance-view",
-		name: "Alliance view mode",
+		name: "Alliance map",
+		description: "Hold the key below and point at a player. The map turns grey, except that player, their allies and their teammates. Each ally shows how long the alliance has left.",
 		options: [{
 			key: HOLD_KEY_OPTION,
-			name: "Hold key",
-			whenUnset: DEFAULT_HOLD_KEY
+			name: "Key to hold",
+			description: "Click the box, then press a key. A key the game already uses is refused.",
+			whenUnset: DEFAULT_HOLD_KEY,
+			control: { kind: "key" }
 		}],
 		attach(context) {
 			const readHooks = mapHooksReader();
@@ -1195,7 +1206,7 @@
 			function reportClash(key) {
 				if (reportedClash === key) return;
 				reportedClash = key;
-				logInfo(`the game binds ${key}, so the alliance view mode stays off. Pick another key with openfrontExtendedUi.setOption("alliance-view", "${HOLD_KEY_OPTION}", "KeyJ").`);
+				logInfo(`the game binds ${key}, so the alliance view mode stays off. Pick another hold key under Extended UI in the game's settings menu.`);
 			}
 			const capture = { capture: true };
 			context.onWindowEvent("keydown", onKeyDown, capture);
@@ -1279,7 +1290,6 @@
 	}
 	var DEFAULT_SECONDS = 3.5;
 	var MIN_SECONDS = .5;
-	var MAX_SECONDS = 30;
 	function placeBadge(cursor, panel, screen) {
 		const top = cursor.y + 50;
 		if (top + panel.height > screen.height) return null;
@@ -1318,7 +1328,7 @@
 	}
 	function stayMs(text) {
 		const seconds = Number(text.trim());
-		return (text.trim() !== "" && Number.isFinite(seconds) && seconds >= MIN_SECONDS && seconds <= MAX_SECONDS ? seconds : DEFAULT_SECONDS) * 1e3;
+		return (text.trim() !== "" && Number.isFinite(seconds) && seconds >= .5 && seconds <= 30 ? seconds : DEFAULT_SECONDS) * 1e3;
 	}
 	var BADGE = "ofx-hotbar-badge";
 	var BADGE_SHOWN = "ofx-hotbar-badge-shown";
@@ -1452,15 +1462,24 @@
 	var BADGE_SECONDS_OPTION = "badge-seconds";
 	var hotbarReadout = {
 		id: "hotbar",
-		name: "Hotbar cheap window",
+		name: "Cheap building alerts",
+		description: "Cities, ports and factories cost more each time you build one. Marks under their icons in the build bar show the next price. The icon lights up when you can afford one, and a reminder pops up under your mouse.",
 		options: [{
 			key: BREATHING_OPTION,
-			name: "Breathing pulse",
+			name: "Keep the icon pulsing",
+			description: "The lit icon keeps pulsing slowly while you can afford it. When off, it flashes three times and then stays still.",
 			whenUnset: true
 		}, {
 			key: BADGE_SECONDS_OPTION,
-			name: "Seconds the badge stays",
-			whenUnset: "3.5"
+			name: "Mouse reminder duration",
+			description: "How many seconds the reminder under your mouse stays, from 0.5 to 30.",
+			whenUnset: "3.5",
+			control: {
+				kind: "number",
+				min: MIN_SECONDS,
+				max: 30,
+				step: .5
+			}
 		}],
 		attach(context) {
 			const readouts = injectedNodes({
@@ -1831,11 +1850,14 @@
 	var NATION_TEAMMATES_OPTION = "nation-teammates";
 	var spawnMarks = {
 		id: "spawn-marks",
-		name: "Spawn marks",
+		name: "Teammate spawn markers",
+		description: "At the start of a team game, a circle with a name shows where each teammate starts. An arrow at the screen edge points to a teammate off screen.",
 		options: [{
 			key: NATION_TEAMMATES_OPTION,
 			name: "Mark Nation teammates too",
-			whenUnset: false
+			description: "Also marks the Nations on your team, so a solo game shows the markers.",
+			whenUnset: false,
+			control: { kind: "console-only" }
 		}],
 		attach(context) {
 			const readHooks = mapHooksReader();
@@ -1982,10 +2004,12 @@
 	var PERCENTAGE_OPTION = "percentage";
 	var troopBar = {
 		id: "troop-bar",
-		name: "Troop bar plateau",
+		name: "Best troop level",
+		description: "A purple strip on your troop bar shows where your troops regrow fastest. Above the strip, attack: extra troops regrow slower.",
 		options: [{
 			key: PERCENTAGE_OPTION,
-			name: "Share of best rate",
+			name: "Regrowth speed in %",
+			description: "Shows how fast your troops regrow now, at the right end of the troop bar. 100% is the fastest possible. Wide screens only.",
 			whenUnset: true
 		}],
 		attach(context) {
@@ -2034,6 +2058,432 @@
 		spawnMarks,
 		alliancePanel
 	];
+	var ROW$1 = "ofx-menu-row";
+	var ROW_TEXT = "ofx-menu-row-text";
+	var ROW_TITLE = "ofx-menu-row-title";
+	var ROW_HINT = "ofx-menu-row-hint";
+	var MENU_OVERLAY = ".modal-overlay";
+	var OPEN_SETTINGS = ":scope > [data-open-settings]";
+	var IN_MATCH_MENU = {
+		host: "settings-modal",
+		place(menu, row) {
+			const overlay = menu.querySelector(MENU_OVERLAY);
+			const column = overlay?.firstElementChild?.lastElementChild;
+			if (!overlay || !column) return null;
+			const anchor = column.querySelector(OPEN_SETTINGS) ?? column.firstElementChild;
+			if (anchor) anchor.after(row);
+			else column.prepend(row);
+			return {
+				kind: "menu",
+				overlay
+			};
+		}
+	};
+	var SETTINGS_PAGE = {
+		host: "user-setting#page-settings",
+		look: "ofx-menu-row-card",
+		place(page, row) {
+			const body = page.querySelector(":scope > o-modal > div:not([slot])");
+			if (!body) return null;
+			body.prepend(row);
+			return { kind: "page" };
+		}
+	};
+	function watchSettingsEntries(deps) {
+		const watches = [IN_MATCH_MENU, SETTINGS_PAGE].map((entry) => watch(entry, deps.onOpen));
+		return { stop() {
+			for (const stop of watches) stop();
+		} };
+	}
+	function watch(entry, onOpen) {
+		const host = document.querySelector(entry.host);
+		if (!host) {
+			logError(`no <${entry.host}> in the page, so the settings panel has no row there`);
+			return () => {};
+		}
+		function sync() {
+			try {
+				if (host?.querySelector(`.${ROW$1}`)) return;
+				addRow(entry, host, onOpen);
+			} catch (error) {
+				logError("could not add the Extended UI row to the game's screen", error);
+			}
+		}
+		const observer = new MutationObserver(sync);
+		observer.observe(host, {
+			childList: true,
+			subtree: true
+		});
+		sync();
+		return () => {
+			observer.disconnect();
+			for (const row of host.querySelectorAll(`.${ROW$1}`)) row.remove();
+		};
+	}
+	function addRow(entry, host, onOpen) {
+		const row = drawRow(entry.look);
+		const place = entry.place(host, row);
+		if (!place) return;
+		row.addEventListener("click", () => {
+			try {
+				onOpen(place);
+			} catch (error) {
+				logError("could not open the settings panel", error);
+			}
+		});
+	}
+	function drawRow(look) {
+		const row = document.createElement("button");
+		row.type = "button";
+		row.className = look ? `${ROW$1} ${look}` : ROW$1;
+		const text = document.createElement("span");
+		text.className = ROW_TEXT;
+		const title = document.createElement("span");
+		title.className = ROW_TITLE;
+		title.textContent = "Extended UI";
+		const hint = document.createElement("span");
+		hint.className = ROW_HINT;
+		hint.textContent = "Switch the userscript's features and options";
+		text.append(title, hint);
+		row.append(sliderIcon(), text);
+		return row;
+	}
+	function sliderIcon() {
+		const ns = "http://www.w3.org/2000/svg";
+		const svg = document.createElementNS(ns, "svg");
+		svg.setAttribute("width", "20");
+		svg.setAttribute("height", "20");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "none");
+		svg.setAttribute("stroke", "currentColor");
+		svg.setAttribute("stroke-width", "2");
+		svg.setAttribute("stroke-linecap", "round");
+		svg.setAttribute("aria-hidden", "true");
+		for (const d of [
+			"M4 6h16M14 4v4",
+			"M4 12h16M8 10v4",
+			"M4 18h16M16 16v4"
+		]) {
+			const path = document.createElementNS(ns, "path");
+			path.setAttribute("d", d);
+			svg.append(path);
+		}
+		return svg;
+	}
+	var CANCEL = "Escape";
+	var MODIFIERS = new Set([
+		"ShiftLeft",
+		"ShiftRight",
+		"ControlLeft",
+		"ControlRight",
+		"AltLeft",
+		"AltRight",
+		"MetaLeft",
+		"MetaRight"
+	]);
+	var SYMBOLS = {
+		Backquote: "`",
+		Minus: "-",
+		Equal: "=",
+		BracketLeft: "[",
+		BracketRight: "]",
+		Backslash: "\\",
+		Semicolon: ";",
+		Quote: "'",
+		Comma: ",",
+		Period: ".",
+		Slash: "/"
+	};
+	function judgeKey(code, game) {
+		if (code === CANCEL) return { kind: "cancel" };
+		if (code === "") return {
+			kind: "refuse",
+			message: "This key sends no code. Pick another."
+		};
+		if (MODIFIERS.has(code)) return {
+			kind: "refuse",
+			message: "Pick a key that is not a modifier."
+		};
+		const message = clashMessage(code, game);
+		if (message !== null) return {
+			kind: "refuse",
+			message
+		};
+		return {
+			kind: "accept",
+			code
+		};
+	}
+	function clashMessage(code, game) {
+		const action = game.boundAction(code);
+		if (action === null) return null;
+		return `The game uses ${keyLabel(code)} for ${actionLabel(action)}. Pick another key.`;
+	}
+	function keyLabel(code) {
+		const letterOrDigit = /^(?:Key|Digit)(.)$/.exec(code);
+		if (letterOrDigit) return letterOrDigit[1] ?? code;
+		const numpad = /^Numpad(\d)$/.exec(code);
+		if (numpad) return `Numpad ${numpad[1]}`;
+		return SYMBOLS[code] ?? code;
+	}
+	function actionLabel(action) {
+		const sentence = action.split(/(?<=[a-z])(?=[A-Z])/).map((word) => word === word.toUpperCase() ? word : word.toLowerCase()).join(" ");
+		return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+	}
+	var BACKDROP = "ofx-settings-backdrop";
+	var DIALOG = "ofx-settings";
+	var HEADER = "ofx-settings-header";
+	var TITLE = "ofx-settings-title";
+	var CLOSE = "ofx-settings-close";
+	var BODY = "ofx-settings-body";
+	var FEATURE = "ofx-settings-feature";
+	var ROW = "ofx-settings-row";
+	var TEXT = "ofx-settings-text";
+	var NAME = "ofx-settings-name";
+	var DESCRIPTION = "ofx-settings-description";
+	var OPTIONS = "ofx-settings-options";
+	var OPTIONS_OFF = "ofx-settings-options-off";
+	var SWITCH = "ofx-switch";
+	var NUMBER = "ofx-settings-number";
+	var KEY = "ofx-settings-key";
+	var KEY_LISTENING = "ofx-settings-key-listening";
+	var WARNING = "ofx-settings-warning";
+	var FOOTER = "ofx-settings-footer";
+	var RESET = "ofx-settings-reset";
+	var RESET_ARMED = "ofx-settings-reset-armed";
+	var TITLE_TEXT = "Extended UI";
+	var RESET_TEXT = "Reset to defaults";
+	var CONFIRM_TEXT = "Confirm?";
+	var LISTENING_TEXT = "Press a key…";
+	var CONFIRM_MS = 3e3;
+	function createSettingsPanel(deps) {
+		const { registry } = deps;
+		let recording = null;
+		let resetTimer = null;
+		const root = element("div", BACKDROP);
+		const dialog = element("div", DIALOG);
+		dialog.setAttribute("role", "dialog");
+		dialog.setAttribute("aria-label", TITLE_TEXT);
+		dialog.tabIndex = -1;
+		root.append(dialog);
+		root.addEventListener("click", (event) => {
+			if (event.target === root) deps.onClose();
+		});
+		const body = element("div", BODY);
+		const reset = element("button", RESET);
+		reset.type = "button";
+		reset.textContent = RESET_TEXT;
+		reset.addEventListener("click", onResetClick);
+		const footer = element("div", FOOTER);
+		footer.append(reset);
+		dialog.append(drawHeader(deps.onClose), body, footer);
+		drawBody();
+		function drawBody() {
+			recording = null;
+			body.replaceChildren(...registry.features.map(drawFeature));
+		}
+		function drawFeature(feature) {
+			const section = element("section", FEATURE);
+			section.dataset.feature = feature.id;
+			const enabled = registry.isEnabled(feature.id);
+			const toggle = switchInput(enabled);
+			toggle.addEventListener("change", () => {
+				registry.setEnabled(feature.id, toggle.checked);
+				setOff(options, !registry.isEnabled(feature.id));
+			});
+			section.append(row(feature, toggle));
+			const options = element("div", OPTIONS);
+			for (const option of registry.optionsOf(feature.id)) {
+				const drawn = drawOption(feature, option);
+				if (drawn) options.append(drawn);
+			}
+			if (options.childElementCount > 0) section.append(options);
+			setOff(options, !enabled);
+			return section;
+		}
+		function drawOption(feature, option) {
+			const control = option.control;
+			if (control?.kind === "console-only") return null;
+			if (control?.kind === "number") {
+				const input = element("input", NUMBER);
+				input.type = "number";
+				input.min = String(control.min);
+				input.max = String(control.max);
+				input.step = String(control.step);
+				input.value = String(option.value);
+				input.addEventListener("change", () => {
+					const value = Number(input.value);
+					if (input.value.trim() !== "" && value >= control.min && value <= control.max && isStep(value, control.step)) registry.setOption(feature.id, option.key, String(value));
+					input.value = String(currentValue(feature, option.key));
+				});
+				return row(option, input);
+			}
+			if (control?.kind === "key") return drawKeyOption(feature, option);
+			if (typeof option.value !== "boolean") return null;
+			const toggle = switchInput(option.value);
+			toggle.addEventListener("change", () => registry.setOption(feature.id, option.key, toggle.checked));
+			return row(option, toggle);
+		}
+		function drawKeyOption(feature, option) {
+			const wrapper = element("div");
+			const button = element("button", KEY);
+			button.type = "button";
+			const warning = element("p", WARNING);
+			warning.setAttribute("role", "status");
+			wrapper.append(row(option, button), warning);
+			function show(message) {
+				const code = String(currentValue(feature, option.key));
+				button.textContent = keyLabel(code);
+				button.classList.remove(KEY_LISTENING);
+				warning.textContent = message ?? clashMessage(code, deps.gameKeybinds()) ?? "";
+			}
+			button.addEventListener("click", () => {
+				button.textContent = LISTENING_TEXT;
+				button.classList.add(KEY_LISTENING);
+				warning.textContent = "";
+				recording = { finish(code) {
+					const verdict = judgeKey(code, deps.gameKeybinds());
+					if (verdict.kind === "refuse") {
+						show(verdict.message);
+						return;
+					}
+					if (verdict.kind === "accept") registry.setOption(feature.id, option.key, verdict.code);
+					show(null);
+				} };
+			});
+			show(null);
+			return wrapper;
+		}
+		function currentValue(feature, key) {
+			return registry.optionsOf(feature.id).find((option) => option.key === key)?.value ?? "";
+		}
+		function onResetClick() {
+			if (resetTimer === null) {
+				reset.textContent = CONFIRM_TEXT;
+				reset.classList.add(RESET_ARMED);
+				resetTimer = setTimeout(disarm, CONFIRM_MS);
+				return;
+			}
+			disarm();
+			registry.resetAll();
+			drawBody();
+		}
+		function disarm() {
+			if (resetTimer !== null) clearTimeout(resetTimer);
+			resetTimer = null;
+			reset.textContent = RESET_TEXT;
+			reset.classList.remove(RESET_ARMED);
+		}
+		return {
+			root,
+			focus: () => dialog.focus(),
+			handleKey(code) {
+				if (recording) {
+					const { finish } = recording;
+					recording = null;
+					finish(code);
+					return true;
+				}
+				if (code !== "Escape") return false;
+				deps.onClose();
+				return true;
+			},
+			destroy: disarm
+		};
+	}
+	function drawHeader(onClose) {
+		const header = element("div", HEADER);
+		const title = element("h2", TITLE);
+		title.textContent = TITLE_TEXT;
+		const close = element("button", CLOSE);
+		close.type = "button";
+		close.textContent = "×";
+		close.setAttribute("aria-label", "Back to the game menu");
+		close.addEventListener("click", onClose);
+		header.append(title, close);
+		return header;
+	}
+	function row(labelled, control) {
+		const label = element("label", ROW);
+		const text = element("span", TEXT);
+		const name = element("span", NAME);
+		name.textContent = labelled.name;
+		text.append(name);
+		if (labelled.description) {
+			const description = element("span", DESCRIPTION);
+			description.textContent = labelled.description;
+			text.append(description);
+		}
+		label.append(text, control);
+		return label;
+	}
+	function switchInput(checked) {
+		const input = element("input", SWITCH);
+		input.type = "checkbox";
+		input.setAttribute("role", "switch");
+		input.checked = checked;
+		return input;
+	}
+	function setOff(options, off) {
+		options.classList.toggle(OPTIONS_OFF, off);
+		for (const control of options.querySelectorAll("input, button")) control.disabled = off;
+	}
+	function isStep(value, step) {
+		const steps = value / step;
+		return Math.abs(steps - Math.round(steps)) < 1e-9;
+	}
+	function element(tag, className) {
+		const node = document.createElement(tag);
+		if (className) node.className = className;
+		return node;
+	}
+	var PAGE_LAYER = "ofx-settings-backdrop-page";
+	function startSettingsPanel(deps) {
+		let panel = null;
+		function open(place) {
+			close();
+			panel = createSettingsPanel({
+				registry: deps.registry,
+				gameKeybinds: () => readGameKeybinds(deps.gameKeybinds),
+				onClose: close
+			});
+			if (place.kind === "menu") place.overlay.append(panel.root);
+			else {
+				panel.root.classList.add(PAGE_LAYER);
+				document.body.append(panel.root);
+			}
+			panel.focus();
+		}
+		function close() {
+			if (!panel) return;
+			panel.destroy();
+			panel.root.remove();
+			panel = null;
+		}
+		function onKeyDown(event) {
+			try {
+				if (!panel) return;
+				if (!panel.root.isConnected) {
+					close();
+					return;
+				}
+				const code = event.code === "" && event.key === "Escape" ? "Escape" : event.code;
+				if (!panel.handleKey(code)) return;
+				event.preventDefault();
+				event.stopImmediatePropagation();
+			} catch (error) {
+				logError("the settings panel failed on a key press", error);
+			}
+		}
+		const capture = { capture: true };
+		window.addEventListener("keydown", onKeyDown, capture);
+		const entries = watchSettingsEntries({ onOpen: open });
+		return { stop() {
+			entries.stop();
+			close();
+			window.removeEventListener("keydown", onKeyDown, capture);
+		} };
+	}
 	var BOUNDARY_POLL_MS = 500;
 	function startLifecycle(deps) {
 		const { panel, handlers } = deps;
@@ -2230,6 +2680,11 @@
 				}
 				settings.setOptionValue(id, option, value);
 			},
+			resetAll() {
+				settings.reset();
+				if (!currentMatch) return;
+				for (const feature of features) attach(feature, currentMatch);
+			},
 			setEnabled(id, enabled) {
 				const feature = featureOf(id);
 				if (!feature) return;
@@ -2247,6 +2702,10 @@
 		});
 		const styles = createStyleSheet(deps.css);
 		styles.injectInto(document);
+		const settingsPanel = startSettingsPanel({
+			registry,
+			gameKeybinds: localStorageStore(GAME_KEYBINDS_KEY)
+		});
 		const lifecycle = startLifecycle({
 			panel: deps.panel,
 			handlers: {
@@ -2262,6 +2721,7 @@
 			registry,
 			stop() {
 				lifecycle.stop();
+				settingsPanel.stop();
 				styles.remove();
 			}
 		};
@@ -2307,7 +2767,7 @@
 				delete window[HANDLE];
 			}
 		});
-		logInfo(`ready. window.${HANDLE}.list() shows what can be switched off.`);
+		logInfo(`ready. Open Extended UI in the game's settings menu to switch features off, or call window.${HANDLE}.list().`);
 	}
 	main().catch((error) => logError("could not start", error));
 })();

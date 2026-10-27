@@ -32,14 +32,20 @@ const NATION_TEAMMATES_OPTION = "nation-teammates";
 
 export const spawnMarks: Feature = {
   id: "spawn-marks",
-  name: "Spawn marks",
+  name: "Teammate spawn markers",
+  description:
+    "At the start of a team game, a circle with a name shows where each teammate starts. An arrow at the screen edge points to a teammate off screen.",
   options: [
     {
       key: NATION_TEAMMATES_OPTION,
       // A solo game holds one human, so it has no human teammate to mark.
       // This is how a solo game, and the test bed on issue #34, can show them.
       name: "Mark Nation teammates too",
+      description:
+        "Also marks the Nations on your team, so a solo game shows the markers.",
       whenUnset: false,
+      // A test aid, not a feature, so a player never meets it.
+      control: { kind: "console-only" },
     },
   ],
 

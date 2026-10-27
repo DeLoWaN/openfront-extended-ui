@@ -27,6 +27,28 @@ export function matchesOption(value: unknown, whenUnset: OptionValue): boolean {
 }
 
 /**
+ * How the settings panel lets a player set one option.
+ *
+ * An option with no control is a switch, which suits a boolean only. A text
+ * option needs one of these, or the panel cannot draw it.
+ *
+ * - `number`: a number field. The option still stores text, so the feature
+ *   must read any value outside the bounds as its own default.
+ * - `key`: the panel's key recorder. The option stores a `KeyboardEvent.code`.
+ * - `console-only`: the panel leaves the option out, and the browser console
+ *   is the only way to set it.
+ */
+export type OptionControl =
+  | {
+      readonly kind: "number";
+      readonly min: number;
+      readonly max: number;
+      readonly step: number;
+    }
+  | { readonly kind: "key" }
+  | { readonly kind: "console-only" };
+
+/**
  * One choice a feature offers beyond being switched on or off.
  *
  * A feature declares its options so the runtime can refuse a key nothing
@@ -37,6 +59,8 @@ export interface FeatureOption {
   readonly key: string;
   /** The name a player reads when they choose. */
   readonly name: string;
+  /** What the option changes, in words a player who never read the README follows. */
+  readonly description?: string;
   /**
    * What the option means before a player has chosen.
    *
@@ -44,6 +68,8 @@ export interface FeatureOption {
    * nothing stored, so a switch can never come back as text.
    */
   readonly whenUnset: OptionValue;
+  /** How the settings panel draws the option. A switch when absent. */
+  readonly control?: OptionControl;
 }
 
 /** What a feature does for as long as one match lasts. */
@@ -68,6 +94,8 @@ export interface Feature {
   readonly id: FeatureId;
   /** The name a player reads when they choose what to switch off. */
   readonly name: string;
+  /** What the feature shows, in words a player who never read the README follows. */
+  readonly description?: string;
   /** The choices this feature offers beyond on and off. */
   readonly options?: readonly FeatureOption[];
 

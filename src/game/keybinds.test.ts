@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { SettingsStore } from "../../runtime/settings";
+import type { SettingsStore } from "../runtime/settings";
 import { readGameKeybinds } from "./keybinds";
 
 /** The game's own stored keybinds, as one JSON string. */
@@ -82,6 +82,30 @@ describe("which keys the game has taken", () => {
     expect(readGameKeybinds(live).isBound("Backquote")).toBe(false);
     raw = JSON.stringify({ buildCity: "Backquote" });
     expect(readGameKeybinds(live).isBound("Backquote")).toBe(true);
+  });
+});
+
+describe("which of the game's actions holds a key", () => {
+  it("names the action the game binds the key to by default", () => {
+    expect(readGameKeybinds(untouched).boundAction("KeyB")).toBe("boatAttack");
+  });
+
+  it("names the action the player moved onto the key", () => {
+    const game = readGameKeybinds(store({ buildCity: "Backquote" }));
+
+    expect(game.boundAction("Backquote")).toBe("buildCity");
+  });
+
+  it("names the action behind a modifier", () => {
+    expect(readGameKeybinds(untouched).boundAction("KeyR")).toBe("retaliateAttack");
+  });
+
+  it("names nothing for a free key", () => {
+    expect(readGameKeybinds(untouched).boundAction("Backquote")).toBeNull();
+  });
+
+  it("names nothing when no key is asked about", () => {
+    expect(readGameKeybinds(untouched).boundAction("")).toBeNull();
   });
 });
 

@@ -10,11 +10,10 @@ export interface ListedOption {
 }
 
 /**
- * The only way to switch a feature off for now.
+ * The package's handle in the browser console.
  *
- * Nobody has designed the settings screen yet, because its shape depends on how
- * many options the readouts turn out to have. Until then a player types these
- * into the browser console.
+ * It does what the Settings panel does, and it also reaches the options the
+ * panel leaves out, such as `nation-teammates`.
  */
 export interface ConsoleHandle {
   /** Every feature, whether it is switched on, and the options it offers. */

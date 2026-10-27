@@ -84,7 +84,9 @@ interface Panel {
 
 export const alliancePanel: Feature = {
   id: "alliance-panel",
-  name: "Alliance panel",
+  name: "Alliance timers",
+  description:
+    "Lists your alliances in the top right corner, with the time left on each. Point at one to see that player on the map. Click it to move the camera there.",
 
   attach(context) {
     const state = createAlliancePanelRows(context.game);

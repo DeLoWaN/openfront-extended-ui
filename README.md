@@ -34,11 +34,7 @@ The light appears again at each of the three prices. With 900,000 in hand you ca
 
 The readout is amber rather than the violet the rest of the package uses. The hotbar boxes are small, and amber reads brighter at that size.
 
-The breathing pulse can be switched off on its own. The three quick pulses and the marks stay.
-
-```js
-openfrontExtendedUi.setOption('hotbar', 'breathing', false)
-```
+The breathing pulse can be switched off on its own, in the settings panel. The three quick pulses and the marks stay.
 
 The light sits about 600 pixels from where your eyes are in the opening minutes, so it also comes to the cursor. The moment a city, a factory or a port becomes affordable, a **badge** appears. The badge is a small amber panel with the icon of that building. An arrow under it points down to the building's own icon in the hotbar.
 
@@ -48,11 +44,7 @@ The light sits about 600 pixels from where your eyes are in the opening minutes,
 - A port and a factory share one price, so they often become affordable together. They get one badge with two icons and one arrow between them.
 - The badge stays away while the game draws its own red crosshair, which is while a warship is selected and while Shift is held. It also stays away when the cursor is too close to the bottom of the screen to leave room below it.
 
-The badge belongs to the hotbar readout, so switching the readout off removes it. You can change how long it stays, in seconds.
-
-```js
-openfrontExtendedUi.setOption('hotbar', 'badge-seconds', '6')
-```
+The badge belongs to the hotbar readout, so switching the readout off removes it. The settings panel sets how long it stays, from 0.5 to 30 seconds.
 
 The game removes the hotbar below 64rem, and the readout and the badge go with it.
 
@@ -70,13 +62,9 @@ Each ally carries a clock under their name, saying how long that alliance has le
 
 The mode stands down while one of the game's own pop-up panels is open, such as the chat or the leaderboard, because the game dims the map behind those. It stands down again while you hold the game's own view key, normally space. Under that view the game draws no territory at all, so there is nothing left to colour.
 
-The hold key is yours to change. Write it the way the browser names a key.
+The hold key is yours to change in the settings panel. Click the key, then press the new one. The panel refuses a key the game already uses, and names the game action that holds it.
 
-```js
-openfrontExtendedUi.setOption('alliance-view', 'hold-key', 'KeyJ')
-```
-
-If the game already uses the key you pick, the mode refuses to run on it and says so in the console. Stealing a key you configured yourself is worse than not running at all.
+If you later give the game that key in the game's own settings, the mode refuses to run on it and says so in the console, and the settings panel shows the clash in red. Stealing a key you configured yourself is worse than not running at all.
 
 The player names on the map lose their coloured outline while the key is down, because the game draws that outline from the same colours the mode rewrites. The letters keep their own colour, and the outline comes back when you let go.
 
@@ -114,7 +102,7 @@ A teammate who is off screen gets a chevron on the edge of the screen, pointing 
 
 When a teammate picks another spawn, the mark glides to it. When the spawn phase ends, the marks fade over about a second and go. A game without teams draws nothing, and neither does a replay. The marks only read the game. They send nothing.
 
-The game draws its own pulse for human teammates only, and so do the marks. A solo game has one human, so it has no human teammate to mark. To see the marks in a solo team game, switch on the option that adds the Nation teammates. The Nations stand in for teammates.
+The game draws its own pulse for human teammates only, and so do the marks. A solo game has one human, so it has no human teammate to mark. To see the marks in a solo team game, switch on the option that adds the Nation teammates. The Nations stand in for teammates. This option is a test aid, so the settings panel does not show it. Set it from the browser console.
 
 ```js
 openfrontExtendedUi.setOption('spawn-marks', 'nation-teammates', true)
@@ -144,7 +132,17 @@ Firefox needs nothing of the sort.
 
 ## Switch a feature off
 
-There is no settings screen yet. Its shape depends on how many options the readouts turn out to have, so it cannot be designed until they exist. Until then, the browser console is the way in.
+Click **Extended UI** to open the **settings panel**. The row is in two places:
+
+- Outside a match, at the top of the game's settings page, which **SETTINGS** in the top bar opens.
+- In a match, in the game's settings menu, which the gear in the top right corner opens.
+
+- Each feature has a row with a switch. Its options sit under it, and they grey out while the feature is off.
+- A change applies at once. There is no Save button.
+- **Reset to defaults** puts every feature and every option back, including the options the panel does not show. It asks for a second click within 3 seconds.
+- Escape, the × button, or a click outside the panel closes it.
+
+The browser console does the same, and it also reaches the options the panel leaves out.
 
 ```js
 openfrontExtendedUi.list()                 // every feature, its options, and what is on
