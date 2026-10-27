@@ -7,11 +7,11 @@ A userscript that adds readouts to the OpenFront.io game view from outside the g
 ### What the package adds
 
 **Feature**:
-Any one of the things the package adds, whether it is a readout, the view mode or a locator. It is the word the code uses, because all three kinds register the same way and each can be switched off on its own.
+Any one of the five things the package adds, whether it is a readout, the view mode or a locator. It is the word the code uses, because all three kinds register the same way and each can be switched off on its own.
 _Avoid_: addition, module, plugin
 
 **Readout**:
-One of the package's features that reformats numbers the game already shows, drawn in the HUD. There are four.
+One of the package's features that reformats numbers the game already shows, drawn in the HUD. There are three.
 _Avoid_: widget, panel, overlay, module
 
 **View mode**:
@@ -24,6 +24,14 @@ _Avoid_: marker, pin, annotation, overlay
 **Subject**:
 The player the alliance view mode draws its map around. The cursor picks it, and it stays until the cursor reaches another player, so the subject is not always the player under the cursor.
 _Avoid_: hovered player, target, focus
+
+**Alliance panel**:
+The readout in the top right corner of the HUD that lists your alliances, with the time each one has left. It also lists the alliance requests aimed at you, and the alliances that just ran out. Each row is a bar that empties as the time runs out. It sends nothing, and a click on a row only moves the camera.
+_Avoid_: alliance list, alliance tracker
+
+**Spotlight**:
+One player the alliance view mode shows on its own, with no key held. The map greys and only that player keeps their colour. The alliance panel sets it while the cursor rests on a row. It is the alliance view mode with no allies and no clocks. When that player is off screen, an arrow at the screen's edge points to them.
+_Avoid_: highlight, hover mode, focus
 
 **Surface**:
 Where a feature draws. There are two, the HUD and the map. A decision about one carries nothing to the other.
@@ -45,7 +53,7 @@ The game's own panels that stay on screen for a whole match, around the edges of
 _Avoid_: toolbar, interface, control panel (`control-panel` names one element inside the HUD, not the HUD)
 
 **Bottom row**:
-The part of the HUD along the bottom of the screen. Four of the five readouts draw there.
+The part of the HUD along the bottom of the screen. Two of the three readouts draw there.
 _Avoid_: bottom bar, main HUD
 
 **Troop bar**:
@@ -93,15 +101,6 @@ _Avoid_: the optimal zone, the sweet spot, the band (say "the plateau", and "the
 
 **Crossing**:
 Passing the 42.2% level from below. It is the signal to spend troops, because troops above the level are unspent, not because regeneration collapsed.
-
-### Gold
-
-**Trade income**:
-Gold from a trade ship arriving at your port.
-_Avoid_: trade gold, port income
-
-**Captured ship**:
-A trade ship taken by another player before it reached its destination, so its gold goes to the captor instead.
 
 ### Building prices
 

@@ -15,6 +15,8 @@ import {
 import { allianceView } from "./index";
 import { CLOCK, URGENT } from "./clocks";
 import { readSlot } from "./palette";
+import { POINTER } from "./pointer";
+import { setSpotlight } from "./spotlight";
 import { greyTerrain } from "./terrain";
 
 const HOLD = "Backquote";
@@ -125,6 +127,7 @@ const clocks = () =>
 beforeEach(() => vi.useFakeTimers());
 
 afterEach(() => {
+  setSpotlight(null);
   for (const detach of attachedDetaches.splice(0)) detach();
   vi.useRealTimers();
   delete window.__webglView;
@@ -702,5 +705,209 @@ describe("what the mode does when the page is not ready", () => {
       keyUp(HOLD);
       detach();
     }).not.toThrow();
+  });
+});
+
+describe("showing one player on their own for another feature", () => {
+  it("greys the map and keeps only that player, with no key held", () => {
+    const { renderer } = setup();
+
+    setSpotlight(1);
+
+    // The subject's ally is the case that tells this apart from the key mode.
+    expect(fillOf(renderer, 1)).toEqual([1, 0, 0, expect.any(Number)]);
+    expect(isGrey(fillOf(renderer, 2))).toBe(true);
+    expect(isGrey(fillOf(renderer, 3))).toBe(true);
+  });
+
+  it("draws no clock, because nobody else is shown", () => {
+    setup();
+
+    setSpotlight(1);
+    frames();
+
+    expect(clocks()).toHaveLength(0);
+  });
+
+  it("greys the terrain, so the mode shows even for a player nobody sees", () => {
+    const { renderer } = setup();
+
+    setSpotlight(2);
+
+    expect(renderer.bakes.length).toBeGreaterThan(0);
+  });
+
+  it("puts the game's own colours back when the spotlight goes", () => {
+    const { renderer } = setup();
+    setSpotlight(1);
+
+    setSpotlight(null);
+
+    expect(fillOf(renderer, 2)).toEqual([0, 1, 0, expect.any(Number)]);
+    expect(fillOf(renderer, 3)).toEqual([0, 0, 1, expect.any(Number)]);
+  });
+
+  it("follows the spotlight from one player to the next", () => {
+    const { renderer } = setup();
+    setSpotlight(1);
+
+    setSpotlight(3);
+
+    expect(fillOf(renderer, 3)).toEqual([0, 0, 1, expect.any(Number)]);
+    expect(isGrey(fillOf(renderer, 1))).toBe(true);
+  });
+
+  it("lets the held key win, with its own subject and allies", () => {
+    const { renderer } = setup();
+    setSpotlight(3);
+
+    pointAt(SUBJECT_AT.screen);
+    keyDown(HOLD);
+
+    expect(fillOf(renderer, 1)).toEqual([1, 0, 0, expect.any(Number)]);
+    expect(fillOf(renderer, 2)).toEqual([0, 1, 0, expect.any(Number)]);
+    expect(isGrey(fillOf(renderer, 3))).toBe(true);
+  });
+
+  it("goes back to the spotlight when the key comes up", () => {
+    const { renderer } = setup();
+    setSpotlight(3);
+    pointAt(SUBJECT_AT.screen);
+    keyDown(HOLD);
+
+    keyUp(HOLD);
+
+    expect(fillOf(renderer, 3)).toEqual([0, 0, 1, expect.any(Number)]);
+    expect(isGrey(fillOf(renderer, 1))).toBe(true);
+  });
+
+  it("stands down under the game's own alternate view", () => {
+    const { renderer } = setup();
+    setSpotlight(1);
+    const written = renderer.palettes.length;
+
+    keyDown("Space");
+
+    expect(renderer.palettes.length).toBeGreaterThan(written);
+    expect(isGrey(fillOf(renderer, 3))).toBe(false);
+  });
+
+  it("stands down while one of the game's modals is open", () => {
+    const { renderer } = setup();
+    document.body.style.overflow = "hidden";
+
+    setSpotlight(1);
+
+    expect(renderer.palettes).toHaveLength(0);
+  });
+
+  it("leaves the map alone once the mode is switched off", () => {
+    const { renderer, detach } = setup();
+    setSpotlight(1);
+    detach();
+    const written = renderer.palettes.length;
+
+    setSpotlight(3);
+
+    expect(renderer.palettes).toHaveLength(written);
+  });
+
+  it("puts the colours back when the mode is switched off under a spotlight", () => {
+    const { renderer, detach } = setup();
+    setSpotlight(1);
+
+    detach();
+
+    expect(isGrey(fillOf(renderer, 3))).toBe(false);
+  });
+});
+
+describe("pointing at a spotlit player who is off screen", () => {
+  const FAR = { x: 3000, y: 400 };
+  const pointer = () => document.querySelector<HTMLElement>(`.${POINTER}`)!;
+  const pointerShown = () =>
+    pointer() !== null && !pointer().classList.contains(HIDDEN);
+
+  it("draws an arrow with the player's name", () => {
+    const { ally } = setup();
+    ally.nameData = { ...FAR, size: 40 };
+    ally.name = "Ana";
+
+    setSpotlight(2);
+
+    expect(pointerShown()).toBe(true);
+    expect(pointer().textContent).toBe("Ana");
+  });
+
+  it("takes the player's own colour", () => {
+    const { ally } = setup();
+    ally.nameData = { ...FAR, size: 40 };
+
+    setSpotlight(2);
+
+    expect(pointer().style.getPropertyValue("--ofx-pointer-colour")).toBe(
+      "rgb(0, 255, 0)",
+    );
+  });
+
+  it("draws nothing while the player is on screen", () => {
+    setup();
+
+    setSpotlight(2);
+
+    expect(pointerShown()).toBe(false);
+  });
+
+  it("draws nothing for a player the renderer has not placed", () => {
+    const { ally } = setup();
+    ally.nameData = undefined;
+
+    setSpotlight(2);
+
+    expect(pointerShown()).toBe(false);
+  });
+
+  it("follows the camera on the next frame", () => {
+    const { ally, camera } = setup();
+    ally.nameData = { ...FAR, size: 40 };
+    setSpotlight(2);
+    expect(pointerShown()).toBe(true);
+
+    camera.offsetX = 2900;
+    camera.offsetY = 300;
+    frames();
+
+    expect(pointerShown()).toBe(false);
+  });
+
+  it("goes when the spotlight goes", () => {
+    const { ally } = setup();
+    ally.nameData = { ...FAR, size: 40 };
+    setSpotlight(2);
+
+    setSpotlight(null);
+
+    expect(pointerShown()).toBe(false);
+  });
+
+  it("goes while the key is held, since the key shows the whole web", () => {
+    const { ally } = setup();
+    ally.nameData = { ...FAR, size: 40 };
+    setSpotlight(2);
+
+    pointAt(SUBJECT_AT.screen);
+    keyDown(HOLD);
+
+    expect(pointerShown()).toBe(false);
+  });
+
+  it("is taken out of the page when the mode is switched off", () => {
+    const { ally, detach } = setup();
+    ally.nameData = { ...FAR, size: 40 };
+    setSpotlight(2);
+
+    detach();
+
+    expect(pointer()).toBeNull();
   });
 });

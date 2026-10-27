@@ -8,7 +8,7 @@ The vocabulary this project uses is in [CONTEXT.md](CONTEXT.md). The decisions b
 
 ## What works today
 
-Four things: a readout on the game's own troop bar, a readout on the hotbar, a view mode on the map, and marks on the map during the spawn phase.
+Five things: a readout on the game's own troop bar, a readout on the hotbar, a view mode on the map, a panel of your alliances in the top right corner, and marks on the map during the spawn phase.
 
 ### The troop bar readout
 
@@ -66,6 +66,30 @@ If the game already uses the key you pick, the mode refuses to run on it and say
 
 The player names on the map lose their coloured outline while the key is down, because the game draws that outline from the same colours the mode rewrites. The letters keep their own colour, and the outline comes back when you let go.
 
+### The alliance panel
+
+The panel lists your own alliances in the top right corner of the HUD, under the game's own buttons. Each row holds the partner's name and the time that alliance has left, written `2:07`. The game already shows an alliance's time in other places, but only one alliance at a time. This is the one place that shows all of them together.
+
+The list runs downward in time. The alliance with the most time left is at the top, and the one nearest its end is at the bottom. That looks upside down at first. It is right because the list also holds the past: an alliance that just ended stays at the bottom for 15 seconds, and the clock beside it counts up. Finished rows on top would push the one alliance you can still save down the list.
+
+There are three kinds of row. Two of them carry a word, so you can tell them apart.
+
+- An alliance you are in. It has no word.
+- An **alliance request** aimed at you, marked `asks you`. Its clock is the time you have left to answer. The game refuses a request by itself after 20 seconds.
+- An alliance that **ended** because the two partners did not renew it, marked `ended`. It is grey.
+
+A broken alliance is not in the list. A betrayal is not a renewal you forgot, and the game already announces it.
+
+Each row is also a **bar** that empties as the time runs out. A full bar is a whole alliance, and an empty one is the end. For a request, the whole is the 20 seconds you have to answer. An ended alliance has an empty bar.
+
+The bar turns red once the game offers to renew that alliance, which is the last 30 seconds by default. It goes back to blue when you agree, because the game stops offering after that. It stays red if only your partner agreed.
+
+Rest the cursor on a row and the map shows that player on their own. It is the alliance view mode's grey map with one player left in their own colours. It shows no ally and no clock, only that player. Allies are usually far away, so when that player is off screen a **pointer** appears: an arrow in that player's own colour, turned toward them, with their name under it. The pointer keeps clear of the bottom of the screen, where the game's own bars sit. It goes when the player is on screen, because their colour already shows. Move the cursor off the panel and the map goes back. A short rest is needed first, so a cursor that only crosses the panel does nothing. The hold key of the alliance view mode wins while you hold it. This needs the alliance view mode to be switched on, and the panel works without it.
+
+A click on a row moves the camera to that player. That is all a click does. There is no renew button, because the package never sends a message to the game on your behalf. [ADR-0009](docs/adr/0009-the-package-changes-your-view-never-the-game.md) holds the reasoning. Renew from the game's own menu.
+
+The panel is not on the screen when it has no row. It never scrolls, because a scrolling list would hide the row closest to its end. It draws nothing before you spawn, after you die, or in a replay. It reads what the game sends each tick, so a request that arrived before you switched the panel on is not shown.
+
 ### The spawn marks
 
 The **spawn phase** is the opening of a match, while every player picks where to start. In a team game, the marks help you find each of your teammates on the map.
@@ -85,8 +109,6 @@ openfrontExtendedUi.setOption('spawn-marks', 'nation-teammates', true)
 To try it, start a solo game on the map World, with the mode Teams, the team size Quads and no Tribes, and do not click the map. A solo game has no spawn timer, so the spawn phase lasts until your first click.
 
 The marks were checked in a solo game with Nation teammates. They have not yet been checked in a game with several real humans.
-
-The other two features are still to come. They are listed on [issue #1](https://github.com/DeLoWaN/openfront-extended-ui/issues/1).
 
 ## Install
 
@@ -164,7 +186,7 @@ src/
   styles/package.css   the package's own stylesheet
 ```
 
-A **feature** is any one of the six things the package adds. `src/runtime/feature.ts` holds the whole contract:
+A **feature** is any one of the four things the package adds. `src/runtime/feature.ts` holds the whole contract:
 
 ```ts
 export interface Feature {

@@ -21,6 +21,7 @@ import type {
   GameConfig,
   GameEventHandler,
   GameEventType,
+  GameUpdates,
   GameView,
   MapRenderer,
   NameLocation,
@@ -67,8 +68,13 @@ export function fakeColour(r: number, g: number, b: number): Colour {
   return { toRgb: () => ({ r, g, b, a: 1 }) };
 }
 
+/** Gives each alliance a number of its own, as the game does. */
+let nextAllianceId = 1;
+
 export class FakePlayerView implements PlayerView {
   alive = true;
+  /** What the game prints for this player. */
+  name: string;
   goldHeld = 0n;
   allyList: FakePlayerView[] = [];
   allianceList: Alliance[] = [];
@@ -103,6 +109,9 @@ export class FakePlayerView implements PlayerView {
   }
   id(): string {
     return this.playerID;
+  }
+  displayName(): string {
+    return this.name;
   }
   isPlayer(): boolean {
     return this.player;
@@ -144,21 +153,49 @@ export class FakePlayerView implements PlayerView {
     return this.goldHeld;
   }
 
-  /** Allies both players and writes the alliance row on each of them. */
-  allyWith(other: FakePlayerView, expiresAt: number): void {
+  /**
+   * Allies both players and writes the alliance row on each of them.
+   *
+   * Returns the alliance's number, which a renewal keeps.
+   */
+  allyWith(other: FakePlayerView, expiresAt: number): number {
+    const id = nextAllianceId++;
     this.allyList.push(other);
     other.allyList.push(this);
-    this.allianceList.push({ other: other.id(), expiresAt });
-    other.allianceList.push({ other: this.id(), expiresAt });
+    this.allianceList.push({ id, other: other.id(), expiresAt });
+    other.allianceList.push({ id, other: this.id(), expiresAt });
+    return id;
+  }
+
+  /** Moves the end tick of one alliance, as a completed renewal does. */
+  renew(allianceId: number, expiresAt: number): void {
+    for (const alliance of this.allianceList) {
+      if (alliance.id === allianceId) alliance.expiresAt = expiresAt;
+    }
+  }
+
+  /** Ends the alliance on this side, with no news from the game. */
+  endAlliance(allianceId: number): void {
+    this.allianceList = this.allianceList.filter(
+      (alliance) => alliance.id !== allianceId,
+    );
   }
 }
 
 /** The game's own alliance figures, as a live match reports them. */
 export class FakeGameConfig implements GameConfig {
   extensionOffset = 300;
+  requestDuration = 200;
+  allianceTicks = 3000;
 
   allianceExtensionPromptOffset(): number {
     return this.extensionOffset;
+  }
+  allianceRequestDuration(): number {
+    return this.requestDuration;
+  }
+  allianceDuration(): number {
+    return this.allianceTicks;
   }
 }
 
@@ -166,6 +203,8 @@ export class FakeGameView implements GameView {
   player: FakePlayerView | null = new FakePlayerView();
   spawnPhase = false;
   tickCount = 1;
+  /** What the game reports for the last tick. Null before the first one. */
+  updates: GameUpdates | null = null;
   readonly settings = new FakeGameConfig();
   readonly width = 100;
 
@@ -181,6 +220,9 @@ export class FakeGameView implements GameView {
   }
   ticks(): number {
     return this.tickCount;
+  }
+  updatesSinceLastTick(): GameUpdates | null {
+    return this.updates;
   }
   players(): PlayerView[] {
     return this.roster;
@@ -271,6 +313,12 @@ export class FakeTransformHandler implements TransformHandler {
   scale = 2;
   offsetX = 0;
   offsetY = 0;
+  /** Every player the camera was sent to, oldest first. */
+  readonly visited: PlayerView[] = [];
+
+  onGoToPlayer(event: { player: PlayerView }): void {
+    this.visited.push(event.player);
+  }
 
   screenToWorldCoordinates(
     screenX: number,
@@ -589,4 +637,23 @@ export function installFakeCanvas(): {
       HTMLCanvasElement.prototype.getContext = original;
     },
   };
+}
+
+/**
+ * The static `<div>` that holds the game's top right buttons.
+ *
+ * Copied from `index.html:365` at OpenFrontIO commit 332e5410e. The game writes
+ * it once and nothing re-renders it, and it holds the sidebar and the replay
+ * panel. The alliance panel is added as its third child.
+ */
+export function createFakeSidebar(): HTMLElement {
+  const host = document.createElement("div");
+  host.className =
+    "flex flex-col items-end fixed top-0 right-0 z-1000 gap-2";
+  host.append(
+    document.createElement("game-right-sidebar"),
+    document.createElement("replay-panel"),
+  );
+  document.body.append(host);
+  return host;
 }
