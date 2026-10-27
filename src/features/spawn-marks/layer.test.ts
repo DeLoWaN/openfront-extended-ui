@@ -11,7 +11,7 @@ beforeEach(() => {
 });
 afterEach(() => restore());
 
-const ada = { x: 200, y: 300, name: "Ada", colour: "rgb(10,200,30)" };
+const ada = { x: 200, y: 300, name: "Ada", colour: "rgb(10,200,30)", isYou: false };
 
 function scene(over: Partial<Parameters<ReturnType<typeof createMarkLayer>["draw"]>[0]> = {}) {
   return { rings: [ada], pointers: [], unit: 1, nowMs: 0, alpha: 1, ...over };
@@ -138,6 +138,13 @@ describe("the name above a ring", () => {
     expect(String(outline.strokeStyle)).toMatch(/^rgba\(0,\s*0,\s*0/);
   });
 
+  it("is white for your own mark, while the ring keeps your colour", () => {
+    createMarkLayer().draw(scene({ rings: [{ ...ada, isYou: true }] }));
+
+    expect(context.of("fillText")[0]!.fillStyle).toBe("#ffffff");
+    expect(context.of("stroke")[1]!.strokeStyle).toBe("rgb(10,200,30)");
+  });
+
   /** The ring breathes by 2 px. The name stays where it is. */
   it("does not move while the ring breathes", () => {
     const layer = createMarkLayer();
@@ -179,6 +186,7 @@ describe("a chevron", () => {
     angle: 0,
     count: 1,
     colour: "rgb(0,0,255)",
+    isYou: false,
   };
 
   it("is a filled shape in the teammate's colour, turned toward them", () => {
@@ -187,6 +195,14 @@ describe("a chevron", () => {
     expect(context.of("translate")[0]!.args).toEqual([940, 400]);
     expect(context.of("rotate")[0]!.args).toEqual([0]);
     expect(context.of("fill")[0]!.fillStyle).toBe("rgb(0,0,255)");
+  });
+
+  it("is white when it points at your own spawn", () => {
+    createMarkLayer().draw(
+      scene({ rings: [], pointers: [{ ...pointer, isYou: true }] }),
+    );
+
+    expect(context.of("fill")[0]!.fillStyle).toBe("#ffffff");
   });
 
   it("reaches about 60 px along its direction", () => {

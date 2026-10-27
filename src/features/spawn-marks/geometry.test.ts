@@ -97,20 +97,20 @@ describe("the edge pointers", () => {
   });
 
   it("points right from 60 px inside the right edge", () => {
-    const [pointer] = placePointers([{ x: 3000, y: 400, colour: red }], view);
+    const [pointer] = placePointers([{ x: 3000, y: 400, colour: red, isYou: false }], view);
 
     expect(pointer).toMatchObject({ x: 940, y: 400, angle: 0, count: 1 });
   });
 
   it("points left from 60 px inside the left edge", () => {
-    const [pointer] = placePointers([{ x: -2000, y: 400, colour: red }], view);
+    const [pointer] = placePointers([{ x: -2000, y: 400, colour: red, isYou: false }], view);
 
     expect(pointer!.x).toBe(60);
     expect(pointer!.angle).toBeCloseTo(Math.PI, 10);
   });
 
   it("points up from 60 px under the top edge", () => {
-    const [pointer] = placePointers([{ x: 500, y: -2000, colour: red }], view);
+    const [pointer] = placePointers([{ x: 500, y: -2000, colour: red, isYou: false }], view);
 
     expect(pointer!.y).toBe(60);
     expect(pointer!.angle).toBeCloseTo(-Math.PI / 2, 10);
@@ -118,7 +118,7 @@ describe("the edge pointers", () => {
 
   /** The game's bottom row sits there, so a chevron under it would hide. */
   it("points down from 150 px over the bottom edge", () => {
-    const [pointer] = placePointers([{ x: 500, y: 5000, colour: red }], view);
+    const [pointer] = placePointers([{ x: 500, y: 5000, colour: red, isYou: false }], view);
 
     expect(pointer!.y).toBe(650);
     expect(pointer!.angle).toBeCloseTo(Math.PI / 2, 10);
@@ -126,14 +126,14 @@ describe("the edge pointers", () => {
 
   it("lands on the nearer edge for a teammate up and to the right", () => {
     // dx = 2500 and dy = -2600 from the centre. The top edge is reached first.
-    const [pointer] = placePointers([{ x: 3000, y: -2200, colour: red }], view);
+    const [pointer] = placePointers([{ x: 3000, y: -2200, colour: red, isYou: false }], view);
 
     expect(pointer!.y).toBeCloseTo(60, 10);
     expect(pointer!.x).toBeCloseTo(500 + 2500 * (340 / 2600), 6);
   });
 
   it("points along the line from the screen centre to the teammate", () => {
-    const [pointer] = placePointers([{ x: 1500, y: 800, colour: red }], view);
+    const [pointer] = placePointers([{ x: 1500, y: 800, colour: red, isYou: false }], view);
 
     // dx = 1000, dy = 400 from the centre (500, 400).
     expect(pointer!.angle).toBeCloseTo(Math.atan2(400, 1000), 10);
@@ -141,7 +141,7 @@ describe("the edge pointers", () => {
   });
 
   it("keeps the colour of the teammate it points at", () => {
-    const [pointer] = placePointers([{ x: 3000, y: 400, colour: blue }], view);
+    const [pointer] = placePointers([{ x: 3000, y: 400, colour: blue, isYou: false }], view);
 
     expect(pointer!.colour).toBe(blue);
   });
@@ -151,9 +151,9 @@ describe("the edge pointers", () => {
 
     const pointers = placePointers(
       [
-        { x: 3000, y: 400, colour: red },
-        { x: 3000, y: 440, colour: blue },
-        { x: 3000, y: 380, colour: blue },
+        { x: 3000, y: 400, colour: red, isYou: false },
+        { x: 3000, y: 440, colour: blue, isYou: false },
+        { x: 3000, y: 380, colour: blue, isYou: false },
       ],
       view,
     );
@@ -165,8 +165,8 @@ describe("the edge pointers", () => {
   it("keeps the colour of the first teammate in a merged chevron", () => {
     const [pointer] = placePointers(
       [
-        { x: 3000, y: 400, colour: red },
-        { x: 3000, y: 410, colour: blue },
+        { x: 3000, y: 400, colour: red, isYou: false },
+        { x: 3000, y: 410, colour: blue, isYou: false },
       ],
       view,
     );
@@ -174,11 +174,27 @@ describe("the edge pointers", () => {
     expect(pointer!.colour).toBe(red);
   });
 
+  it("never joins the local player's chevron to a teammate's", () => {
+    const pointers = placePointers(
+      [
+        { x: 3000, y: 400, colour: red, isYou: true },
+        { x: 3000, y: 410, colour: blue, isYou: false },
+        { x: 3000, y: 420, colour: blue, isYou: false },
+      ],
+      view,
+    );
+
+    expect(pointers.map((pointer) => [pointer.isYou, pointer.count])).toEqual([
+      [true, 1],
+      [false, 2],
+    ]);
+  });
+
   it("keeps chevrons apart that land further than 70 px from each other", () => {
     const pointers = placePointers(
       [
-        { x: 3000, y: 400, colour: red },
-        { x: -3000, y: 400, colour: blue },
+        { x: 3000, y: 400, colour: red, isYou: false },
+        { x: -3000, y: 400, colour: blue, isYou: false },
       ],
       view,
     );
@@ -189,7 +205,7 @@ describe("the edge pointers", () => {
 
   it("copes with a screen too small for the margins", () => {
     const [pointer] = placePointers(
-      [{ x: 3000, y: 400, colour: red }],
+      [{ x: 3000, y: 400, colour: red, isYou: false }],
       { width: 100, height: 100 },
     );
 

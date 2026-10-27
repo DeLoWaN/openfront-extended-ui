@@ -162,7 +162,7 @@ describe("which games get marks", () => {
     expect(canvas.of("arc")).toHaveLength(1);
   });
 
-  it("draws nothing in a game without teams", () => {
+  it("marks no other player in a game without teams", () => {
     setup({ teams: false });
     frames(3);
 
@@ -193,6 +193,63 @@ describe("which games get marks", () => {
 
     expect(canvas.of("arc")).toHaveLength(0);
     expect(vi.getTimerCount()).toBeGreaterThan(0);
+  });
+});
+
+describe("your own mark", () => {
+  it("rings your spawn in your colour, with your name in white", () => {
+    const { game, me } = setup();
+    me.name = "Damien";
+    me.spawnAt(20, 20, game);
+    frames();
+
+    const names = lastFrame().filter((call) => call.op === "fillText");
+    expect(names.map((call) => [call.args[0], call.fillStyle])).toEqual([
+      ["Ada", "rgb(10,200,30)"],
+      ["Damien", "#ffffff"],
+    ]);
+    const rings = lastFrame().filter(
+      (call) => call.op === "stroke" && !String(call.strokeStyle).startsWith("rgba"),
+    );
+    expect(rings.map((call) => call.strokeStyle)).toEqual([
+      "rgb(10,200,30)",
+      "rgb(255,0,0)",
+    ]);
+  });
+
+  it("is drawn over a teammate's mark, even when you picked first", () => {
+    const { game, me, mate } = setup();
+    me.name = "Damien";
+    me.spawnAt(20, 20, game);
+    delete mate.state.spawnTile;
+    frames();
+
+    mate.spawnAt(10, 10, game);
+    frames();
+
+    expect(lastFrameNames()).toEqual(["Ada", "Damien"]);
+  });
+
+  it("shows in a game without teams", () => {
+    const { game, me } = setup({ teams: false });
+    me.name = "Damien";
+    me.spawnAt(20, 20, game);
+    frames();
+
+    expect(lastFrameNames()).toEqual(["Damien"]);
+  });
+
+  it("gets a white chevron of its own that never merges with a teammate's", () => {
+    const { game, me, camera } = setup();
+    me.spawnAt(11, 10, game);
+    camera.offsetX = -2000;
+    frames();
+
+    expect(canvas.of("fill").map((call) => call.fillStyle)).toEqual([
+      "rgb(10,200,30)",
+      "#ffffff",
+    ]);
+    expect(lastFrameNames()).toEqual([]);
   });
 });
 

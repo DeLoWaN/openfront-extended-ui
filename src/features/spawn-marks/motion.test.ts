@@ -5,10 +5,10 @@ import {
   createMarkTracker,
   fadeAlpha,
 } from "./motion";
-import type { Teammate } from "./teammates";
+import type { MarkedPlayer } from "./players";
 
-function mate(x: number, y: number, over: Partial<Teammate> = {}): Teammate {
-  return { id: "a", name: "Ada", colour: "rgb(1,2,3)", x, y, ...over };
+function mate(x: number, y: number, over: Partial<MarkedPlayer> = {}): MarkedPlayer {
+  return { id: "a", name: "Ada", colour: "rgb(1,2,3)", x, y, isYou: false, ...over };
 }
 
 describe("where a mark is drawn", () => {
@@ -18,7 +18,7 @@ describe("where a mark is drawn", () => {
     tracker.update([mate(10, 20)], 0);
 
     expect(tracker.marks(0)).toEqual([
-      { id: "a", name: "Ada", colour: "rgb(1,2,3)", x: 10, y: 20 },
+      { id: "a", name: "Ada", colour: "rgb(1,2,3)", isYou: false, x: 10, y: 20 },
     ]);
   });
 

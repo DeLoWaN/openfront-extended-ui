@@ -155,13 +155,13 @@ A player on your own team in a team game. A teammate is not an alliance partner.
 _Avoid_: ally (the alliance view mode uses it for an alliance partner), friend
 
 **Spawn pulse**:
-The breathing glow the game draws on a teammate's spawn during the spawn phase, in that teammate's own colour. The game draws it for human teammates only.
+The breathing glow the game draws on your own spawn and on each human teammate's spawn during the spawn phase. A teammate's glow is in that teammate's own colour. Yours is larger and goes from white to your colour, or to gold when you have no team.
 _Avoid_: ally pulse, highlight, beacon
 
 **Spawn mark**:
-What the spawn marks feature draws on each teammate's spawn during the spawn phase: a ring in that teammate's own territory colour, with the teammate's name above it. It sits over the spawn pulse and does not replace it. It ends with the spawn phase.
+What the spawn marks feature draws on your own spawn and on each teammate's spawn during the spawn phase: a ring in that player's own territory colour, with the player's name above it. Your own name is white, so your mark stands apart from your teammates' marks. Your mark also shows in a game without teams. It sits over the spawn pulse and does not replace it. It ends with the spawn phase.
 _Avoid_: beacon, ping, ally marker
 
 **Edge pointer**:
-A chevron on the edge of the screen that points at a teammate whose spawn is off screen. It takes the teammate's colour. Several pointers that land close together become one pointer with a count.
+A chevron on the edge of the screen that points at a spawn mark that is off screen. A teammate's pointer takes the teammate's colour, and yours is white. Several teammates' pointers that land close together become one pointer with a count. Yours never joins them.
 _Avoid_: arrow, off-screen indicator, compass
