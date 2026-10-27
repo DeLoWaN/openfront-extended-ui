@@ -19,7 +19,7 @@
 
 (function() {
 	"use strict";
-	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-spawn-marks{z-index:50;pointer-events:none;width:100vw;height:100vh;position:fixed;inset:0}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}.ofx-alliance-panel{--ofx-bar-track:#0f172af0;--ofx-bar-fill:#3b5b86;--ofx-bar-fill-urgent:#b42323;min-width:14em;max-width:22em;font-size:calc(var(--ofx-figure-size) * 1.6);color:#fff;text-shadow:var(--ofx-shadow-figure);pointer-events:auto;flex-direction:column;gap:.2em;line-height:1.2;display:flex}.ofx-alliance-row{background:linear-gradient(90deg, var(--ofx-bar-fill) var(--ofx-frac,100%), var(--ofx-bar-track) var(--ofx-frac,100%));cursor:pointer;border-radius:.3em;align-items:baseline;gap:.5em;padding:.3em .6em;display:flex;box-shadow:0 0 0 1px #0009}.ofx-alliance-row-urgent{--ofx-bar-fill:var(--ofx-bar-fill-urgent)}.ofx-alliance-row:hover{filter:brightness(1.3)}.ofx-alliance-name{text-overflow:ellipsis;white-space:nowrap;flex:auto;min-width:0;overflow:hidden}.ofx-alliance-tag{color:#cbd5e1;white-space:nowrap;flex:none;font-size:.8em}.ofx-alliance-time{font-variant-numeric:tabular-nums;flex:none;font-weight:700}.ofx-alliance-row-expired{color:#cbd5e1}.ofx-spotlight-pointer{z-index:50;pointer-events:none;flex-direction:column;align-items:center;gap:6px;display:flex;position:fixed;transform:translate(-50%,-50%)}.ofx-spotlight-arrow{border-top:16px solid #0000;border-bottom:16px solid #0000;border-left:28px solid var(--ofx-pointer-colour,#fff);filter:drop-shadow(0 0 1px #fff)drop-shadow(0 0 1px #fff)drop-shadow(0 0 3px #000000e6);width:0;height:0}.ofx-spotlight-name{text-overflow:ellipsis;white-space:nowrap;color:#fff;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;max-width:14em;font-size:18px;font-weight:700;overflow:hidden}";
+	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-spawn-marks{z-index:50;pointer-events:none;width:100vw;height:100vh;position:fixed;inset:0}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}.ofx-hotbar-badge{z-index:9000;pointer-events:none;position:fixed}.ofx-hotbar-badge[hidden]{display:none}.ofx-hotbar-badge-panel{box-shadow:inset 0 0 0 2px var(--ofx-cue), 0 0 10px var(--ofx-cue-glow);background:#111827eb;border-radius:6px;gap:4px;padding:4px 6px;display:flex}.ofx-hotbar-badge-icon{object-fit:contain;width:28px;height:28px}.ofx-hotbar-badge-arrow{border-left:2px solid var(--ofx-cue);transform-origin:top;filter:drop-shadow(0 0 2px #000000e6);width:0;height:30px;margin-left:-1px;position:absolute;top:100%;left:50%}.ofx-hotbar-badge-arrow:after{content:\"\";border-top:10px solid var(--ofx-cue);border-left:6px solid #0000;border-right:6px solid #0000;position:absolute;bottom:-2px;left:-7px}@keyframes ofx-hotbar-badge-pulse{0%,to{opacity:1}50%{opacity:.55}}.ofx-hotbar-badge-shown{animation:1s ease-in-out infinite ofx-hotbar-badge-pulse}.ofx-hotbar-badge-fading{opacity:0;transition:opacity .4s ease-out;animation:none}@media (prefers-reduced-motion:reduce){.ofx-hotbar-badge-shown{animation:none}}.ofx-alliance-panel{--ofx-bar-track:#0f172af0;--ofx-bar-fill:#3b5b86;--ofx-bar-fill-urgent:#b42323;min-width:14em;max-width:22em;font-size:calc(var(--ofx-figure-size) * 1.6);color:#fff;text-shadow:var(--ofx-shadow-figure);pointer-events:auto;flex-direction:column;gap:.2em;line-height:1.2;display:flex}.ofx-alliance-row{background:linear-gradient(90deg, var(--ofx-bar-fill) var(--ofx-frac,100%), var(--ofx-bar-track) var(--ofx-frac,100%));cursor:pointer;border-radius:.3em;align-items:baseline;gap:.5em;padding:.3em .6em;display:flex;box-shadow:0 0 0 1px #0009}.ofx-alliance-row-urgent{--ofx-bar-fill:var(--ofx-bar-fill-urgent)}.ofx-alliance-row:hover{filter:brightness(1.3)}.ofx-alliance-name{text-overflow:ellipsis;white-space:nowrap;flex:auto;min-width:0;overflow:hidden}.ofx-alliance-tag{color:#cbd5e1;white-space:nowrap;flex:none;font-size:.8em}.ofx-alliance-time{font-variant-numeric:tabular-nums;flex:none;font-weight:700}.ofx-alliance-row-expired{color:#cbd5e1}.ofx-spotlight-pointer{z-index:50;pointer-events:none;flex-direction:column;align-items:center;gap:6px;display:flex;position:fixed;transform:translate(-50%,-50%)}.ofx-spotlight-arrow{border-top:16px solid #0000;border-bottom:16px solid #0000;border-left:28px solid var(--ofx-pointer-colour,#fff);filter:drop-shadow(0 0 1px #fff)drop-shadow(0 0 1px #fff)drop-shadow(0 0 3px #000000e6);width:0;height:0}.ofx-spotlight-name{text-overflow:ellipsis;white-space:nowrap;color:#fff;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;max-width:14em;font-size:18px;font-weight:700;overflow:hidden}";
 	function isMatchLive(game) {
 		if (game.inSpawnPhase()) return false;
 		const me = game.myPlayer();
@@ -378,7 +378,7 @@
 		}
 	}
 	var SIDEBAR = "game-right-sidebar";
-	var PANEL$1 = "ofx-alliance-panel";
+	var PANEL$2 = "ofx-alliance-panel";
 	var ROW = "ofx-alliance-row";
 	var NAME$1 = "ofx-alliance-name";
 	var TAG = "ofx-alliance-tag";
@@ -456,7 +456,7 @@
 	}
 	function drawPanel(host, game, hover) {
 		const root = document.createElement("div");
-		root.className = `${PANEL$1} ${HIDDEN}`;
+		root.className = `${PANEL$2} ${HIDDEN}`;
 		root.addEventListener("click", (event) => {
 			try {
 				const row = event.target?.closest(`.${ROW}`);
@@ -908,7 +908,7 @@
 		];
 	}
 	var POINTER = "ofx-spotlight-pointer";
-	var ARROW = "ofx-spotlight-arrow";
+	var ARROW$1 = "ofx-spotlight-arrow";
 	var NAME = "ofx-spotlight-name";
 	var EDGE_INSETS = {
 		top: 72,
@@ -937,7 +937,7 @@
 		const root = document.createElement("div");
 		root.className = `${POINTER} ${HIDDEN}`;
 		const arrow = document.createElement("div");
-		arrow.className = ARROW;
+		arrow.className = ARROW$1;
 		const name = document.createElement("div");
 		name.className = NAME;
 		root.append(arrow, name);
@@ -1277,6 +1277,118 @@
 		if (!(focused instanceof HTMLElement)) return false;
 		return focused.tagName === "INPUT" || focused.tagName === "TEXTAREA" || focused.isContentEditable;
 	}
+	var DEFAULT_SECONDS = 3.5;
+	var MIN_SECONDS = .5;
+	var MAX_SECONDS = 30;
+	function placeBadge(cursor, panel, screen) {
+		const top = cursor.y + 50;
+		if (top + panel.height > screen.height) return null;
+		const wanted = cursor.x - panel.width / 2;
+		const left = Math.min(Math.max(wanted, 0), Math.max(screen.width - panel.width, 0));
+		return {
+			left,
+			top,
+			tail: {
+				x: left + panel.width / 2,
+				y: top + panel.height
+			}
+		};
+	}
+	function arrowDegrees(tail, target) {
+		const across = target.x - tail.x;
+		const down = target.y - tail.y;
+		const side = across < 0 ? -1 : 1;
+		if (down <= 0) return side * 55;
+		const degrees = Math.atan(Math.abs(across) / down) * 180 / Math.PI;
+		return side * Math.min(degrees, 55);
+	}
+	function aimPoint(centres) {
+		if (centres.length === 0) return null;
+		const total = centres.reduce((sum, point) => ({
+			x: sum.x + point.x,
+			y: sum.y + point.y
+		}), {
+			x: 0,
+			y: 0
+		});
+		return {
+			x: total.x / centres.length,
+			y: total.y / centres.length
+		};
+	}
+	function stayMs(text) {
+		const seconds = Number(text.trim());
+		return (text.trim() !== "" && Number.isFinite(seconds) && seconds >= MIN_SECONDS && seconds <= MAX_SECONDS ? seconds : DEFAULT_SECONDS) * 1e3;
+	}
+	var BADGE = "ofx-hotbar-badge";
+	var BADGE_SHOWN = "ofx-hotbar-badge-shown";
+	var PANEL$1 = "ofx-hotbar-badge-panel";
+	var ICON = "ofx-hotbar-badge-icon";
+	var ARROW = "ofx-hotbar-badge-arrow";
+	function createBadgeNode(host = document.body) {
+		const root = document.createElement("div");
+		root.className = BADGE;
+		root.hidden = true;
+		const panel = document.createElement("div");
+		panel.className = PANEL$1;
+		const arrow = document.createElement("div");
+		arrow.className = ARROW;
+		root.append(panel, arrow);
+		host.append(root);
+		let fadeTimer;
+		function stopFade() {
+			clearTimeout(fadeTimer);
+			fadeTimer = void 0;
+			root.classList.remove("ofx-hotbar-badge-fading");
+		}
+		function hide() {
+			stopFade();
+			root.classList.remove(BADGE_SHOWN);
+			root.hidden = true;
+		}
+		return {
+			show(icons, cursor, target) {
+				stopFade();
+				panel.replaceChildren(...icons.map((src) => {
+					const image = document.createElement("img");
+					image.className = ICON;
+					image.src = src;
+					image.alt = "";
+					return image;
+				}));
+				root.hidden = false;
+				const placed = placeBadge(cursor, {
+					width: panel.offsetWidth,
+					height: panel.offsetHeight
+				}, {
+					width: window.innerWidth,
+					height: window.innerHeight
+				});
+				if (!placed) {
+					hide();
+					return false;
+				}
+				root.style.left = `${placed.left}px`;
+				root.style.top = `${placed.top}px`;
+				arrow.style.transform = `rotate(${arrowDegrees(placed.tail, target)}deg)`;
+				root.classList.remove(BADGE_SHOWN);
+				root.offsetWidth;
+				root.classList.add(BADGE_SHOWN);
+				return true;
+			},
+			fade() {
+				if (root.hidden || fadeTimer !== void 0) return;
+				root.classList.add("ofx-hotbar-badge-fading");
+				fadeTimer = setTimeout(hide, 400);
+			},
+			hide,
+			isShown: () => !root.hidden,
+			remove() {
+				stopFade();
+				root.remove();
+			}
+		};
+	}
 	var HOTBAR = "unit-display";
 	var ITEM_IS_POSITIONED = "relative";
 	var CUED_ICONS = [
@@ -1306,6 +1418,21 @@
 		if (typeof priced?.cost !== "bigint") return null;
 		return priced.cost;
 	}
+	var INPUT_OVERLAY = "game-input-overlay";
+	function gameOwnsCursor() {
+		return document.getElementById(INPUT_OVERLAY)?.style.cursor === "crosshair";
+	}
+	function iconSource(item, icon) {
+		return item.querySelector(`img[alt="${icon}"]`)?.src || null;
+	}
+	function iconCentre(item) {
+		const box = item.getBoundingClientRect();
+		if (box.width === 0 || box.height === 0) return null;
+		return {
+			x: box.left + box.width / 2,
+			y: box.top + box.height / 2
+		};
+	}
 	var FIRST_PRICE = 125e3;
 	function priceStep(cost) {
 		const price = Number(cost);
@@ -1322,6 +1449,7 @@
 	var MARK = "ofx-hotbar-mark";
 	var MARK_LIT = "ofx-hotbar-mark-lit";
 	var BREATHING_OPTION = "breathing";
+	var BADGE_SECONDS_OPTION = "badge-seconds";
 	var hotbarReadout = {
 		id: "hotbar",
 		name: "Hotbar cheap window",
@@ -1329,6 +1457,10 @@
 			key: BREATHING_OPTION,
 			name: "Breathing pulse",
 			whenUnset: true
+		}, {
+			key: BADGE_SECONDS_OPTION,
+			name: "Seconds the badge stays",
+			whenUnset: "3.5"
 		}],
 		attach(context) {
 			const readouts = injectedNodes({
@@ -1337,15 +1469,60 @@
 				nodesOf: (readout) => readout.nodes
 			});
 			context.onDetach(() => readouts.remove());
+			const badge = createBadgeNode();
+			let fadeTimer;
+			let cursor = null;
+			let affordable = null;
+			function hideBadge() {
+				clearTimeout(fadeTimer);
+				fadeTimer = void 0;
+				badge.hide();
+			}
+			context.onWindowEvent("mousemove", (event) => {
+				cursor = {
+					x: event.clientX,
+					y: event.clientY
+				};
+			}, { capture: true });
+			context.onDetach(() => {
+				hideBadge();
+				badge.remove();
+			});
+			function announce(cues) {
+				if (!cursor || gameOwnsCursor()) return;
+				const icons = [];
+				const centres = [];
+				for (const cue of cues) {
+					const source = iconSource(cue.item, cue.icon);
+					const centre = iconCentre(cue.item);
+					if (!source || !centre) continue;
+					icons.push(source);
+					centres.push(centre);
+				}
+				const target = aimPoint(centres);
+				if (!target) return;
+				clearTimeout(fadeTimer);
+				if (!badge.show(icons, cursor, target)) return;
+				fadeTimer = setTimeout(() => badge.fade(), stayMs(context.optionText(BADGE_SECONDS_OPTION)));
+			}
 			return { tick() {
 				const me = context.game.myPlayer();
 				if (!isMatchLive(context.game) || !me) {
 					readouts.remove();
+					hideBadge();
+					affordable = null;
 					return;
 				}
 				const gold = me.gold();
 				const breathing = context.isOptionEnabled(BREATHING_OPTION);
-				for (const readout of readouts.sync()) for (const cue of readout.cues) update$1(cue, readout.hotbar, gold, breathing);
+				const ready = new Map();
+				for (const readout of readouts.sync()) for (const cue of readout.cues) if (update$1(cue, readout.hotbar, gold, breathing)) ready.set(cue.type, cue);
+				const before = affordable;
+				affordable = new Set(ready.keys());
+				if (!before) return;
+				if (gameOwnsCursor()) hideBadge();
+				const arrived = [...ready].filter(([type]) => !before.has(type));
+				if (arrived.length > 0) announce(arrived.map(([, cue]) => cue));
 			} };
 		}
 	};
@@ -1369,6 +1546,8 @@
 			item.append(light, marks);
 			cues.push({
 				type: cued.type,
+				icon: cued.icon,
+				item,
 				light,
 				marks,
 				steps
@@ -1392,6 +1571,7 @@
 			mark.classList.toggle(MARK_LIT, step !== null && index < step);
 		});
 		setLight(cue.light, ready ? step : null, breathing);
+		return ready;
 	}
 	function setLight(light, step, breathing) {
 		const wanted = breathing ? LIGHT_BREATHING : LIGHT_STEADY;

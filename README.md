@@ -40,7 +40,21 @@ The breathing pulse can be switched off on its own. The three quick pulses and t
 openfrontExtendedUi.setOption('hotbar', 'breathing', false)
 ```
 
-The game removes the hotbar below 64rem, and the readout goes with it.
+The light sits about 600 pixels from where your eyes are in the opening minutes, so it also comes to the cursor. The moment a city, a factory or a port becomes affordable, a **badge** appears. The badge is a small amber panel with the icon of that building. An arrow under it points down to the building's own icon in the hotbar.
+
+- The badge is centred under the cursor, 50 pixels below it. It is never beside the cursor or above it, because that is where you are about to click.
+- It stays where it appeared, pulses about once a second, and fades after 3.5 seconds. It takes no clicks.
+- The arrow never leans more than 55 degrees from straight down.
+- A port and a factory share one price, so they often become affordable together. They get one badge with two icons and one arrow between them.
+- The badge stays away while the game draws its own red crosshair, which is while a warship is selected and while Shift is held. It also stays away when the cursor is too close to the bottom of the screen to leave room below it.
+
+The badge belongs to the hotbar readout, so switching the readout off removes it. You can change how long it stays, in seconds.
+
+```js
+openfrontExtendedUi.setOption('hotbar', 'badge-seconds', '6')
+```
+
+The game removes the hotbar below 64rem, and the readout and the badge go with it.
 
 ### The alliance view mode
 

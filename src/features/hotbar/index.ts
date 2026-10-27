@@ -2,7 +2,17 @@ import { isMatchLive } from "../../game/match";
 import type { UnitDisplay } from "../../game/types";
 import type { Feature } from "../../runtime/feature";
 import { injectedNodes } from "../../runtime/hud";
-import { CUED_ICONS, findHotbars, findIconItem, readCost } from "./hotbar";
+import { aimPoint, stayMs, type Point } from "./badge";
+import { createBadgeNode } from "./badge-node";
+import {
+  CUED_ICONS,
+  findHotbars,
+  findIconItem,
+  gameOwnsCursor,
+  iconCentre,
+  iconSource,
+  readCost,
+} from "./hotbar";
 import { STEP_COUNT, priceStep } from "./prices";
 
 /**
@@ -16,7 +26,11 @@ import { STEP_COUNT, priceStep } from "./prices";
  * Every rule here is read fresh on each tick. The light holds the one thing
  * it has to remember, which is the price step it runs at.
  *
- * The README says what a player sees. The stylesheet holds how both nodes
+ * When an icon becomes affordable, a badge also appears under the cursor, with
+ * an arrow that points down to the icon. See `badge.ts` and `badge-node.ts`. The
+ * badge belongs to this readout, so switching the readout off takes it away.
+ *
+ * The README says what a player sees. The stylesheet holds how the nodes
  * look, including the pulses.
  */
 
@@ -38,11 +52,16 @@ const MARK = "ofx-hotbar-mark";
 const MARK_LIT = "ofx-hotbar-mark-lit";
 
 const BREATHING_OPTION = "breathing";
+const BADGE_SECONDS_OPTION = "badge-seconds";
 
 /** What the readout draws under one icon. */
 interface Cue {
   /** The game's own `UnitType` value, which the price is read by. */
   readonly type: string;
+  /** The game's own `alt` for the icon. */
+  readonly icon: string;
+  /** The item the icon sits in, which the badge's arrow aims at. */
+  readonly item: HTMLElement;
   readonly light: HTMLElement;
   readonly marks: HTMLElement;
   /** The three marks, cheapest step first. */
@@ -65,6 +84,11 @@ export const hotbarReadout: Feature = {
       name: "Breathing pulse",
       whenUnset: true,
     },
+    {
+      key: BADGE_SECONDS_OPTION,
+      name: "Seconds the badge stays",
+      whenUnset: "3.5",
+    },
   ],
 
   attach(context) {
@@ -75,6 +99,56 @@ export const hotbarReadout: Feature = {
     });
     context.onDetach(() => readouts.remove());
 
+    const badge = createBadgeNode();
+    let fadeTimer: ReturnType<typeof setTimeout> | undefined;
+    /** Where the cursor was last seen. Null until it has moved once. */
+    let cursor: Point | null = null;
+    /** Which of the three were affordable on the last tick. Null before one. */
+    let affordable: ReadonlySet<string> | null = null;
+
+    function hideBadge(): void {
+      clearTimeout(fadeTimer);
+      fadeTimer = undefined;
+      badge.hide();
+    }
+
+    context.onWindowEvent(
+      "mousemove",
+      (event) => {
+        cursor = { x: event.clientX, y: event.clientY };
+      },
+      { capture: true },
+    );
+    context.onDetach(() => {
+      hideBadge();
+      badge.remove();
+    });
+
+    /** Shows the badge for the icons that just became affordable. */
+    function announce(cues: readonly Cue[]): void {
+      if (!cursor || gameOwnsCursor()) return;
+
+      const icons: string[] = [];
+      const centres: Point[] = [];
+      for (const cue of cues) {
+        const source = iconSource(cue.item, cue.icon);
+        const centre = iconCentre(cue.item);
+        // A hotbar the game hides has no box to point at, so nothing is shown.
+        if (!source || !centre) continue;
+        icons.push(source);
+        centres.push(centre);
+      }
+      const target = aimPoint(centres);
+      if (!target) return;
+
+      clearTimeout(fadeTimer);
+      if (!badge.show(icons, cursor, target)) return;
+      fadeTimer = setTimeout(
+        () => badge.fade(),
+        stayMs(context.optionText(BADGE_SECONDS_OPTION)),
+      );
+    }
+
     return {
       tick() {
         const me = context.game.myPlayer();
@@ -82,16 +156,31 @@ export const hotbarReadout: Feature = {
         // you die, or in a replay, so the readout goes with it.
         if (!isMatchLive(context.game) || !me) {
           readouts.remove();
+          hideBadge();
+          affordable = null;
           return;
         }
 
         const gold = me.gold();
         const breathing = context.isOptionEnabled(BREATHING_OPTION);
+        const ready = new Map<string, Cue>();
         for (const readout of readouts.sync()) {
           for (const cue of readout.cues) {
-            update(cue, readout.hotbar, gold, breathing);
+            if (update(cue, readout.hotbar, gold, breathing)) {
+              ready.set(cue.type, cue);
+            }
           }
         }
+
+        // The first tick only learns what is affordable. An icon that was
+        // affordable before the readout looked did not just become so.
+        const before = affordable;
+        affordable = new Set(ready.keys());
+        if (!before) return;
+
+        if (gameOwnsCursor()) hideBadge();
+        const arrived = [...ready].filter(([type]) => !before.has(type));
+        if (arrived.length > 0) announce(arrived.map(([, cue]) => cue));
       },
     };
   },
@@ -131,7 +220,7 @@ function draw(hotbar: HTMLElement): Readout | null {
     }
 
     item.append(light, marks);
-    cues.push({ type: cued.type, light, marks, steps });
+    cues.push({ type: cued.type, icon: cued.icon, item, light, marks, steps });
     nodes.push(light, marks);
   }
 
@@ -141,6 +230,7 @@ function draw(hotbar: HTMLElement): Readout | null {
 
 /**
  * Draws one icon's price step, and lights the box when you can build it.
+ * Returns whether you can build it now.
  *
  * A price that falls because you lost a structure is drawn exactly like one
  * that rose.
@@ -150,7 +240,7 @@ function update(
   hotbar: UnitDisplay,
   gold: bigint,
   breathing: boolean,
-): void {
+): boolean {
   const cost = readCost(hotbar, cue.type);
   // Past the cap there is no step, and then neither node draws anything.
   const step = cost === null ? null : priceStep(cost);
@@ -163,6 +253,7 @@ function update(
   });
 
   setLight(cue.light, ready ? step : null, breathing);
+  return ready;
 }
 
 /**
