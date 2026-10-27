@@ -273,7 +273,7 @@ describe("the troop bar readout, as a match starts and ends", () => {
 describe("what the readout offers a player", () => {
   it("declares the share of best rate as an option that is on by default", () => {
     expect(troopBar.options).toEqual([
-      { key: "percentage", name: "Share of best rate", whenUnset: true },
+      expect.objectContaining({ key: "percentage", whenUnset: true }),
     ]);
   });
 });

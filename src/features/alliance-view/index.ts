@@ -11,7 +11,7 @@ import {
 import { createClockLayer, type Clock } from "./clocks";
 import { NOBODY, ownerUnderCursor } from "./cursor";
 import { mapHooksReader, type MapHooks } from "./hooks";
-import { GAME_KEYBINDS_KEY, readGameKeybinds } from "./keybinds";
+import { GAME_KEYBINDS_KEY, readGameKeybinds } from "../../game/keybinds";
 import { createPalette, paintAlliance, paintReal } from "./palette";
 import { createPointer, type PointerTarget } from "./pointer";
 import { onSpotlight, spotlightedPlayer } from "./spotlight";
@@ -81,12 +81,17 @@ const NOTHING_COLOURED: ReadonlySet<number> = new Set();
 
 export const allianceView: Feature = {
   id: "alliance-view",
-  name: "Alliance view mode",
+  name: "Alliance map",
+  description:
+    "Hold the key below and point at a player. The map turns grey, except that player, their allies and their teammates. Each ally shows how long the alliance has left.",
   options: [
     {
       key: HOLD_KEY_OPTION,
-      name: "Hold key",
+      name: "Key to hold",
+      description:
+        "Click the box, then press a key. A key the game already uses is refused.",
       whenUnset: DEFAULT_HOLD_KEY,
+      control: { kind: "key" },
     },
   ],
 
@@ -316,7 +321,7 @@ export const allianceView: Feature = {
       if (reportedClash === key) return;
       reportedClash = key;
       logInfo(
-        `the game binds ${key}, so the alliance view mode stays off. Pick another key with openfrontExtendedUi.setOption("alliance-view", "${HOLD_KEY_OPTION}", "KeyJ").`,
+        `the game binds ${key}, so the alliance view mode stays off. Pick another hold key under Extended UI in the game's settings menu.`,
       );
     }
 

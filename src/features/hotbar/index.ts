@@ -2,7 +2,13 @@ import { isMatchLive } from "../../game/match";
 import type { UnitDisplay } from "../../game/types";
 import type { Feature } from "../../runtime/feature";
 import { injectedNodes } from "../../runtime/hud";
-import { aimPoint, stayMs, type Point } from "./badge";
+import {
+  aimPoint,
+  MAX_SECONDS,
+  MIN_SECONDS,
+  stayMs,
+  type Point,
+} from "./badge";
 import { createBadgeNode } from "./badge-node";
 import {
   CUED_ICONS,
@@ -77,17 +83,24 @@ interface Readout {
 
 export const hotbarReadout: Feature = {
   id: "hotbar",
-  name: "Hotbar cheap window",
+  name: "Cheap building alerts",
+  description:
+    "Cities, ports and factories cost more each time you build one. Marks under their icons in the build bar show the next price. The icon lights up when you can afford one, and a reminder pops up under your mouse.",
   options: [
     {
       key: BREATHING_OPTION,
-      name: "Breathing pulse",
+      name: "Keep the icon pulsing",
+      description:
+        "The lit icon keeps pulsing slowly while you can afford it. When off, it flashes three times and then stays still.",
       whenUnset: true,
     },
     {
       key: BADGE_SECONDS_OPTION,
-      name: "Seconds the badge stays",
+      name: "Mouse reminder duration",
+      description:
+        "How many seconds the reminder under your mouse stays, from 0.5 to 30.",
       whenUnset: "3.5",
+      control: { kind: "number", min: MIN_SECONDS, max: MAX_SECONDS, step: 0.5 },
     },
   ],
 

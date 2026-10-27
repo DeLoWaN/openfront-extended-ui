@@ -162,3 +162,39 @@ describe("an option that holds text rather than a switch", () => {
     ).toBe("KeyJ");
   });
 });
+
+describe("putting every setting back to its default", () => {
+  it("switches every feature back on", () => {
+    const settings = createSettings(memoryStore());
+    settings.setEnabled("troop-bar", false);
+
+    settings.reset();
+
+    expect(settings.isEnabled("troop-bar")).toBe(true);
+  });
+
+  it("puts every option back to its own default, a hidden one included", () => {
+    const settings = createSettings(memoryStore());
+    settings.setOptionValue("alliance-view", "hold-key", "KeyJ");
+    settings.setOptionValue("spawn-marks", "nation-teammates", true);
+
+    settings.reset();
+
+    expect(settings.optionValue("alliance-view", "hold-key", "Backquote")).toBe(
+      "Backquote",
+    );
+    expect(settings.optionValue("spawn-marks", "nation-teammates", false)).toBe(
+      false,
+    );
+  });
+
+  it("keeps the defaults across a reload", () => {
+    const store = memoryStore();
+    const settings = createSettings(store);
+    settings.setEnabled("troop-bar", false);
+
+    settings.reset();
+
+    expect(createSettings(store).isEnabled("troop-bar")).toBe(true);
+  });
+});

@@ -52,7 +52,9 @@ async function main(): Promise<void> {
       delete window[HANDLE];
     },
   });
-  logInfo(`ready. window.${HANDLE}.list() shows what can be switched off.`);
+  logInfo(
+    `ready. Open Extended UI in the game's settings menu to switch features off, or call window.${HANDLE}.list().`,
+  );
 }
 
 void main().catch((error) => logError("could not start", error));

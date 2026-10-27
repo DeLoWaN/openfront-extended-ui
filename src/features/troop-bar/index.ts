@@ -36,11 +36,15 @@ interface Readout {
 
 export const troopBar: Feature = {
   id: "troop-bar",
-  name: "Troop bar plateau",
+  name: "Best troop level",
+  description:
+    "A purple strip on your troop bar shows where your troops regrow fastest. Above the strip, attack: extra troops regrow slower.",
   options: [
     {
       key: PERCENTAGE_OPTION,
-      name: "Share of best rate",
+      name: "Regrowth speed in %",
+      description:
+        "Shows how fast your troops regrow now, at the right end of the troop bar. 100% is the fastest possible. Wide screens only.",
       whenUnset: true,
     },
   ],

@@ -40,6 +40,12 @@ export interface Registry {
   /** The options one feature declares, and what each is set to. */
   optionsOf(id: FeatureId): Array<FeatureOption & { value: OptionValue }>;
   setOption(id: FeatureId, option: string, value: OptionValue): void;
+
+  /**
+   * Puts every feature and every option back to its default, and starts every
+   * feature that was off while a match runs.
+   */
+  resetAll(): void;
 }
 
 export function createRegistry(deps: {
@@ -151,6 +157,14 @@ export function createRegistry(deps: {
         return;
       }
       settings.setOptionValue(id, option, value);
+    },
+
+    // A feature that stayed on reads its options where it uses them, so it
+    // picks up their defaults with no reattach.
+    resetAll() {
+      settings.reset();
+      if (!currentMatch) return;
+      for (const feature of features) attach(feature, currentMatch);
     },
 
     setEnabled(id, enabled) {

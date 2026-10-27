@@ -32,6 +32,12 @@ export interface Settings {
     whenUnset: Value,
   ): Value;
   setOptionValue(id: FeatureId, option: string, value: OptionValue): void;
+
+  /**
+   * Forgets every stored choice, including the ones nothing shows a player.
+   * Every feature is then on, and every option is at its own default.
+   */
+  reset(): void;
 }
 
 const STORAGE_KEY = "openfront-extended-ui:features";
@@ -80,6 +86,11 @@ export function createSettings(store: SettingsStore): Settings {
 
     setOptionValue(id, option, value) {
       stored[optionKey(id, option)] = value;
+      save();
+    },
+
+    reset() {
+      for (const key of Object.keys(stored)) delete stored[key];
       save();
     },
   };

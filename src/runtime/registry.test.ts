@@ -488,3 +488,36 @@ describe("a feature's own options", () => {
     complaint.mockRestore();
   });
 });
+
+describe("putting every setting back to its default", () => {
+  it("starts a switched-off feature while a match runs", () => {
+    const troopBar = feature("troop-bar");
+    const { registry, match } = setup([troopBar], { "troop-bar": false });
+    registry.attachAll(match);
+
+    registry.resetAll();
+
+    expect(registry.isEnabled("troop-bar")).toBe(true);
+    expect(troopBar.attach).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not attach a feature that is already running a second time", () => {
+    const troopBar = feature("troop-bar");
+    const { registry, match } = setup([troopBar]);
+    registry.attachAll(match);
+
+    registry.resetAll();
+
+    expect(troopBar.attach).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits for a match when none is running", () => {
+    const troopBar = feature("troop-bar");
+    const { registry } = setup([troopBar], { "troop-bar": false });
+
+    registry.resetAll();
+
+    expect(registry.isEnabled("troop-bar")).toBe(true);
+    expect(troopBar.attach).not.toHaveBeenCalled();
+  });
+});
