@@ -20,8 +20,8 @@ The project's own build and unit tests are in [development.md](../development.md
 
 Each fact has a title, a short text, and these lines:
 
-- `Checked at`: the commit of the game repository where someone last checked the fact. `source only` means that someone read the code but never saw the fact in a match. `unknown` means that the source gave no commit.
-- `Game source`: the file and line in the game repository, at the `Checked at` commit. The game moves files between versions, so read the path at that commit: `git -C ~/git_perso/OpenFrontIO show <commit>:<path>`.
+- `Checked at`: the commit of the game repository where someone last checked the fact. `source only` means that someone read the code but never saw the fact in a match. `live game` means that someone saw the fact in a match on the public site, where the commit is unknown. `unknown` means that the source gave no commit and no date.
+- `Game source`: the file and line in the game repository, at the `Checked at` commit. `none, seen in a match` means that nobody found the code behind the fact. The game moves files between versions, so read the path at that commit: `git -C ~/git_perso/OpenFrontIO show <commit>:<path>`.
 - `Used in`: the file of this project that depends on the fact. The comment in that file holds the full detail, and it is the reference.
 - `Found in`: the GitHub issue or the research branch where the fact comes from. A fact that only the project code states has no `Found in` line.
 
