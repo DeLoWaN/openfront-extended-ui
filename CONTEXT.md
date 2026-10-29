@@ -7,7 +7,7 @@ A userscript that adds readouts to the OpenFront.io game view from outside the g
 ### What the package adds
 
 **Feature**:
-Any one of the five things the package adds, whether it is a readout, the view mode or a locator. It is the word the code uses, because all three kinds register the same way and each can be switched off on its own.
+Any one of the things the package adds, whether it is a readout, the view mode, a locator or a tag. It is the word the code uses, because all four kinds register the same way and each can be switched off on its own.
 _Avoid_: addition, module, plugin
 
 **Readout**:
@@ -20,6 +20,14 @@ A feature that changes how the map is coloured instead of reporting a number. Th
 **Locator**:
 A feature that draws a mark on the map, at a place the game already knows, so a player can find that place. It reports no number and recolours nothing, so it is neither a readout nor a view mode. There is one, the spawn marks.
 _Avoid_: marker, pin, annotation, overlay
+
+**Tag**:
+A feature that draws a mark on the map over every player of one kind, for the whole match, so a player can tell that kind apart at a glance. It marks a kind of player, not a place, so it is not a locator. It reports no number and keeps every real colour, so it is neither a readout nor a view mode.
+_Avoid_: label, badge (the hotbar uses it), highlight
+
+**Nation hatch**:
+The tag that draws thin diagonal stripes over each living nation's territory. The stripes alternate dark and light, so they show on a light territory and on a dark one. Their spacing on the screen stays the same at every zoom. The real colour stays visible between them. It is absent in a Humans vs Nations match, where the team colour already tells nations apart. It is also absent while the alliance view mode is up, and while the game's own alternate view is on.
+_Avoid_: nation pattern, nation skin, stripes
 
 **Subject**:
 The player the alliance view mode draws its map around. The cursor picks it, and it stays until the cursor reaches another player, so the subject is not always the player under the cursor.
@@ -169,3 +177,17 @@ _Avoid_: beacon, ping, ally marker
 **Edge pointer**:
 A chevron on the edge of the screen that points at a spawn mark that is off screen. A teammate's pointer takes the teammate's colour, and yours is white. Several teammates' pointers that land close together become one pointer with a count. Yours never joins them.
 _Avoid_: arrow, off-screen indicator, compass
+
+### Kinds of player
+
+**Human**:
+A player that a person controls.
+_Avoid_: real player, user
+
+**Nation**:
+A player that the game controls and that plays like a country. Its name and its start point come from the map, so it often carries a real country's name. A human may take the same name, so a name alone never proves that a player is a nation. A nation stays in the match until it dies, like a human.
+_Avoid_: bot nation, AI player, FakeHuman
+
+**Bot**:
+A small player that the game controls and that does not play like a country. The game draws its name and its territory in grey, so a bot already stands apart from humans and nations.
+_Avoid_: tribe, neutral bot

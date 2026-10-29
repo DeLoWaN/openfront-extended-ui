@@ -127,6 +127,22 @@ The hold key is yours to change in the settings panel. Click the key, then press
 
 If you later give the game that key in the game's own settings, the mode refuses to run on it and says so in the console, and the settings panel shows the clash in red. Stealing a key you configured yourself is worse than not running at all.
 
+## Nation stripes
+
+The game has three kinds of player. A **human** is a person at a keyboard. A **nation** is a player the game controls, which plays like a country. Its name and its start point come from the map, so it often carries a real country's name. A **bot** is a small player the game controls, which the game already draws in grey.
+
+A human may take a country's name, so a name alone never proves that a player is a nation. The game knows each player's kind from the first moment of the match. The stripes show that kind on the map.
+
+Thin diagonal stripes cover each living nation's territory, for the whole match. Each stripe is a dark line with a light line beside it, so the stripes show on a light territory and on a dark one. The stripes are laid on the screen, not on the map, so their spacing stays the same at every zoom. The territory's own colour stays visible between them. When a nation dies, its stripes go with its territory. The stripes follow the territory about twice a second.
+
+The stripes are hidden in three cases:
+
+- In a Humans vs Nations game. The team colour already shows which players are nations.
+- While the alliance map is on. The grey map is there to show alliances.
+- While the game's own alternate view is on, from its key or from its settings menu. That view draws each territory in a colour that shows your relation to its owner, and the stripes would cover it.
+
+The stripes sit under the spawn markers and the alliance clocks. They also sit over everything the game draws on a nation's land: its name, its borders, its buildings and its units. The game draws all of these and the territory on one canvas, so the stripes cannot slide between them.
+
 ## Settings panel
 
 Click **Extended UI** to open the **settings panel**. The row is in two places:

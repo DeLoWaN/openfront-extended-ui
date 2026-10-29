@@ -7,6 +7,7 @@
  * dozens of marks that all move whenever the camera does.
  */
 
+import { createMapCanvas } from "../../runtime/map-canvas";
 import {
   breathOffset,
   nameBaseline,
@@ -83,50 +84,20 @@ export interface MarkLayer {
 }
 
 export function createMarkLayer(host: ParentNode = document.body): MarkLayer {
-  const canvas = document.createElement("canvas");
-  canvas.className = LAYER;
-  host.append(canvas);
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("the page gave no 2D canvas for the spawn marks");
-
-  /**
-   * Makes the canvas cover the window at the device's own resolution.
-   *
-   * Read on every frame, because a window resize and a move to a screen of
-   * another density both change it and neither tells the package. Writing the
-   * size also wipes the canvas, so it is written only when it differs.
-   */
-  function fit(): { width: number; height: number } {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const ratio = window.devicePixelRatio || 1;
-    const pixelWidth = Math.round(width * ratio);
-    const pixelHeight = Math.round(height * ratio);
-    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
-      canvas.width = pixelWidth;
-      canvas.height = pixelHeight;
-    }
-    ctx!.setTransform(ratio, 0, 0, ratio, 0, 0);
-    return { width, height };
-  }
-
-  function wipe(): void {
-    const { width, height } = fit();
-    ctx!.clearRect(0, 0, width, height);
-  }
+  const { ctx, wipe, remove } = createMapCanvas(LAYER, host);
 
   function drawRing(ring: RingToDraw, unit: number, nowMs: number): void {
     const radius = ringRadius(unit) + breathOffset(nowMs);
     const width = ringStrokePx(unit);
 
-    ctx!.beginPath();
-    ctx!.arc(ring.x, ring.y, radius, 0, Math.PI * 2);
-    ctx!.lineWidth = width + OUTLINE_EXTRA_PX;
-    ctx!.strokeStyle = OUTLINE;
-    ctx!.stroke();
-    ctx!.lineWidth = width;
-    ctx!.strokeStyle = ring.colour;
-    ctx!.stroke();
+    ctx.beginPath();
+    ctx.arc(ring.x, ring.y, radius, 0, Math.PI * 2);
+    ctx.lineWidth = width + OUTLINE_EXTRA_PX;
+    ctx.strokeStyle = OUTLINE;
+    ctx.stroke();
+    ctx.lineWidth = width;
+    ctx.strokeStyle = ring.colour;
+    ctx.stroke();
 
     // The name is placed from the ring at rest, so it stays still while the
     // ring breathes.
@@ -146,35 +117,35 @@ export function createMarkLayer(host: ParentNode = document.body): MarkLayer {
     fontPx: number,
     colour: string,
   ): void {
-    ctx!.font = `700 ${fontPx}px ${FONT_FAMILY}`;
-    ctx!.textAlign = "center";
-    ctx!.textBaseline = "bottom";
-    ctx!.lineWidth = OUTLINE_EXTRA_PX;
-    ctx!.strokeStyle = TEXT_OUTLINE;
-    ctx!.strokeText(text, x, y);
-    ctx!.fillStyle = colour;
-    ctx!.fillText(text, x, y);
+    ctx.font = `700 ${fontPx}px ${FONT_FAMILY}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.lineWidth = OUTLINE_EXTRA_PX;
+    ctx.strokeStyle = TEXT_OUTLINE;
+    ctx.strokeText(text, x, y);
+    ctx.fillStyle = colour;
+    ctx.fillText(text, x, y);
   }
 
   function drawPointer(pointer: Pointer): void {
     const colour = pointer.isYou ? YOUR_COLOUR : pointer.colour;
-    ctx!.save();
-    ctx!.translate(pointer.x, pointer.y);
-    ctx!.rotate(pointer.angle);
-    ctx!.beginPath();
+    ctx.save();
+    ctx.translate(pointer.x, pointer.y);
+    ctx.rotate(pointer.angle);
+    ctx.beginPath();
     CHEVRON.forEach(([along, across], index) => {
       const x = along * CHEVRON_SCALE;
       const y = across * CHEVRON_SCALE;
-      if (index === 0) ctx!.moveTo(x, y);
-      else ctx!.lineTo(x, y);
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
     });
-    ctx!.closePath();
-    ctx!.lineWidth = OUTLINE_EXTRA_PX;
-    ctx!.strokeStyle = OUTLINE;
-    ctx!.stroke();
-    ctx!.fillStyle = colour;
-    ctx!.fill();
-    ctx!.restore();
+    ctx.closePath();
+    ctx.lineWidth = OUTLINE_EXTRA_PX;
+    ctx.strokeStyle = OUTLINE;
+    ctx.stroke();
+    ctx.fillStyle = colour;
+    ctx.fill();
+    ctx.restore();
 
     if (pointer.count < 2) return;
     // The count sits behind the chevron, on the side away from the edge, so it
@@ -201,9 +172,6 @@ export function createMarkLayer(host: ParentNode = document.body): MarkLayer {
     },
 
     clear: wipe,
-
-    remove() {
-      canvas.remove();
-    },
+    remove,
   };
 }
