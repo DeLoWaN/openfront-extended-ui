@@ -1296,7 +1296,8 @@
 	function typingSomewhere() {
 		const focused = document.activeElement;
 		if (!(focused instanceof HTMLElement)) return false;
-		return focused.tagName === "INPUT" || focused.tagName === "TEXTAREA" || focused.isContentEditable;
+		if (focused instanceof HTMLInputElement) return focused.type !== "range";
+		return focused.tagName === "TEXTAREA" || focused.isContentEditable;
 	}
 	var DEFAULT_SECONDS = 3.5;
 	var MIN_SECONDS = .5;
