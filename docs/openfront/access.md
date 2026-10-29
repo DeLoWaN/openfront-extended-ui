@@ -70,13 +70,13 @@ Besides its palette, terrain and settings methods, `MapRenderer` has these publi
 - Used in: `src/game/types.ts:200-216`
 - Found in: #12, `research/spawn-pulse-tuning`
 
-### The bundler can rename the private fields of `MapRenderer`
+### Private fields of `MapRenderer` keep their names at run time
 
-The WebGL context and the palette texture are private fields of the renderer. TypeScript `private` is gone at run time, but the bundler can rename those fields.
+TypeScript `private` is gone at run time, so a script can read a private field such as `window.__webglView.renderer`. The production build minifies with esbuild, which renames local names and class names but keeps property names unless `mangleProps` is set. The game's `vite.config.ts` does not set it. A private field can still change in any game update, because the game owes nobody a stable private field.
 
-- Checked at: `332e5410e`
-- Game source: `src/client/render/gl/MapRenderer.ts:38`, `src/client/render/gl/passes/TerritoryPass.ts:50`
-- Found in: #12, `research/spawn-pulse-tuning`
+- Checked at: `8ca8e5895`, source only
+- Game source: `src/client/render/gl/MapRenderer.ts:39`, `vite.config.ts`
+- Used in: `src/game/types.ts:258`, `src/features/nation-hatch/index.ts:140-141`
 
 ### The page has no mod API and no other match global
 
@@ -288,6 +288,22 @@ A player has three identifiers: `smallID()`, `id()` and `clientID()`. Tile state
 - Used in: `src/game/types.ts:48-54`, `src/game/types.ts:76-89`
 - Found in: #34, `research/spawn-test-bed`
 
+### `type()` tells a Nation from a human from the first tick
+
+`player.type()` returns `"HUMAN"`, `"NATION"` or `"BOT"`. A Nation is a computer player that plays like a country, and a Bot is a small computer player. The game creates every human and every Nation before the first tick, so the type is there in the spawn phase. A Nation takes its name from the map, and nothing stops a human from taking the same name, so a name never proves the type.
+
+- Checked at: `8ca8e5895`, seen in a local match
+- Game source: `src/client/view/PlayerView.ts:415`
+- Used in: `src/features/nation-hatch/nations.ts:15-26`
+
+### `gameConfig().playerTeams` names the Humans vs Nations mode
+
+`game.config().gameConfig()` returns the lobby settings of the match. In a Humans vs Nations match, `playerTeams` is the string `"Humans Vs Nations"`. In another team match it is a team count or a preset name, and in a match without teams it is absent.
+
+- Checked at: `8ca8e5895`, source only
+- Game source: `packages/engine-lib/src/configuration/Config.ts:158`, `packages/engine-api/src/Schemas.ts:331`, `packages/engine-api/src/game/GameTypes.ts:94`
+- Used in: `src/game/types.ts:157`, `src/features/nation-hatch/nations.ts:7`
+
 ### `isAlive()` means that the player owns land
 
 `player.isAlive()` is true once the player owns at least one tile.
@@ -351,11 +367,11 @@ A tile ref is the game's handle for one map tile, and `GameView` converts it wit
 
 ### The low 12 bits of a tile state name the owner
 
-The low 12 bits of `game.tileState(ref)` are the owner's smallID. `game.tileStateBuffer()` returns a live `Uint16Array` with the state of every tile.
+The low 12 bits of `game.tileState(ref)` are the owner's smallID. Bit 13 marks fallout, and the map draws a fallout tile as nuked ground, not in its owner's colour. `game.tileStateBuffer()` returns a live `Uint16Array` with the state of every tile, indexed by tile ref.
 
-- Checked at: `332e5410e`
-- Game source: `src/client/view/GameView.ts:1291`, `src/client/view/GameView.ts:1294`, `src/client/render/gl/utils/TileCodec.ts:9`
-- Used in: `src/game/types.ts:188`, `src/features/alliance-view/cursor.ts:11-12`
+- Checked at: `8ca8e5895`
+- Game source: `src/client/view/GameView.ts:1123`, `src/client/render/gl/utils/TileCodec.ts:9-10`, `src/client/render/gl/shaders/map-overlay/territory.frag.glsl:46-52`
+- Used in: `src/game/types.ts`, `src/features/alliance-view/cursor.ts`, `src/features/nation-hatch/mask.ts:8`
 - Found in: #12
 
 ### The player under the cursor is the owner of the tile there

@@ -189,6 +189,14 @@ The alternate view is a map mode that the player holds a key for, Space by defau
 - Used in: `src/game/keybinds.ts:93-99`
 - Found in: #1, #12, #13
 
+### The renderer holds the alternate view state
+
+Two controls turn the alternate view on: the hold key, and a toggle in the in-match settings menu. Both send `AlternateViewEvent`, and the renderer keeps the result in its private field `altView`. A script reads it as `window.__webglView.renderer.altView`, which covers both controls. A script that watches the key alone misses the menu toggle.
+
+- Checked at: `8ca8e5895`, seen in a local match
+- Game source: `src/client/hud/layers/SettingsModal.ts:161`, `src/client/controllers/ViewModeController.ts:22-23`, `src/client/render/gl/MapRenderer.ts:390-391`, `src/client/render/gl/Renderer.ts:200`, `:1156-1158`
+- Used in: `src/game/types.ts:258-268`, `src/features/nation-hatch/index.ts:140-141`
+
 ### `setLocalPlayerID` changes more than alliance colours
 
 `view.setLocalPlayerID(id)` builds the affiliation palette again around that player. It also gives the new id to the SAM radius, structure, unit and railroad passes. So after a call, the units of the real local player draw as the units of someone else.
@@ -244,6 +252,14 @@ The map is a WebGL canvas with `position: fixed`, full size and no z-index, as t
 - Game source: `src/client/Utils.ts:382-394`, `src/client/ClientGameRunner.ts:323-326`, `:564-575`, `index.html:321`
 - Used in: `src/features/hotbar/hotbar.ts:90-91`
 - Found in: #3
+
+### A tile covers the world square from its corner
+
+The territory shader takes `floor` of the world position, so tile `(x, y)` covers the world square from `(x, y)` to `(x + 1, y + 1)`. `worldToScreenCoordinates({ x: 0, y: 0 })` is therefore the top left corner of the map on the screen. An image with one pixel per tile, drawn there at `scale` CSS pixels per pixel with smoothing off, lines up with the map.
+
+- Checked at: `8ca8e5895`, seen in a local match
+- Game source: `src/client/render/gl/shaders/map-overlay/territory.frag.glsl:37`, `src/client/TransformHandler.ts:95-120`
+- Used in: `src/features/nation-hatch/index.ts:87`, `src/features/nation-hatch/layer.ts`
 
 ### A per-tile overlay is too slow in JavaScript
 
