@@ -11,6 +11,16 @@ Every pull request that changes the userscript is a new version:
    gh release create v<version> dist/openfront-extended-ui.user.js --target main --title v<version> --generate-notes
    ```
 
+## Feature docs
+
+A pull request that adds a feature, or changes what a feature shows or how it behaves, updates the player docs in the same pull request:
+
+1. `README.md`: one short section per feature, with a screenshot and a "More details" link. Keep it to what a player needs.
+2. `docs/features.md`: the full behaviour of the feature.
+3. `docs/images/`: a new screenshot for a new feature, or a fresh one when a feature changes how it looks. Take it as `docs/development.md` describes under "Screenshots", at 1440 by 900.
+
+A pull request is not finished while a feature in it has no screenshot, or shows an old one.
+
 ## Agent skills
 
 ### Issue tracker
