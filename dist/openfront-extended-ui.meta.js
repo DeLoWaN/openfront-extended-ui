@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         OpenFront Extended UI
 // @namespace    https://github.com/DeLoWaN/openfront-extended-ui
-// @version      0.2.0
+// @version      0.2.1
 // @author       DeLoWaN
 // @description  Adds readouts and an alliance view mode to the OpenFront.io game view. Changes nothing in the game.
 // @license      MIT
