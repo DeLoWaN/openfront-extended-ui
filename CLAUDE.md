@@ -11,6 +11,31 @@ Every pull request that changes the userscript is a new version:
    gh release create v<version> dist/openfront-extended-ui.user.js --target main --title v<version> --generate-notes
    ```
 
+## Facts about the game
+
+`docs/openfront/` holds what we know about the base OpenFront game:
+
+- how a script reaches into the game
+- the game rules and balance values
+- how to test against the live game
+
+Each fact names the OpenFrontIO commit where someone last checked it.
+
+1. Before you search the game's code, read `docs/openfront/README.md` and the topic file it points to.
+2. Before you rely on a fact, check it against the current game. The game changes fast, so an old fact can be wrong. A clone of the game lives at `~/git_perso/OpenFrontIO`, and its `origin` remote is the official repository:
+
+   ```bash
+   git -C ~/git_perso/OpenFrontIO fetch origin
+   git -C ~/git_perso/OpenFrontIO show origin/main:<path>
+   ```
+
+   If the fact still holds, update its commit. If not, correct the fact.
+3. When your work finds a new durable fact, add it to `docs/openfront/` in the same pull request. A durable fact meets two conditions:
+   - You had to read the game's code or test in a match to find it.
+   - Another feature can use it.
+
+   A research ticket has the label `wayfinder:research` and no pull request of its own. When you close one, open a small documentation pull request with its facts.
+
 ## Agent skills
 
 ### Issue tracker
