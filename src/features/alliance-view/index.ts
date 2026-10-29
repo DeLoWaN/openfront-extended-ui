@@ -444,9 +444,6 @@ function playersOf(game: GameView): readonly PlayerView[] {
 function typingSomewhere(): boolean {
   const focused = document.activeElement;
   if (!(focused instanceof HTMLElement)) return false;
-  return (
-    focused.tagName === "INPUT" ||
-    focused.tagName === "TEXTAREA" ||
-    focused.isContentEditable
-  );
+  if (focused instanceof HTMLInputElement) return focused.type !== "range";
+  return focused.tagName === "TEXTAREA" || focused.isContentEditable;
 }

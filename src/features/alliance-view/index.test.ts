@@ -423,6 +423,20 @@ describe("the key the mode is held on", () => {
 
     expect(renderer.palettes).toHaveLength(0);
   });
+
+  // The game keeps its own keys working after the player moves a slider.
+  it("still switches on while a slider has focus", () => {
+    const { renderer } = setup();
+    const slider = document.createElement("input");
+    slider.type = "range";
+    document.body.append(slider);
+    slider.focus();
+    pointAt(SUBJECT_AT.screen);
+
+    keyDown(HOLD);
+
+    expect(renderer.palettes.length).toBeGreaterThan(0);
+  });
 });
 
 describe("the clocks on the map", () => {
