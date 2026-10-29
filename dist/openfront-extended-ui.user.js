@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         OpenFront Extended UI
 // @namespace    https://github.com/DeLoWaN/openfront-extended-ui
-// @version      0.2.0
+// @version      0.2.1
 // @author       DeLoWaN
 // @description  Adds readouts and an alliance view mode to the OpenFront.io game view. Changes nothing in the game.
 // @license      MIT
@@ -1286,7 +1286,8 @@
 	function typingSomewhere() {
 		const focused = document.activeElement;
 		if (!(focused instanceof HTMLElement)) return false;
-		return focused.tagName === "INPUT" || focused.tagName === "TEXTAREA" || focused.isContentEditable;
+		if (focused instanceof HTMLInputElement) return focused.type !== "range";
+		return focused.tagName === "TEXTAREA" || focused.isContentEditable;
 	}
 	var DEFAULT_SECONDS = 3.5;
 	var MIN_SECONDS = .5;
