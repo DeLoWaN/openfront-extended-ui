@@ -6,10 +6,7 @@
  * state. Read at OpenFrontIO commit 332e5410e.
  */
 
-import type { GameView, TransformHandler } from "../../game/types";
-
-/** The part of a tile's state that names its owner. `TileCodec.ts:9`. */
-const OWNER_MASK = 0xfff;
+import { OWNER_MASK, type GameView, type TransformHandler } from "../../game/types";
 
 /** Nobody. Water, an unclaimed tile, and a point off the map all read as this. */
 export const NOBODY = 0;

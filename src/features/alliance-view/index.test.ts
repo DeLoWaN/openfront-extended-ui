@@ -16,6 +16,7 @@ import { allianceView } from "./index";
 import { CLOCK, URGENT } from "./clocks";
 import { readSlot } from "./palette";
 import { POINTER } from "./pointer";
+import { isAllianceViewShowing } from "./showing";
 import { setSpotlight } from "./spotlight";
 import { greyTerrain } from "./terrain";
 
@@ -248,6 +249,30 @@ describe("the subject the map is drawn around", () => {
     keyDown(HOLD);
 
     expect(isGrey(fillOf(renderer, 1))).toBe(true);
+  });
+});
+
+describe("telling other features the map is grey", () => {
+  it("says so while the key is down, and stops saying so when it comes up", () => {
+    setup();
+    pointAt(SUBJECT_AT.screen);
+    expect(isAllianceViewShowing()).toBe(false);
+
+    keyDown(HOLD);
+    expect(isAllianceViewShowing()).toBe(true);
+
+    keyUp(HOLD);
+    expect(isAllianceViewShowing()).toBe(false);
+  });
+
+  it("stops saying so when the mode is switched off with the key still down", () => {
+    const { detach } = setup();
+    pointAt(SUBJECT_AT.screen);
+    keyDown(HOLD);
+
+    detach();
+
+    expect(isAllianceViewShowing()).toBe(false);
   });
 });
 

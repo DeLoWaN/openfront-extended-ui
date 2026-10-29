@@ -24,6 +24,7 @@ import type {
   GameUpdates,
   GameView,
   MapRenderer,
+  MatchSettings,
   NameLocation,
   PlayerState,
   PlayerType,
@@ -180,10 +181,15 @@ export class FakePlayerView implements PlayerView {
 
 /** The game's own alliance figures, as a live match reports them. */
 export class FakeGameConfig implements GameConfig {
+  /** A match without teams, until a test sets otherwise. */
+  match: MatchSettings = { gameMode: "Free For All" };
   extensionOffset = 300;
   requestDuration = 200;
   allianceTicks = 3000;
 
+  gameConfig(): MatchSettings {
+    return this.match;
+  }
   allianceExtensionPromptOffset(): number {
     return this.extensionOffset;
   }
@@ -202,7 +208,8 @@ export class FakeGameView implements GameView {
   /** What the game reports for the last tick. Null before the first one. */
   updates: GameUpdates | null = null;
   readonly settings = new FakeGameConfig();
-  readonly width = 100;
+  /** The map is square, this many tiles on a side. */
+  readonly side = 100;
 
   private readonly roster: FakePlayerView[] = [];
   private readonly owners = new Map<number, number>();
@@ -233,22 +240,33 @@ export class FakeGameView implements GameView {
     return this.settings;
   }
   ref(x: number, y: number): number {
-    return y * this.width + x;
+    return y * this.side + x;
   }
   x(ref: number): number {
-    return ref % this.width;
+    return ref % this.side;
   }
   y(ref: number): number {
-    return Math.floor(ref / this.width);
+    return Math.floor(ref / this.side);
+  }
+  width(): number {
+    return this.side;
+  }
+  height(): number {
+    return this.side;
   }
   isValidCoord(x: number, y: number): boolean {
-    return x >= 0 && y >= 0 && x < this.width && y < this.width;
+    return x >= 0 && y >= 0 && x < this.side && y < this.side;
   }
   isLand(ref: number): boolean {
     return !this.water.has(ref);
   }
   tileState(ref: number): number {
     return this.owners.get(ref) ?? 0;
+  }
+  tileStateBuffer(): Uint16Array {
+    const buffer = new Uint16Array(this.side * this.side);
+    for (const [ref, owner] of this.owners) buffer[ref] = owner;
+    return buffer;
   }
 
   add(player: FakePlayerView): FakePlayerView {
@@ -286,6 +304,8 @@ export class FakeMapRenderer implements MapRenderer {
   readonly settings: RenderSettings = { terrain: { ...DEFAULT_TERRAIN } };
   /** The terrain colours at each bake, oldest first. */
   readonly bakes: TerrainColours[] = [];
+  /** The GPU renderer, with the game's alternate view off. */
+  readonly renderer = { altView: false };
 
   updatePalette(palette: Float32Array): void {
     this.palettes.push(palette.slice());
@@ -558,6 +578,8 @@ export interface CanvasCall {
   readonly strokeStyle: unknown;
   readonly lineWidth: number;
   readonly font: string;
+  readonly globalCompositeOperation: string;
+  readonly imageSmoothingEnabled: boolean;
 }
 
 /**
@@ -578,6 +600,8 @@ export class FakeCanvasContext {
   font = "10px sans-serif";
   textAlign = "start";
   textBaseline = "alphabetic";
+  globalCompositeOperation = "source-over";
+  imageSmoothingEnabled = true;
 
   private record(op: string, args: unknown[]): void {
     this.calls.push({
@@ -588,6 +612,8 @@ export class FakeCanvasContext {
       strokeStyle: this.strokeStyle,
       lineWidth: this.lineWidth,
       font: this.font,
+      globalCompositeOperation: this.globalCompositeOperation,
+      imageSmoothingEnabled: this.imageSmoothingEnabled,
     });
   }
 
@@ -606,6 +632,21 @@ export class FakeCanvasContext {
   restore = (...args: unknown[]) => this.record("restore", args);
   translate = (...args: unknown[]) => this.record("translate", args);
   rotate = (...args: unknown[]) => this.record("rotate", args);
+  fillRect = (...args: unknown[]) => this.record("fillRect", args);
+  drawImage = (...args: unknown[]) => this.record("drawImage", args);
+  putImageData = (...args: unknown[]) => this.record("putImageData", args);
+
+  /** jsdom has no `ImageData`, so this hands back the same shape. */
+  createImageData = (width: number, height: number) => {
+    this.record("createImageData", [width, height]);
+    return { width, height, data: new Uint8ClampedArray(width * height * 4) };
+  };
+
+  /** A pattern is opaque to the page, so a marked object stands in for it. */
+  createPattern = (...args: unknown[]) => {
+    this.record("createPattern", args);
+    return { pattern: true };
+  };
 
   /** Every call of one kind, oldest first. */
   of(op: string): CanvasCall[] {

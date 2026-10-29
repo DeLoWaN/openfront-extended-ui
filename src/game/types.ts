@@ -8,6 +8,9 @@
  * Read at OpenFrontIO commit 332e5410e.
  */
 
+/** The bits of a tile's packed state that hold its owner's `smallID`. `TileCodec.ts:9`. */
+export const OWNER_MASK = 0xfff;
+
 /** A colour, as the `colord` library hands it back. `PlayerView.ts:285`. */
 export interface Colour {
   /** Each channel runs 0 to 255. */
@@ -129,8 +132,29 @@ export interface UnitDisplay extends HTMLElement {
   playerBuildables?: BuildableUnit[] | null;
 }
 
+/**
+ * The settings the lobby chose for this match.
+ * `packages/engine-api/src/Schemas.ts:264`, read at OpenFrontIO commit 8ca8e5895.
+ */
+export interface MatchSettings {
+  /** "Free For All" or "Team". `GameTypes.ts:138`. */
+  gameMode: string;
+  /**
+   * How the teams are made, in a team match. `Schemas.ts:331`.
+   *
+   * A team count, or a preset name such as "Humans Vs Nations". Absent in a
+   * match without teams.
+   */
+  playerTeams?: number | string;
+}
+
 /** The match's own rules. `src/core/configuration/Config.ts`. */
 export interface GameConfig {
+  /**
+   * The lobby's settings for this match.
+   * `packages/engine-lib/src/configuration/Config.ts:158`, at commit 8ca8e5895.
+   */
+  gameConfig(): MatchSettings;
   /** How long before the end the game offers to renew, in ticks. */
   allianceExtensionPromptOffset(): number;
   /** How long an alliance request waits for an answer, in ticks. `Config.ts:602`. */
@@ -187,6 +211,16 @@ export interface GameView {
   isLand(ref: number): boolean;
   /** One tile's packed state. Mask it with `OWNER_MASK` for the owner. `:1291`. */
   tileState(ref: number): number;
+  /** The map's width, in tiles. `:984`, at commit 8ca8e5895. */
+  width(): number;
+  /** The map's height, in tiles. `:987`, at commit 8ca8e5895. */
+  height(): number;
+  /**
+   * Every tile's packed state, indexed by tile handle. `:1123`, at commit 8ca8e5895.
+   *
+   * The game's own live array, not a copy, so a reader must never write to it.
+   */
+  tileStateBuffer(): Uint16Array;
 }
 
 /**
@@ -214,6 +248,24 @@ export interface MapRenderer {
   getSettings(): RenderSettings;
   /** Bakes the terrain texture again from `getSettings().terrain`. `:236`. */
   rebuildTerrain(): void;
+  /**
+   * The GPU renderer behind this wrapper. `MapRenderer.ts:39`, at commit
+   * 8ca8e5895.
+   *
+   * A private field in the game's TypeScript, so it may move without notice.
+   * Null while the WebGL context is lost.
+   */
+  readonly renderer?: GpuRenderer | null;
+}
+
+/** The part of the GPU renderer the package reads. `Renderer.ts`, at commit 8ca8e5895. */
+export interface GpuRenderer {
+  /**
+   * True while the game's alternate view is on. `:200`.
+   *
+   * The hold key and the toggle in the game's settings menu both set it.
+   */
+  readonly altView?: boolean;
 }
 
 /** The part of the renderer's settings the package reads. `RenderSettings.ts:62`. */

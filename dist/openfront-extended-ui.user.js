@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         OpenFront Extended UI
 // @namespace    https://github.com/DeLoWaN/openfront-extended-ui
-// @version      0.2.0
+// @version      0.3.0
 // @author       DeLoWaN
 // @description  Adds readouts and an alliance view mode to the OpenFront.io game view. Changes nothing in the game.
 // @license      MIT
@@ -19,7 +19,7 @@
 
 (function() {
 	"use strict";
-	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-spawn-marks{z-index:50;pointer-events:none;width:100vw;height:100vh;position:fixed;inset:0}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}.ofx-hotbar-badge{z-index:9000;pointer-events:none;position:fixed}.ofx-hotbar-badge[hidden]{display:none}.ofx-hotbar-badge-panel{box-shadow:inset 0 0 0 2px var(--ofx-cue), 0 0 10px var(--ofx-cue-glow);background:#111827eb;border-radius:6px;gap:4px;padding:4px 6px;display:flex}.ofx-hotbar-badge-icon{object-fit:contain;width:28px;height:28px}.ofx-hotbar-badge-arrow{border-left:2px solid var(--ofx-cue);transform-origin:top;filter:drop-shadow(0 0 2px #000000e6);width:0;height:30px;margin-left:-1px;position:absolute;top:100%;left:50%}.ofx-hotbar-badge-arrow:after{content:\"\";border-top:10px solid var(--ofx-cue);border-left:6px solid #0000;border-right:6px solid #0000;position:absolute;bottom:-2px;left:-7px}@keyframes ofx-hotbar-badge-pulse{0%,to{opacity:1}50%{opacity:.55}}.ofx-hotbar-badge-shown{animation:1s ease-in-out infinite ofx-hotbar-badge-pulse}.ofx-hotbar-badge-fading{opacity:0;transition:opacity .4s ease-out;animation:none}@media (prefers-reduced-motion:reduce){.ofx-hotbar-badge-shown{animation:none}}.ofx-alliance-panel{--ofx-bar-track:#0f172af0;--ofx-bar-fill:#3b5b86;--ofx-bar-fill-urgent:#b42323;min-width:14em;max-width:22em;font-size:calc(var(--ofx-figure-size) * 1.6);color:#fff;text-shadow:var(--ofx-shadow-figure);pointer-events:auto;flex-direction:column;gap:.2em;line-height:1.2;display:flex}.ofx-alliance-row{background:linear-gradient(90deg, var(--ofx-bar-fill) var(--ofx-frac,100%), var(--ofx-bar-track) var(--ofx-frac,100%));cursor:pointer;border-radius:.3em;align-items:baseline;gap:.5em;padding:.3em .6em;display:flex;box-shadow:0 0 0 1px #0009}.ofx-alliance-row-urgent{--ofx-bar-fill:var(--ofx-bar-fill-urgent)}.ofx-alliance-row:hover{filter:brightness(1.3)}.ofx-alliance-name{text-overflow:ellipsis;white-space:nowrap;flex:auto;min-width:0;overflow:hidden}.ofx-alliance-tag{color:#cbd5e1;white-space:nowrap;flex:none;font-size:.8em}.ofx-alliance-time{font-variant-numeric:tabular-nums;flex:none;font-weight:700}.ofx-alliance-row-expired{color:#cbd5e1}.ofx-spotlight-pointer{z-index:50;pointer-events:none;flex-direction:column;align-items:center;gap:6px;display:flex;position:fixed;transform:translate(-50%,-50%)}.ofx-spotlight-arrow{border-top:16px solid #0000;border-bottom:16px solid #0000;border-left:28px solid var(--ofx-pointer-colour,#fff);filter:drop-shadow(0 0 1px #fff)drop-shadow(0 0 1px #fff)drop-shadow(0 0 3px #000000e6);width:0;height:0}.ofx-spotlight-name{text-overflow:ellipsis;white-space:nowrap;color:#fff;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;max-width:14em;font-size:18px;font-weight:700;overflow:hidden}:root{--ofx-menu-background:#1e293b;--ofx-menu-border:#475569;--ofx-menu-hover:#334155;--ofx-menu-hint:#94a3b8;--ofx-menu-warning:#f87171;--ofx-switch-on:#10b981}.ofx-menu-row{color:#fff;width:100%;font:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:.25rem;align-items:center;gap:.75rem;padding:.75rem;transition:background-color .15s;display:flex}.ofx-menu-row:hover{background:var(--ofx-menu-hover)}.ofx-menu-row-text{flex-direction:column;flex:1;display:flex}.ofx-menu-row-title{font-weight:500}.ofx-menu-row-hint{color:var(--ofx-menu-hint);font-size:.875rem}.ofx-menu-row-card{background:#ffffff0d;border:1px solid #ffffff1a;border-radius:.75rem;padding:1rem}.ofx-menu-row-card:hover{background:#ffffff1a}.ofx-menu-row-card .ofx-menu-row-title{font-size:1rem;font-weight:700}.ofx-menu-row-card .ofx-menu-row-hint{color:#ffffff80}.ofx-settings-backdrop{z-index:1;background:#00000080;justify-content:center;align-items:center;padding:1rem;display:flex;position:absolute;inset:0}.ofx-settings-backdrop-page{z-index:10000;position:fixed}.ofx-settings{border:1px solid var(--ofx-menu-border);background:var(--ofx-menu-background);color:#fff;border-radius:.5rem;outline:none;flex-direction:column;width:100%;max-width:32rem;max-height:80vh;display:flex}.ofx-settings-header{border-bottom:1px solid var(--ofx-menu-border);justify-content:space-between;align-items:center;padding:1rem;display:flex}.ofx-settings-title{margin:0;font-size:1.25rem;font-weight:600}.ofx-settings-close{color:var(--ofx-menu-hint);cursor:pointer;background:0 0;border:0;font-size:1.5rem;font-weight:700;line-height:1}.ofx-settings-close:hover{color:#fff}.ofx-settings-body{flex-direction:column;gap:.25rem;padding:.5rem 1rem;display:flex;overflow-y:auto}.ofx-settings-feature+.ofx-settings-feature{border-top:1px solid var(--ofx-menu-border)}.ofx-settings-row{cursor:pointer;border-radius:.25rem;justify-content:space-between;align-items:center;gap:.75rem;padding:.6rem .75rem;display:flex}.ofx-settings-row:hover{background:var(--ofx-menu-hover)}.ofx-settings-text{flex-direction:column;flex:1;gap:.15rem;display:flex}.ofx-settings-feature>.ofx-settings-row .ofx-settings-name{font-size:1rem;font-weight:600}.ofx-settings-description{color:var(--ofx-menu-hint);font-size:.8rem;line-height:1.35}.ofx-settings-options{color:#e2e8f0;padding-left:1.5rem;font-size:.875rem}.ofx-settings-options-off{opacity:.4}.ofx-settings-options-off .ofx-settings-row{cursor:default}.ofx-settings-options-off .ofx-settings-row:hover{background:0 0}.ofx-switch{appearance:none;background:var(--ofx-menu-border);cursor:pointer;border-radius:999px;flex:none;width:2.25rem;height:1.25rem;margin:0;transition:background-color .15s;position:relative}.ofx-switch:after{content:\"\";background:#fff;border-radius:50%;width:1rem;height:1rem;transition:transform .15s;position:absolute;top:.125rem;left:.125rem}.ofx-switch:checked{background:var(--ofx-switch-on)}.ofx-switch:checked:after{transform:translate(1rem)}.ofx-switch:disabled{cursor:default}.ofx-settings-number,.ofx-settings-key{border:1px solid var(--ofx-menu-border);color:#fff;min-width:4.5rem;font:inherit;text-align:center;background:#0f172a;border-radius:.25rem;flex:none;padding:.25rem .5rem}.ofx-settings-key{cursor:pointer}.ofx-settings-key-listening{border-color:var(--ofx-switch-on);color:var(--ofx-menu-hint)}.ofx-settings-warning{color:var(--ofx-menu-warning);margin:0;padding:0 .75rem;font-size:.8rem}.ofx-settings-warning:empty{display:none}.ofx-settings-footer{border-top:1px solid var(--ofx-menu-border);padding:.75rem 1rem 1rem}.ofx-settings-reset{border:1px solid var(--ofx-menu-border);color:#fff;width:100%;font:inherit;cursor:pointer;background:0 0;border-radius:.25rem;padding:.6rem}.ofx-settings-reset:hover{background:var(--ofx-menu-hover)}.ofx-settings-reset-armed{border-color:var(--ofx-menu-warning);color:var(--ofx-menu-warning)}";
+	var package_default = ":root,:host{--ofx-mark:#9d93f5;--ofx-figure:#c9c4ff;--ofx-shadow-figure:0 1px 1px #000000e6;--ofx-shadow-mark:0 0 2px #000000e6;--ofx-figure-size:13px;--ofx-cue:#fbbf24;--ofx-cue-wash:#fbbf242e;--ofx-cue-glow:#fbbf248c;--ofx-cue-waiting:#9ca3af;--ofx-cue-rail:#374151;--ofx-hotbar-marks-height:7px}.ofx-hidden{display:none!important}.ofx-troop-strip{background:var(--ofx-mark);height:3px;box-shadow:var(--ofx-shadow-mark);pointer-events:none;position:absolute;bottom:0}.ofx-troop-share{color:var(--ofx-figure);font-size:var(--ofx-figure-size);font-variant-numeric:tabular-nums;text-shadow:var(--ofx-shadow-figure);pointer-events:none;align-items:center;font-weight:700;line-height:1;display:flex;position:absolute;top:0;bottom:0;right:5px}@media (width<64rem){.ofx-troop-share{display:none}}.ofx-alliance-clocks{z-index:50;pointer-events:none;position:fixed;inset:0;overflow:hidden}.ofx-spawn-marks,.ofx-nation-hatch{z-index:50;pointer-events:none;width:100vw;height:100vh;position:fixed;inset:0}.ofx-alliance-clock{color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;pointer-events:none;font-weight:700;line-height:1;position:absolute;transform:translate(-50%)}.ofx-alliance-clock-urgent{color:#ff4d4d}.ofx-hotbar-marks{height:var(--ofx-hotbar-marks-height);pointer-events:none;justify-content:center;align-items:center;gap:2px;display:flex}.ofx-hotbar-marks-off{visibility:hidden}.ofx-hotbar-mark{background:var(--ofx-cue-rail);border-radius:1px;width:7px;height:3px}.ofx-hotbar-mark-lit{background:var(--ofx-cue-waiting)}.ofx-hotbar-marks-ready .ofx-hotbar-mark-lit{background:var(--ofx-cue)}.ofx-hotbar-light{top:0;right:0;bottom:var(--ofx-hotbar-marks-height);background:var(--ofx-cue-wash);box-shadow:inset 0 0 0 1px var(--ofx-cue), 0 0 6px var(--ofx-cue-glow);opacity:0;pointer-events:none;border-radius:2px;position:absolute;left:0}@keyframes ofx-hotbar-onset{0%{opacity:1}6%{opacity:.3}12%{opacity:1}18%{opacity:.3}24%{opacity:1}30%{opacity:.3}36%{opacity:.92}48%{opacity:.28}61%{opacity:.8}80%{opacity:.26}to{opacity:.7}}@keyframes ofx-hotbar-breathe{0%,to{opacity:.7}50%{opacity:.25}}.ofx-hotbar-light-breathing{animation:3.3s ease-in-out both ofx-hotbar-onset,2s ease-in-out 3.3s infinite ofx-hotbar-breathe}.ofx-hotbar-light-steady{animation:3.3s ease-in-out forwards ofx-hotbar-onset}@media (prefers-reduced-motion:reduce){.ofx-hotbar-light-breathing{animation:3.3s ease-in-out forwards ofx-hotbar-onset}}.ofx-hotbar-badge{z-index:9000;pointer-events:none;position:fixed}.ofx-hotbar-badge[hidden]{display:none}.ofx-hotbar-badge-panel{box-shadow:inset 0 0 0 2px var(--ofx-cue), 0 0 10px var(--ofx-cue-glow);background:#111827eb;border-radius:6px;gap:4px;padding:4px 6px;display:flex}.ofx-hotbar-badge-icon{object-fit:contain;width:28px;height:28px}.ofx-hotbar-badge-arrow{border-left:2px solid var(--ofx-cue);transform-origin:top;filter:drop-shadow(0 0 2px #000000e6);width:0;height:30px;margin-left:-1px;position:absolute;top:100%;left:50%}.ofx-hotbar-badge-arrow:after{content:\"\";border-top:10px solid var(--ofx-cue);border-left:6px solid #0000;border-right:6px solid #0000;position:absolute;bottom:-2px;left:-7px}@keyframes ofx-hotbar-badge-pulse{0%,to{opacity:1}50%{opacity:.55}}.ofx-hotbar-badge-shown{animation:1s ease-in-out infinite ofx-hotbar-badge-pulse}.ofx-hotbar-badge-fading{opacity:0;transition:opacity .4s ease-out;animation:none}@media (prefers-reduced-motion:reduce){.ofx-hotbar-badge-shown{animation:none}}.ofx-alliance-panel{--ofx-bar-track:#0f172af0;--ofx-bar-fill:#3b5b86;--ofx-bar-fill-urgent:#b42323;min-width:14em;max-width:22em;font-size:calc(var(--ofx-figure-size) * 1.6);color:#fff;text-shadow:var(--ofx-shadow-figure);pointer-events:auto;flex-direction:column;gap:.2em;line-height:1.2;display:flex}.ofx-alliance-row{background:linear-gradient(90deg, var(--ofx-bar-fill) var(--ofx-frac,100%), var(--ofx-bar-track) var(--ofx-frac,100%));cursor:pointer;border-radius:.3em;align-items:baseline;gap:.5em;padding:.3em .6em;display:flex;box-shadow:0 0 0 1px #0009}.ofx-alliance-row-urgent{--ofx-bar-fill:var(--ofx-bar-fill-urgent)}.ofx-alliance-row:hover{filter:brightness(1.3)}.ofx-alliance-name{text-overflow:ellipsis;white-space:nowrap;flex:auto;min-width:0;overflow:hidden}.ofx-alliance-tag{color:#cbd5e1;white-space:nowrap;flex:none;font-size:.8em}.ofx-alliance-time{font-variant-numeric:tabular-nums;flex:none;font-weight:700}.ofx-alliance-row-expired{color:#cbd5e1}.ofx-spotlight-pointer{z-index:50;pointer-events:none;flex-direction:column;align-items:center;gap:6px;display:flex;position:fixed;transform:translate(-50%,-50%)}.ofx-spotlight-arrow{border-top:16px solid #0000;border-bottom:16px solid #0000;border-left:28px solid var(--ofx-pointer-colour,#fff);filter:drop-shadow(0 0 1px #fff)drop-shadow(0 0 1px #fff)drop-shadow(0 0 3px #000000e6);width:0;height:0}.ofx-spotlight-name{text-overflow:ellipsis;white-space:nowrap;color:#fff;text-shadow:0 0 3px #000000f2,0 0 3px #000000f2,0 0 3px #000000f2;max-width:14em;font-size:18px;font-weight:700;overflow:hidden}:root{--ofx-menu-background:#1e293b;--ofx-menu-border:#475569;--ofx-menu-hover:#334155;--ofx-menu-hint:#94a3b8;--ofx-menu-warning:#f87171;--ofx-switch-on:#10b981}.ofx-menu-row{color:#fff;width:100%;font:inherit;text-align:left;cursor:pointer;background:0 0;border:0;border-radius:.25rem;align-items:center;gap:.75rem;padding:.75rem;transition:background-color .15s;display:flex}.ofx-menu-row:hover{background:var(--ofx-menu-hover)}.ofx-menu-row-text{flex-direction:column;flex:1;display:flex}.ofx-menu-row-title{font-weight:500}.ofx-menu-row-hint{color:var(--ofx-menu-hint);font-size:.875rem}.ofx-menu-row-card{background:#ffffff0d;border:1px solid #ffffff1a;border-radius:.75rem;padding:1rem}.ofx-menu-row-card:hover{background:#ffffff1a}.ofx-menu-row-card .ofx-menu-row-title{font-size:1rem;font-weight:700}.ofx-menu-row-card .ofx-menu-row-hint{color:#ffffff80}.ofx-settings-backdrop{z-index:1;background:#00000080;justify-content:center;align-items:center;padding:1rem;display:flex;position:absolute;inset:0}.ofx-settings-backdrop-page{z-index:10000;position:fixed}.ofx-settings{border:1px solid var(--ofx-menu-border);background:var(--ofx-menu-background);color:#fff;border-radius:.5rem;outline:none;flex-direction:column;width:100%;max-width:32rem;max-height:80vh;display:flex}.ofx-settings-header{border-bottom:1px solid var(--ofx-menu-border);justify-content:space-between;align-items:center;padding:1rem;display:flex}.ofx-settings-title{margin:0;font-size:1.25rem;font-weight:600}.ofx-settings-close{color:var(--ofx-menu-hint);cursor:pointer;background:0 0;border:0;font-size:1.5rem;font-weight:700;line-height:1}.ofx-settings-close:hover{color:#fff}.ofx-settings-body{flex-direction:column;gap:.25rem;padding:.5rem 1rem;display:flex;overflow-y:auto}.ofx-settings-feature+.ofx-settings-feature{border-top:1px solid var(--ofx-menu-border)}.ofx-settings-row{cursor:pointer;border-radius:.25rem;justify-content:space-between;align-items:center;gap:.75rem;padding:.6rem .75rem;display:flex}.ofx-settings-row:hover{background:var(--ofx-menu-hover)}.ofx-settings-text{flex-direction:column;flex:1;gap:.15rem;display:flex}.ofx-settings-feature>.ofx-settings-row .ofx-settings-name{font-size:1rem;font-weight:600}.ofx-settings-description{color:var(--ofx-menu-hint);font-size:.8rem;line-height:1.35}.ofx-settings-options{color:#e2e8f0;padding-left:1.5rem;font-size:.875rem}.ofx-settings-options-off{opacity:.4}.ofx-settings-options-off .ofx-settings-row{cursor:default}.ofx-settings-options-off .ofx-settings-row:hover{background:0 0}.ofx-switch{appearance:none;background:var(--ofx-menu-border);cursor:pointer;border-radius:999px;flex:none;width:2.25rem;height:1.25rem;margin:0;transition:background-color .15s;position:relative}.ofx-switch:after{content:\"\";background:#fff;border-radius:50%;width:1rem;height:1rem;transition:transform .15s;position:absolute;top:.125rem;left:.125rem}.ofx-switch:checked{background:var(--ofx-switch-on)}.ofx-switch:checked:after{transform:translate(1rem)}.ofx-switch:disabled{cursor:default}.ofx-settings-number,.ofx-settings-key{border:1px solid var(--ofx-menu-border);color:#fff;min-width:4.5rem;font:inherit;text-align:center;background:#0f172a;border-radius:.25rem;flex:none;padding:.25rem .5rem}.ofx-settings-key{cursor:pointer}.ofx-settings-key-listening{border-color:var(--ofx-switch-on);color:var(--ofx-menu-hint)}.ofx-settings-warning{color:var(--ofx-menu-warning);margin:0;padding:0 .75rem;font-size:.8rem}.ofx-settings-warning:empty{display:none}.ofx-settings-footer{border-top:1px solid var(--ofx-menu-border);padding:.75rem 1rem 1rem}.ofx-settings-reset{border:1px solid var(--ofx-menu-border);color:#fff;width:100%;font:inherit;cursor:pointer;background:0 0;border-radius:.25rem;padding:.6rem}.ofx-settings-reset:hover{background:var(--ofx-menu-hover)}.ofx-settings-reset-armed{border-color:var(--ofx-menu-warning);color:var(--ofx-menu-warning)}.ofx-nation-hatch{z-index:49}";
 	function isMatchLive(game) {
 		if (game.inSpawnPhase()) return false;
 		const me = game.myPlayer();
@@ -611,7 +611,7 @@
 		for (const [id, value] of Object.entries(stored)) if (typeof value === "boolean" || typeof value === "string") values[id] = value;
 		return values;
 	}
-	var LAYER$1 = "ofx-alliance-clocks";
+	var LAYER$2 = "ofx-alliance-clocks";
 	var CLOCK = "ofx-alliance-clock";
 	var URGENT = "ofx-alliance-clock-urgent";
 	var NAME_SCALE_FACTOR = .4;
@@ -624,7 +624,7 @@
 	var OFF_SCREEN_MARGIN_PX = 100;
 	function createClockLayer(host = document.body) {
 		const root = document.createElement("div");
-		root.className = LAYER$1;
+		root.className = LAYER$2;
 		host.append(root);
 		const pool = [];
 		function nodeAt(index) {
@@ -976,6 +976,13 @@
 			}
 		};
 	}
+	var showing = false;
+	function isAllianceViewShowing() {
+		return showing;
+	}
+	function setAllianceViewShowing(value) {
+		showing = value;
+	}
 	var TERRAIN_KEYS = [
 		"oceanColor",
 		"sandColor",
@@ -1121,6 +1128,7 @@
 					paintAlliance(palette, playersOf(context.game), coloured);
 					hooks.view.updatePalette(palette);
 					painted = true;
+					setAllianceViewShowing(true);
 					writtenSignature = signature;
 					framesSinceWrite = 0;
 				}
@@ -1135,6 +1143,7 @@
 				paintReal(palette, playersOf(context.game));
 				hooks.view.updatePalette(palette);
 				painted = false;
+				setAllianceViewShowing(false);
 				writtenSignature = "";
 			}
 			function step() {
@@ -1228,6 +1237,7 @@
 				stopLoop();
 				const hooks = readHooks();
 				if (hooks) standDown(hooks);
+				setAllianceViewShowing(false);
 				terrain.restore();
 				clocks.remove();
 				pointer.remove();
@@ -1606,6 +1616,234 @@
 		light.offsetWidth;
 		light.classList.add(wanted);
 	}
+	function createMapCanvas(className, host = document.body) {
+		const canvas = document.createElement("canvas");
+		canvas.className = className;
+		host.append(canvas);
+		const ctx = canvas.getContext("2d");
+		if (!ctx) {
+			canvas.remove();
+			throw new Error(`the page gave no 2D canvas for ${className}`);
+		}
+		function fit() {
+			const width = window.innerWidth;
+			const height = window.innerHeight;
+			const ratio = window.devicePixelRatio || 1;
+			const pixelWidth = Math.round(width * ratio);
+			const pixelHeight = Math.round(height * ratio);
+			if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+				canvas.width = pixelWidth;
+				canvas.height = pixelHeight;
+			}
+			ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+			return {
+				width,
+				height
+			};
+		}
+		return {
+			ctx,
+			wipe() {
+				const size = fit();
+				ctx.clearRect(0, 0, size.width, size.height);
+				return size;
+			},
+			remove() {
+				canvas.remove();
+			}
+		};
+	}
+	var LAYER$1 = "ofx-nation-hatch";
+	var STRIPE_SPACING_PX = 8;
+	var DARK_STRIPE = {
+		colour: "rgba(20,20,30,0.55)",
+		widthPx: 1.6,
+		offsetPx: 0
+	};
+	var LIGHT_STRIPE = {
+		colour: "rgba(255,255,255,0.35)",
+		widthPx: 1.2,
+		offsetPx: 2.5
+	};
+	function createHatchLayer(mapWidth, mapHeight, host = document.body) {
+		const { ctx, wipe, remove } = createMapCanvas(LAYER$1, host);
+		const maskCanvas = document.createElement("canvas");
+		maskCanvas.width = mapWidth;
+		maskCanvas.height = mapHeight;
+		const maskCtx = context2d(maskCanvas);
+		const maskImage = maskCtx.createImageData(mapWidth, mapHeight);
+		const stripes = ctx.createPattern(stripeTile(), "repeat");
+		if (!stripes) throw new Error("the page gave no pattern for the nation hatch");
+		return {
+			pixels: maskImage.data,
+			draw(placement, changedRows) {
+				if (changedRows) maskCtx.putImageData(maskImage, 0, 0, 0, changedRows.first, mapWidth, changedRows.last - changedRows.first + 1);
+				const { width, height } = wipe();
+				ctx.fillStyle = stripes;
+				ctx.fillRect(0, 0, width, height);
+				ctx.globalCompositeOperation = "destination-in";
+				ctx.imageSmoothingEnabled = false;
+				ctx.drawImage(maskCanvas, placement.x, placement.y, mapWidth * placement.scale, mapHeight * placement.scale);
+				ctx.globalCompositeOperation = "source-over";
+			},
+			clear() {
+				wipe();
+			},
+			remove
+		};
+	}
+	function context2d(canvas) {
+		const ctx = canvas.getContext("2d");
+		if (!ctx) throw new Error("the page gave no 2D canvas for the nation hatch");
+		return ctx;
+	}
+	function stripeTile() {
+		const tile = document.createElement("canvas");
+		tile.width = STRIPE_SPACING_PX;
+		tile.height = STRIPE_SPACING_PX;
+		const ctx = context2d(tile);
+		for (const stripe of [DARK_STRIPE, LIGHT_STRIPE]) {
+			ctx.strokeStyle = stripe.colour;
+			ctx.lineWidth = stripe.widthPx;
+			ctx.beginPath();
+			for (const shift of [
+				-8,
+				0,
+				STRIPE_SPACING_PX
+			]) {
+				const c = stripe.offsetPx + shift;
+				ctx.moveTo(c + STRIPE_SPACING_PX, -8);
+				ctx.lineTo(c - STRIPE_SPACING_PX, STRIPE_SPACING_PX);
+			}
+			ctx.stroke();
+		}
+		return tile;
+	}
+	var FALLOUT_BIT = 8192;
+	var OPAQUE = 255;
+	function createNationMask(width, height, pixels = new Uint8ClampedArray(width * height * 4)) {
+		const hatched = new Uint8Array(OWNER_MASK + 1);
+		let covered = 0;
+		return {
+			pixels,
+			refresh(tiles, nations) {
+				hatched.fill(0);
+				for (const id of nations) hatched[id & OWNER_MASK] = 1;
+				let first = -1;
+				let last = -1;
+				covered = 0;
+				const count = Math.min(tiles.length, width * height);
+				for (let tile = 0; tile < count; tile++) {
+					const state = tiles[tile];
+					const inside = (state & FALLOUT_BIT) === 0 && hatched[state & 4095] === 1;
+					const alpha = inside ? OPAQUE : 0;
+					const at = tile * 4 + 3;
+					if (pixels[at] !== alpha) {
+						pixels[at] = alpha;
+						const row = Math.floor(tile / width);
+						if (first === -1) first = row;
+						last = row;
+					}
+					if (inside) covered++;
+				}
+				return first === -1 ? null : {
+					first,
+					last
+				};
+			},
+			isEmpty: () => covered === 0
+		};
+	}
+	var HUMANS_VS_NATIONS = "Humans Vs Nations";
+	function readHatchedNations(game) {
+		const hatched = new Set();
+		if (game.config().gameConfig().playerTeams === HUMANS_VS_NATIONS) return hatched;
+		for (const player of game.players()) if (player.type() === "NATION" && player.isAlive()) hatched.add(player.smallID());
+		return hatched;
+	}
+	var REFRESH_TICKS = 5;
+	var nationHatch = {
+		id: "nation-hatch",
+		name: "Nation stripes",
+		description: "Thin stripes cover the territory of every Nation, so you can tell a Nation from a player who took a country's name. They are hidden in Humans vs Nations games.",
+		attach(context) {
+			const game = context.game;
+			const readHooks = mapHooksReader();
+			const layer = createHatchLayer(game.width(), game.height());
+			context.onDetach(() => layer.remove());
+			const mask = createNationMask(game.width(), game.height(), layer.pixels);
+			let pending = null;
+			let refreshedAt = game.ticks();
+			let drawnFor = "";
+			let frame = 0;
+			let failed = false;
+			function refresh() {
+				const changed = mask.refresh(game.tileStateBuffer(), readHatchedNations(game));
+				if (!changed) return;
+				pending = pending ? {
+					first: Math.min(pending.first, changed.first),
+					last: Math.max(pending.last, changed.last)
+				} : changed;
+			}
+			function draw() {
+				const hooks = readHooks();
+				if (!hooks || mask.isEmpty() || isAlternateViewOn(hooks.view) || isAllianceViewShowing()) {
+					if (drawnFor !== "") layer.clear();
+					drawnFor = "";
+					return;
+				}
+				const { camera } = hooks;
+				const origin = camera.worldToScreenCoordinates({
+					x: 0,
+					y: 0
+				});
+				const placement = {
+					x: origin.x,
+					y: origin.y,
+					scale: camera.scale
+				};
+				const viewKey = [
+					placement.x,
+					placement.y,
+					placement.scale,
+					window.innerWidth,
+					window.innerHeight,
+					window.devicePixelRatio
+				].join(",");
+				if (!pending && viewKey === drawnFor) return;
+				layer.draw(placement, pending);
+				pending = null;
+				drawnFor = viewKey;
+			}
+			function step() {
+				frame = requestAnimationFrame(step);
+				try {
+					draw();
+				} catch (error) {
+					logError("the nation hatch failed on a frame", error);
+					failed = true;
+					stopLoop();
+					layer.clear();
+				}
+			}
+			function stopLoop() {
+				if (frame === 0) return;
+				cancelAnimationFrame(frame);
+				frame = 0;
+			}
+			refresh();
+			frame = requestAnimationFrame(step);
+			context.onDetach(stopLoop);
+			return { tick() {
+				if (failed || game.ticks() - refreshedAt < REFRESH_TICKS) return;
+				refreshedAt = game.ticks();
+				refresh();
+			} };
+		}
+	};
+	function isAlternateViewOn(view) {
+		return view.renderer?.altView === true;
+	}
 	var REFERENCE_SCALE = .864;
 	var MIN_UNIT = .35;
 	var RING_RADIUS_PX = 16;
@@ -1683,31 +1921,7 @@
 	var COUNT_FONT = 13;
 	var FONT_FAMILY = "system-ui, sans-serif";
 	function createMarkLayer(host = document.body) {
-		const canvas = document.createElement("canvas");
-		canvas.className = LAYER;
-		host.append(canvas);
-		const ctx = canvas.getContext("2d");
-		if (!ctx) throw new Error("the page gave no 2D canvas for the spawn marks");
-		function fit() {
-			const width = window.innerWidth;
-			const height = window.innerHeight;
-			const ratio = window.devicePixelRatio || 1;
-			const pixelWidth = Math.round(width * ratio);
-			const pixelHeight = Math.round(height * ratio);
-			if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
-				canvas.width = pixelWidth;
-				canvas.height = pixelHeight;
-			}
-			ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-			return {
-				width,
-				height
-			};
-		}
-		function wipe() {
-			const { width, height } = fit();
-			ctx.clearRect(0, 0, width, height);
-		}
+		const { ctx, wipe, remove } = createMapCanvas(LAYER, host);
 		function drawRing(ring, unit, nowMs) {
 			const radius = ringRadius(unit) + breathOffset(nowMs);
 			const width = ringStrokePx(unit);
@@ -1765,9 +1979,7 @@
 				ctx.globalAlpha = 1;
 			},
 			clear: wipe,
-			remove() {
-				canvas.remove();
-			}
+			remove
 		};
 	}
 	var FADE_MS = 1200;
@@ -2073,6 +2285,7 @@
 		hotbarReadout,
 		allianceView,
 		spawnMarks,
+		nationHatch,
 		alliancePanel
 	];
 	var ROW$1 = "ofx-menu-row";

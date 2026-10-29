@@ -14,6 +14,7 @@ import { mapHooksReader, type MapHooks } from "./hooks";
 import { GAME_KEYBINDS_KEY, readGameKeybinds } from "../../game/keybinds";
 import { createPalette, paintAlliance, paintReal } from "./palette";
 import { createPointer, type PointerTarget } from "./pointer";
+import { setAllianceViewShowing } from "./showing";
 import { onSpotlight, spotlightedPlayer } from "./spotlight";
 import { createTerrainShade } from "./terrain";
 
@@ -203,6 +204,7 @@ export const allianceView: Feature = {
         paintAlliance(palette, playersOf(context.game), coloured);
         hooks.view.updatePalette(palette);
         painted = true;
+        setAllianceViewShowing(true);
         writtenSignature = signature;
         framesSinceWrite = 0;
       }
@@ -221,6 +223,7 @@ export const allianceView: Feature = {
       paintReal(palette, playersOf(context.game));
       hooks.view.updatePalette(palette);
       painted = false;
+      setAllianceViewShowing(false);
       writtenSignature = "";
     }
 
@@ -358,6 +361,7 @@ export const allianceView: Feature = {
       // leave a player's map grey.
       const hooks = readHooks();
       if (hooks) standDown(hooks);
+      setAllianceViewShowing(false);
       // The renderer the terrain was greyed on may no longer be on `window`.
       terrain.restore();
       clocks.remove();

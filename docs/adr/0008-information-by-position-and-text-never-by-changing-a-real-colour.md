@@ -10,6 +10,8 @@ That closes a channel the mode would otherwise use. The mode also has to say how
 
 Where the package keeps a real player colour, it adds information by position and by text. It never changes that colour.
 
+A sparse pattern drawn over a territory is allowed, such as thin stripes. The real colour must stay visible between the marks, so the territory still reads as its owner. A pattern that covers most of the area, or that shifts its hue or brightness as a whole, is a colour change and stays forbidden.
+
 A colour of our own is not covered by this. The package may do what it likes with violet, because violet already means "we computed this".
 
 ## What it decided
@@ -26,6 +28,6 @@ The subject is still never ambiguous, which is why the missing mark costs nothin
 
 A later scheme that paints allies a colour of ours may darken that colour freely. The fade is the right answer there, and the throwaway records how it worked. It is simply not the answer under a scheme that keeps real colours, and the package ships no other scheme, so the fade is not built.
 
-The cost is that one channel is closed. Anything more the map has to say needs a new position or new text, and both cost more than a colour change would.
+The cost is that one channel is closed. Anything more the map has to say needs a new position, new text or a sparse pattern, and each costs more than a colour change would.
 
 Settled on [issue #13](https://github.com/DeLoWaN/openfront-extended-ui/issues/13). The fade was built and judged on branch `prototype/issue-14-alliance-view`.

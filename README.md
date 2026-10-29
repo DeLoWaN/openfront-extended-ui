@@ -72,6 +72,12 @@ You can change the key in the settings.
 
 [More details](docs/features.md#alliance-map)
 
+### Nation stripes
+
+Thin stripes cover the territory of every Nation, the players the game controls. A real player who took a country's name has no stripes, so you can tell the two apart at a glance. The stripes keep the same spacing at every zoom, and the territory's colour shows between them.
+
+[More details](docs/features.md#nation-stripes)
+
 ## Settings
 
 Every feature can be switched off, and some have options. A change applies at once.

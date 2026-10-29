@@ -149,7 +149,8 @@
  * a mark never covers the game's own HUD. The canvas takes no pointer events,
  * so a click on a mark reaches the map beneath it.
  */
-.ofx-spawn-marks {
+.ofx-spawn-marks,
+.ofx-nation-hatch {
   position: fixed;
   inset: 0;
   width: 100vw;
@@ -854,4 +855,12 @@
 .ofx-settings-reset-armed {
   border-color: var(--ofx-menu-warning);
   color: var(--ofx-menu-warning);
+}
+
+/*
+ * The canvas the nation hatch is drawn on. It takes the spawn marks' place,
+ * one step lower, so a spawn mark or a clock is never striped.
+ */
+.ofx-nation-hatch {
+  z-index: 49;
 }
